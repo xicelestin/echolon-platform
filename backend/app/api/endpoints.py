@@ -1,6 +1,9 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from typing import List
+import pandas as pd
+import io
 from app.schemas import schemas
+from app.models.models import BusinessData
 from datetime import datetime
 from sqlalchemy.orm import Session
 from app.db.database import get_db
@@ -12,7 +15,7 @@ from fastapi import Depends
 router = APIRouter()
 
 @router.post("/upload_csv")
-async def upload_csv(file: UploadFile = File(...)):
+async def upload_csv(file: UploadFile = File(...)), session: Session = Depends(get_db):
     """Upload CSV file with business data"""
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Only CSV files are accepted")
@@ -24,6 +27,50 @@ async def upload_csv(file: UploadFile = File(...)):
         "filename": file.filename,
         "status": "processing"
     }
+"""Upload CSV file with business data."""
+    # Validate file extension
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="Only CSV files are accepted")
+    
+    try:
+        # Read file contents
+        contents = await file.read()
+        
+        # Parse CSV
+        df = pd.read_csv(io.BytesIO(contents))
+        
+        # Validate required columns
+        required_cols = ['date', 'metric_name', 'value']
+        missing_cols = [col for col in required_cols if col not in df.columns]
+        if missing_cols:
+            raise HTTPException(
+                status_code=400,
+                detail=f"CSV must contain columns: {required_cols}. Missing: {missing_cols}"
+            )
+        
+        # Store in database
+        business_data = BusinessData(
+            user_id=1,  # TODO: Get from auth context
+            filename=file.filename,
+            data=df.to_dict('records'),
+            data_type='timeseries'
+        )
+        session.add(business_data)
+        session.commit()
+        
+        return {
+            "message": "CSV uploaded successfully",
+            "filename": file.filename,
+            "rows_processed": len(df),
+            "status": "success"
+        }
+    
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing CSV: {str(e)}"
+        )
 
 @router.get("/insights", response_model=List[schemas.MetricsOut])
 async def get_insights():
