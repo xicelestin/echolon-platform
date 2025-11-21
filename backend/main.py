@@ -1,15 +1,12 @@
 """Echolon AI - FastAPI Backend Entry Point"""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import routes
-from app.db.database import engine
-from app.models import user, business_data, metrics, predictions
-
+from app.api import endpoints
+from app.db.database import engine, Base
+from app.models.models import User, BusinessData, Metrics, Predictions
 # Create database tables
-user.Base.metadata.create_all(bind=engine)
-business_data.Base.metadata.create_all(bind=engine)
-metrics.Base.metadata.create_all(bind=engine)
-predictions.Base.metadata.create_all(bind=engine)
+# Create database tables
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Echolon AI API",
@@ -27,7 +24,7 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(routes.router, prefix="/api/v1", tags=["main"])
+app.include_router(endpoints.router, prefix="/api/v1", tags=["main"])
 
 @app.get("/")
 async def root():
