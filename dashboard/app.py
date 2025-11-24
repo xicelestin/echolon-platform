@@ -48,6 +48,17 @@ st.sidebar.info("**Version:** 1.0.0\n\n**Status:** Active")
 # ============= HOME PAGE =============
 if page == "🏠 Home":
     st.markdown('<p class="main-header">Welcome to Echolon AI</p>', unsafe_allow_html=True)
+    # 🔍 Backend Health Check Button
+    if st.button("Check Backend Connection"):
+        try:
+            res = requests.get(f"{BACKEND_API_URL}/health", timeout=5)
+            if res.status_code == 200:
+                st.success("Backend is LIVE 🔥")
+            else:
+                st.warning(f"Backend returned {res.status_code}")
+        except Exception as e:
+            st.error(f"Could not connect: {str(e)}")
+            
     st.markdown("""
     ### Your Intelligent Business Analytics Platform
     
