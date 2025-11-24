@@ -58,7 +58,22 @@ if page == "🏠 Home":
                 st.warning(f"Backend returned {res.status_code}")
         except Exception as e:
             st.error(f"Could not connect: {str(e)}")
-            
+
+    st.markdown("""
+    ### The AI-Powered Dashboard for Real Businesses
+
+    Echolon helps small and mid-sized businesses turn raw data into:
+    - **Clear analytics**
+    - **Meaningful insights**
+    - **Reliable predictions**
+    - **Actionable steps**
+
+    Our mission is simple:  
+    **Give SMBs the same data power that big companies have — without needing a full data team.**
+    """)
+
+    st.markdown("### What would you like to do today?")
+
     st.markdown("""
     ### Your Intelligent Business Analytics Platform
     
