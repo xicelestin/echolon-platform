@@ -58,7 +58,7 @@ jobs:
             --region=${{ env.REGION }} \
             --platform=managed \
             --allow-unauthenticated \
-            --project=${{ env.PROJECT_ID }} \
+            --project=${{ env.POJECT_ID }} \
       --port=8080 \
       --cpu=2 \
       --timeout=3600 \
