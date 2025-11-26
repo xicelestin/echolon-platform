@@ -28,10 +28,10 @@ jobs:
       
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-                  audience: https://github.com/echolon44/echolon-platform
+    with:
+      workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+      service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+      audience: https://github.com/echolon44/echolon-platform
       
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
