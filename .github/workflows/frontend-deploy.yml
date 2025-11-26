@@ -60,7 +60,8 @@ jobs:
             --allow-unauthenticated \
             --project=${{ env.PROJECT_ID }} \
       --port=8080 \
-      --cpu=2 \            --timeout=3600 \
+      --cpu=2 \            --
+            --timeout=3600 \
             --max-instances=10
       
       - name: Deployment notification
