@@ -31,7 +31,6 @@ jobs:
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-                  audience: "//iam.googleapis.com/projects/645381719281/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
       
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
