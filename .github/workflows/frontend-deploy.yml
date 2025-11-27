@@ -59,7 +59,7 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --project=${{ env.PROJECT_ID }} \
-      --port=8080 \
+            --port=8080 \
       --cpu=2 \
       --timeout=3600 \
       --max-instances=10
