@@ -2,616 +2,395 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from datetime import datetime, timedelta
+from datetime import datetime
 import requests
 import os
 import io
+import numpy as np
 
-# Page configuration - wide layout, no sidebar
+# Page configuration
 st.set_page_config(
     page_title="Echolon AI - Business Intelligence Platform",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 # Backend API URL
 BACKEND_API_URL = os.getenv("BACKEND_API_URL", "http://localhost:8000")
 
-# Custom CSS for modern UI matching the design
-st.markdown("""
-<style>
-    /* Hide default Streamlit elements */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    .stDeployButton {display: none;}
-    
-    /* Main background */
-    .stApp {
-        background-color: #f8f9fa;
-    }
-    
-    /* Top navigation bar */
-    .nav-bar {
-        background-color: #1a1a2e;
-        padding: 1rem 2rem;
-        border-radius: 0;
-        margin: -1rem -1rem 2rem -1rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-    
-    .nav-logo {
-        color: white;
-        font-size: 1.5rem;
-        font-weight: bold;
-        letter-spacing: 2px;
-    }
-    
-    .nav-links {
-        display: flex;
-        gap: 2rem;
-    }
-    
-    .nav-link {
-        color: #888;
-        text-decoration: none;
-        font-size: 0.9rem;
-        transition: color 0.3s;
-    }
-    
-    .nav-link:hover, .nav-link.active {
-        color: white;
-    }
-    
-    /* Metric cards */
-    .metric-card {
-        background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        border: 1px solid #eee;
-    }
-    
-    .metric-label {
-        color: #666;
-        font-size: 0.85rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .metric-value {
-        font-size: 2rem;
-        font-weight: 600;
-        color: #1a1a2e;
-    }
-    
-    .metric-change {
-        display: inline-block;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        margin-left: 0.5rem;
-    }
-    
-    .metric-change.positive {
-        background: #e8f5e9;
-        color: #2e7d32;
-    }
-    
-    .metric-change.negative {
-        background: #ffebee;
-        color: #c62828;
-    }
-    
-    /* Chart container */
-    .chart-container {
-        background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        border: 1px solid #eee;
-        margin-bottom: 1rem;
-    }
-    
-    /* Forecast panel */
-    .forecast-panel {
-        background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        border: 1px solid #eee;
-        height: 100%;
-    }
-    
-    .forecast-title {
-        font-size: 1rem;
-        color: #666;
-        margin-bottom: 1rem;
-    }
-    
-    .forecast-highlight {
-        color: #2e7d32;
-        font-weight: 600;
-    }
-    
-    /* Insight cards */
-    .insight-card {
-        background: white;
-        border-radius: 12px;
-        padding: 1.25rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        border: 1px solid #eee;
-        height: 100%;
-    }
-    
-    .insight-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 0.75rem;
-        font-size: 1rem;
-    }
-    
-    .insight-icon.growth { background: #e8f5e9; }
-    .insight-icon.alert { background: #fff3e0; }
-    .insight-icon.advice { background: #fce4ec; }
-    
-    .insight-title {
-        font-weight: 600;
-        color: #1a1a2e;
-        margin-bottom: 0.5rem;
-        font-size: 0.95rem;
-    }
-    
-    .insight-text {
-        color: #666;
-        font-size: 0.85rem;
-        line-height: 1.5;
-    }
-    
-    /* Section headers */
-    .section-header {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #1a1a2e;
-        margin-bottom: 1rem;
-    }
-    
-    /* Hide sidebar */
-    [data-testid="stSidebar"] {
-        display: none;
-    }
-    
-    /* Streamlit metric styling override */
-    [data-testid="stMetricValue"] {
-        font-size: 1.8rem !important;
-    }
-    
-    /* Upload area styling */
-    .uploadedFile {
-        border-radius: 12px !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
 # Initialize session state
 if 'uploaded_data' not in st.session_state:
     st.session_state.uploaded_data = None
 if 'data_source' not in st.session_state:
-    st.session_state.data_source = 'demo'
-if 'current_page' not in st.session_state:
-    st.session_state.current_page = 'Home'
-if 'forecast_data' not in st.session_state:
-    st.session_state.forecast_data = None
+    st.session_state.data_source = 'none'
+if 'api_response' not in st.session_state:
+    st.session_state.api_response = None
 
-# Navigation bar
-nav_cols = st.columns([2, 6, 2])
-with nav_cols[0]:
-    st.markdown("### ECHOLON")
-with nav_cols[1]:
-    nav_options = st.columns(4)
-    with nav_options[0]:
-        if st.button("Home", use_container_width=True, type="secondary" if st.session_state.current_page != 'Home' else "primary"):
-            st.session_state.current_page = 'Home'
-            st.rerun()
-    with nav_options[1]:
-        if st.button("Upload Data", use_container_width=True, type="secondary" if st.session_state.current_page != 'Upload Data' else "primary"):
-            st.session_state.current_page = 'Upload Data'
-            st.rerun()
-    with nav_options[2]:
-        if st.button("Insights", use_container_width=True, type="secondary" if st.session_state.current_page != 'Insights' else "primary"):
-            st.session_state.current_page = 'Insights'
-            st.rerun()
-    with nav_options[3]:
-        if st.button("Predictions", use_container_width=True, type="secondary" if st.session_state.current_page != 'Predictions' else "primary"):
-            st.session_state.current_page = 'Predictions'
-            st.rerun()
 
-st.markdown("---")
+# ============= HELPER FUNCTIONS =============
+def calculate_growth(series):
+    if series is None or len(series) < 2:
+        return None
+    first_val = series.iloc[0]
+    last_val = series.iloc[-1]
+    if first_val == 0:
+        return None
+    return ((last_val - first_val) / first_val) * 100
+
+
+def get_metric_summary(df, col_name):
+    if col_name not in df.columns:
+        return None
+    series = df[col_name]
+    return {
+        'current': series.iloc[-1] if len(series) > 0 else 0,
+        'average': series.mean(),
+        'total': series.sum(),
+        'growth': calculate_growth(series),
+    }
+
+
+def detect_numeric_columns(df):
+    return df.select_dtypes(include=[np.number]).columns.tolist()
+
+
+def generate_insights_from_data(df):
+    insights = []
+    numeric_cols = detect_numeric_columns(df)
+    
+    for col in numeric_cols:
+        if col.lower() == 'date':
+            continue
+        summary = get_metric_summary(df, col)
+        if summary and summary['growth'] is not None:
+            direction = "increased" if summary['growth'] > 0 else "decreased"
+            insights.append({
+                'metric': col.title(),
+                'insight': f"{col.title()} has {direction} by {abs(summary['growth']):.1f}%",
+                'growth': summary['growth'],
+                'type': 'growth'
+            })
+    
+    if 'date' in df.columns:
+        df_sorted = df.sort_values('date')
+        for col in numeric_cols[:3]:
+            if col.lower() == 'date':
+                continue
+            recent_avg = df_sorted[col].tail(len(df)//4).mean() if len(df) > 4 else df_sorted[col].mean()
+            older_avg = df_sorted[col].head(len(df)//4).mean() if len(df) > 4 else df_sorted[col].mean()
+            if older_avg > 0:
+                trend_change = ((recent_avg - older_avg) / older_avg) * 100
+                trend_direction = "upward" if trend_change > 0 else "downward"
+                insights.append({
+                    'metric': col.title(),
+                    'insight': f"Recent {col.lower()} shows {trend_direction} trend ({trend_change:+.1f}%)",
+                    'growth': trend_change,
+                    'type': 'trend'
+                })
+    
+    return insights
+
+
+# ============= SIDEBAR =============
+st.sidebar.title("ECHOLON")
+st.sidebar.markdown("AI powered business intelligence")
+st.sidebar.markdown("---")
+
+page = st.sidebar.radio("Navigation", ["Home", "Upload Data", "Insights", "Predictions"])
+
+st.sidebar.markdown("---")
+
+if st.session_state.data_source == 'uploaded' and st.session_state.uploaded_data is not None:
+    st.sidebar.success(f"✓ Data loaded: {len(st.session_state.uploaded_data)} rows")
+else:
+    st.sidebar.warning("No data uploaded")
+
+st.sidebar.markdown("---")
+
+if st.sidebar.button("Check Backend Connection"):
+    try:
+        res = requests.get(f"{BACKEND_API_URL}/health", timeout=5)
+        if res.status_code == 200:
+            st.sidebar.success("Backend is LIVE")
+        else:
+            st.sidebar.warning(f"Backend returned {res.status_code}")
+    except Exception as e:
+        st.sidebar.error(f"Could not connect: {str(e)}")
+
 
 # ============= HOME PAGE =============
-if st.session_state.current_page == "Home":
+if page == "Home":
+    st.title("Echolon AI Dashboard")
     
-    # Top metrics row
-    col1, col2, col3 = st.columns(3)
+    has_data = st.session_state.data_source == 'uploaded' and st.session_state.uploaded_data is not None
     
-    with col1:
-        st.markdown("""
-        <div class="metric-card">
-            <div class="metric-label">Revenue</div>
-            <div class="metric-value">$24,700 <span class="metric-change positive">↑ 15%</span></div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("""
-        <div class="metric-card">
-            <div class="metric-label">Bookings</div>
-            <div class="metric-value">342 <span class="metric-change positive">↑ 7.9%</span></div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown("""
-        <div class="metric-card">
-            <div class="metric-label">Utilization</div>
-            <div class="metric-value">86.5%</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Revenue trend and Forecast panels
-    chart_col, forecast_col = st.columns([2, 1])
-    
-    with chart_col:
-        st.markdown('<div class="section-header">Revenue Trend</div>', unsafe_allow_html=True)
+    if has_data:
+        df = st.session_state.uploaded_data
+        st.success("📊 Showing metrics from your uploaded data")
+        st.markdown("---")
         
-        # Generate trend data
-        if st.session_state.uploaded_data is not None and 'date' in st.session_state.uploaded_data.columns:
-            df = st.session_state.uploaded_data
-            # Use first numeric column for chart
-            numeric_cols = df.select_dtypes(include=['int64', 'float64']).columns.tolist()
-            if numeric_cols:
-                chart_df = df[['date', numeric_cols[0]]].copy()
-                chart_df.columns = ['Date', 'Value']
-            else:
-                chart_df = pd.DataFrame({
-                    'Date': pd.date_range(start='2024-01-01', periods=6, freq='ME'),
-                    'Value': [5000, 12000, 18000, 15000, 22000, 28000]
-                })
+        numeric_cols = detect_numeric_columns(df)
+        display_cols = [c for c in numeric_cols if c.lower() != 'date'][:4]
+        
+        st.subheader("Key Performance Indicators")
+        
+        if display_cols:
+            cols = st.columns(len(display_cols))
+            for i, col_name in enumerate(display_cols):
+                with cols[i]:
+                    summary = get_metric_summary(df, col_name)
+                    if summary:
+                        if summary['current'] > 10000:
+                            display_val = f"${summary['current']/1000:.1f}K" if 'revenue' in col_name.lower() else f"{summary['current']/1000:.1f}K"
+                        elif summary['current'] < 1:
+                            display_val = f"{summary['current']*100:.1f}%"
+                        else:
+                            display_val = f"{summary['current']:,.0f}"
+                        delta = f"{summary['growth']:+.1f}%" if summary['growth'] is not None else None
+                        st.metric(label=col_name.replace('_', ' ').title(), value=display_val, delta=delta)
         else:
-            chart_df = pd.DataFrame({
-                'Date': pd.date_range(start='2024-01-01', periods=6, freq='ME'),
-                'Value': [5000, 12000, 18000, 15000, 22000, 28000]
-            })
+            st.warning("No numeric columns found")
         
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=chart_df['Date'],
-            y=chart_df['Value'],
-            mode='lines+markers',
-            line=dict(color='#1a73e8', width=2),
-            marker=dict(size=8, color='#1a73e8'),
-            fill='tozeroy',
-            fillcolor='rgba(26, 115, 232, 0.1)'
-        ))
-        fig.update_layout(
-            margin=dict(l=0, r=0, t=10, b=0),
-            height=250,
-            paper_bgcolor='white',
-            plot_bgcolor='white',
-            xaxis=dict(showgrid=False, tickformat='%b'),
-            yaxis=dict(showgrid=True, gridcolor='#f0f0f0', tickprefix='$', tickformat=',')
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    
-    with forecast_col:
-        st.markdown('<div class="section-header">Upcoming Forecast</div>', unsafe_allow_html=True)
+        st.markdown("---")
+        st.subheader("Data Trends")
         
-        # Calculate forecast from session data or use default
-        forecast_pct = 14.4
-        if st.session_state.forecast_data:
-            points = st.session_state.forecast_data.get('points', [])
-            if len(points) >= 2:
-                first_val = points[0].get('value', 0)
-                last_val = points[-1].get('value', 0)
-                if first_val > 0:
-                    forecast_pct = ((last_val - first_val) / first_val) * 100
+        if 'date' in df.columns and len(display_cols) > 0:
+            chart_metric = st.selectbox("Select metric", display_cols)
+            chart_df = df[['date', chart_metric]].copy()
+            chart_df['date'] = pd.to_datetime(chart_df['date'])
+            chart_df = chart_df.sort_values('date')
+            
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=chart_df['date'], y=chart_df[chart_metric], mode='lines+markers', name=chart_metric.title(), line=dict(color='#FF6B35', width=2)))
+            fig.update_layout(title=f"{chart_metric.title()} Over Time", xaxis_title="Date", yaxis_title=chart_metric.title(), template="plotly_white")
+            st.plotly_chart(fig, use_container_width=True)
         
-        st.markdown(f"""
-        <div class="forecast-panel">
-            <p style="font-size: 1.1rem; line-height: 1.8;">
-                A revenue increase of around <span class="forecast-highlight">{abs(forecast_pct):.1f}%</span> is <span class="forecast-highlight">expected</span> during the next 30 days.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("---")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("📈 Auto-Generated Insights")
+            insights = generate_insights_from_data(df)
+            if insights:
+                for insight in insights[:4]:
+                    icon = "🔼" if insight['growth'] > 0 else "🔽"
+                    st.markdown(f"{icon} **{insight['metric']}**: {insight['insight']}")
+            else:
+                st.info("Not enough data for insights")
+        
+        with col2:
+            st.subheader("📊 Data Summary")
+            st.markdown(f"**Total Records**: {len(df):,}")
+            if 'date' in df.columns:
+                st.markdown(f"**Date Range**: {df['date'].min()} to {df['date'].max()}")
+            st.markdown(f"**Metrics**: {', '.join(display_cols)}")
     
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Automated Insights section
-    st.markdown('<div class="section-header">Automated Insights</div>', unsafe_allow_html=True)
-    
-    insight_cols = st.columns(3)
-    
-    with insight_cols[0]:
-        st.markdown("""
-        <div class="insight-card">
-            <div class="insight-icon growth">📈</div>
-            <div class="insight-title">Growth Opportunity</div>
-            <div class="insight-text">Customer acquisition has been steadily increasing over the past quarter.</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with insight_cols[1]:
-        st.markdown("""
-        <div class="insight-card">
-            <div class="insight-icon alert">⚠️</div>
-            <div class="insight-title">Inventory Alert</div>
-            <div class="insight-text">High demand for popular items may lead to stock shortages.</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with insight_cols[2]:
-        st.markdown("""
-        <div class="insight-card">
-            <div class="insight-icon advice">👥</div>
-            <div class="insight-title">Staffing Advice</div>
-            <div class="insight-text">Consider hiring additional staff to manage increasing bookings.</div>
-        </div>
-        """, unsafe_allow_html=True)
+    else:
+        st.info("👋 Welcome! Upload your business data to get started.")
+        st.markdown("---")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown("### 📤 Upload Data")
+            st.markdown("Upload CSV with `date`, `revenue`, `customers`")
+        with col2:
+            st.markdown("### 🔮 Get Predictions")
+            st.markdown("ML models forecast your metrics")
+        with col3:
+            st.markdown("### 📊 Discover Insights")
+            st.markdown("Auto-detect patterns and trends")
+        
+        st.markdown("---")
+        st.subheader("Sample Data Format")
+        sample_df = pd.DataFrame({
+            'date': ['2024-01-01', '2024-01-02', '2024-01-03'],
+            'revenue': [50000, 52000, 51500],
+            'customers': [245, 248, 250]
+        })
+        st.dataframe(sample_df, use_container_width=True)
+
 
 # ============= UPLOAD DATA PAGE =============
-elif st.session_state.current_page == "Upload Data":
-    st.markdown("## Upload Your Data")
-    st.markdown("Upload a CSV file containing your business data for analysis")
+elif page == "Upload Data":
+    st.title("Upload Your Data")
+    st.markdown("---")
     
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    col1, col2 = st.columns([2, 1])
-    
-    with col1:
-        uploaded_file = st.file_uploader(
-            "Drag and drop your CSV file here",
-            type="csv",
-            help="Accepts any CSV with a date column and numeric metrics"
-        )
-        
-        if uploaded_file is not None:
-            try:
-                df = pd.read_csv(uploaded_file)
-                st.session_state.uploaded_data = df
-                st.session_state.data_source = 'uploaded'
-                
-                st.success(f"✅ File uploaded: {df.shape[0]} rows × {df.shape[1]} columns")
-                
-                st.markdown("### Data Preview")
-                st.dataframe(df.head(10), use_container_width=True)
-                
-                # Summary metrics
-                st.markdown("### Summary")
-                m1, m2, m3 = st.columns(3)
-                with m1:
-                    st.metric("Total Rows", df.shape[0])
-                with m2:
-                    st.metric("Total Columns", df.shape[1])
-                with m3:
-                    st.metric("Missing Values", df.isnull().sum().sum())
-                
-                st.markdown("<br>", unsafe_allow_html=True)
-                
-                # Save to backend button
-                if st.button("💾 Process & Save to Backend", type="primary", use_container_width=True):
-                    with st.spinner("Saving to backend..."):
-                        try:
-                            uploaded_file.seek(0)
-                            files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "text/csv")}
-                            response = requests.post(
-                                f"{BACKEND_API_URL}/api/v1/upload_csv",
-                                files=files,
-                                timeout=30
-                            )
-                            if response.status_code == 200:
-                                result = response.json()
-                                st.success(f"✅ {result.get('message')} - {result.get('rows_processed')} rows processed")
-                                st.balloons()
-                            else:
-                                error = response.json().get('detail', 'Unknown error')
-                                st.error(f"Error: {error}")
-                        except requests.exceptions.ConnectionError:
-                            st.error("Could not connect to backend. Make sure it's running on port 8000.")
-                        except Exception as e:
-                            st.error(f"Error: {str(e)}")
-            
-            except Exception as e:
-                st.error(f"Error reading file: {str(e)}")
-    
-    with col2:
-        st.markdown("### Accepted Formats")
-        st.markdown("""
-        Your CSV should include:
-        - A **date** column
-        - One or more **numeric metric** columns
-        
-        Example columns:
-        - `date`, `revenue`, `bookings`
-        - `date`, `sales`, `customers`, `orders`
-        """)
-        
-        # Sample download
-        sample_df = pd.DataFrame({
-            'date': pd.date_range(start='2024-01-01', periods=30, freq='D'),
-            'revenue': [50000 + i*500 + (i%7)*200 for i in range(30)],
-            'bookings': [300 + i*5 + (i%5)*10 for i in range(30)],
-            'utilization': [0.80 + i*0.005 for i in range(30)]
-        })
-        csv = sample_df.to_csv(index=False)
-        st.download_button(
-            "📥 Download Sample CSV",
-            csv,
-            "sample_business_data.csv",
-            "text/csv",
-            use_container_width=True
-        )
-
-# ============= INSIGHTS PAGE =============
-elif st.session_state.current_page == "Insights":
-    st.markdown("## Business Insights")
-    
-    # KPI cards
-    kpi_cols = st.columns(4)
-    kpis = [
-        ("Total Revenue", "$2.4M", "+12.5%", True),
-        ("Active Users", "8,432", "+8.2%", True),
-        ("Conversion Rate", "3.8%", "+0.5%", True),
-        ("Avg Order Value", "$285", "-2.1%", False)
-    ]
-    
-    for col, (label, value, change, positive) in zip(kpi_cols, kpis):
-        with col:
-            change_class = "positive" if positive else "negative"
-            arrow = "↑" if positive else "↓"
-            st.markdown(f"""
-            <div class="metric-card">
-                <div class="metric-label">{label}</div>
-                <div class="metric-value">{value} <span class="metric-change {change_class}">{arrow} {change}</span></div>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Charts row
-    chart1, chart2 = st.columns(2)
-    
-    with chart1:
-        st.markdown("### Revenue by Category")
-        fig = px.pie(
-            values=[45, 25, 20, 10],
-            names=['Product A', 'Product B', 'Services', 'Other'],
-            color_discrete_sequence=['#1a73e8', '#34a853', '#fbbc04', '#ea4335']
-        )
-        fig.update_layout(margin=dict(l=0, r=0, t=30, b=0), height=300)
-        st.plotly_chart(fig, use_container_width=True)
-    
-    with chart2:
-        st.markdown("### Monthly Trend")
-        months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
-        values = [12000, 15000, 14000, 18000, 22000, 25000]
-        fig = go.Figure(go.Bar(x=months, y=values, marker_color='#1a73e8'))
-        fig.update_layout(margin=dict(l=0, r=0, t=30, b=0), height=300)
-        st.plotly_chart(fig, use_container_width=True)
-
-# ============= PREDICTIONS PAGE =============
-elif st.session_state.current_page == "Predictions":
-    st.markdown("## AI Predictions")
-    st.markdown("Generate forecasts using machine learning models")
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Configuration
-    config_cols = st.columns(4)
-    
-    with config_cols[0]:
-        metric_name = st.text_input("Metric Name", value="revenue", help="Name of the metric to forecast")
-    with config_cols[1]:
-        horizon = st.selectbox("Forecast Horizon", [7, 30, 60, 90], index=1, format_func=lambda x: f"{x} days")
-    with config_cols[2]:
-        model_type = st.selectbox("Model", ["auto", "xgboost", "prophet"])
-    with config_cols[3]:
-        business_id = st.number_input("Business ID", min_value=1, value=1)
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    if st.button("🚀 Generate Forecast", type="primary", use_container_width=True):
-        with st.spinner("Training model and generating forecast..."):
-            try:
-                response = requests.post(
-                    f"{BACKEND_API_URL}/api/v1/ml/forecast",
-                    json={
-                        "business_id": business_id,
-                        "metric_name": metric_name,
-                        "horizon": horizon,
-                        "model_type": model_type
-                    },
-                    timeout=120
-                )
-                
-                if response.status_code == 200:
-                    forecast_data = response.json()
-                    st.session_state.forecast_data = forecast_data
-                    
-                    st.success(f"✅ Forecast generated using {forecast_data.get('model_used', 'unknown')} model")
-                    
-                    points = forecast_data.get('points', [])
-                    if points:
-                        # Create forecast chart
-                        dates = [p['date'] for p in points]
-                        values = [p['value'] for p in points]
-                        
-                        fig = go.Figure()
-                        fig.add_trace(go.Scatter(
-                            x=dates, y=values,
-                            mode='lines+markers',
-                            line=dict(color='#1a73e8', width=2),
-                            marker=dict(size=6)
-                        ))
-                        
-                        # Add confidence intervals if available
-                        lower = [p.get('lower_bound') for p in points]
-                        upper = [p.get('upper_bound') for p in points]
-                        if all(lower) and all(upper):
-                            fig.add_trace(go.Scatter(
-                                x=dates + dates[::-1],
-                                y=upper + lower[::-1],
-                                fill='toself',
-                                fillcolor='rgba(26, 115, 232, 0.2)',
-                                line=dict(color='rgba(255,255,255,0)'),
-                                name='Confidence'
-                            ))
-                        
-                        fig.update_layout(
-                            title=f"{metric_name} Forecast - {horizon} Days",
-                            margin=dict(l=0, r=0, t=40, b=0),
-                            height=400
-                        )
-                        st.plotly_chart(fig, use_container_width=True)
-                        
-                        # Summary stats
-                        st.markdown("### Forecast Summary")
-                        s1, s2, s3 = st.columns(3)
-                        with s1:
-                            st.metric("Starting Value", f"${values[0]:,.0f}")
-                        with s2:
-                            st.metric("Ending Value", f"${values[-1]:,.0f}")
-                        with s3:
-                            growth = ((values[-1] - values[0]) / values[0] * 100) if values[0] > 0 else 0
-                            st.metric("Projected Growth", f"{growth:+.1f}%")
-                        
-                        # Data table
-                        with st.expander("View Forecast Data"):
-                            st.dataframe(pd.DataFrame(points), use_container_width=True)
-                
-                elif response.status_code == 503:
-                    st.error("ML services not available. Install XGBoost/Prophet.")
-                else:
-                    st.error(f"Error: {response.json().get('detail', 'Unknown error')}")
-            
-            except requests.exceptions.ConnectionError:
-                st.error("Cannot connect to backend. Make sure it's running.")
-            except Exception as e:
-                st.error(f"Error: {str(e)}")
+    sample_data = pd.DataFrame({'date': ['2024-01-01', '2024-01-02'], 'revenue': [50000, 52000], 'customers': [245, 248]})
+    csv_buffer = io.StringIO()
+    sample_data.to_csv(csv_buffer, index=False)
+    st.download_button(label="Download sample CSV", data=csv_buffer.getvalue(), file_name="sample_data.csv", mime="text/csv")
     
     st.markdown("---")
-    st.info("💡 Upload data first in the 'Upload Data' tab to generate forecasts based on your business metrics.")
+    uploaded_file = st.file_uploader("Upload CSV", type="csv")
+    
+    if uploaded_file is not None:
+        try:
+            df = pd.read_csv(uploaded_file)
+            st.session_state.uploaded_data = df
+            st.session_state.data_source = 'uploaded'
+            
+            st.success(f"Uploaded: {df.shape[0]} rows × {df.shape[1]} columns")
+            st.dataframe(df.head(10), use_container_width=True)
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Rows", df.shape[0])
+            with col2:
+                st.metric("Columns", df.shape[1])
+            with col3:
+                st.metric("Missing", df.isnull().sum().sum())
+            
+            numeric_cols = detect_numeric_columns(df)
+            if numeric_cols:
+                st.info(f"📊 Detected: {', '.join(numeric_cols)}")
+            
+            if st.button("Process & Save to Backend", type="primary"):
+                with st.spinner("Processing..."):
+                    try:
+                        uploaded_file.seek(0)
+                        files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "text/csv")}
+                        response = requests.post(f"{BACKEND_API_URL}/api/v1/upload_csv", files=files, timeout=30)
+                        if response.status_code == 200:
+                            result = response.json()
+                            st.success(f"✅ Saved! ({result.get('rows_processed', 0)} rows)")
+                            st.balloons()
+                        else:
+                            st.error(f"Error: {response.json().get('detail', response.text)}")
+                    except requests.exceptions.ConnectionError:
+                        st.error("❌ Backend not connected")
+                    except Exception as e:
+                        st.error(f"Failed: {str(e)}")
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+    else:
+        st.info("Upload a CSV file to begin")
 
-# Footer
+
+# ============= INSIGHTS PAGE =============
+elif page == "Insights":
+    st.title("Business Insights")
+    
+    has_data = st.session_state.data_source == 'uploaded' and st.session_state.uploaded_data is not None
+    
+    if has_data:
+        df = st.session_state.uploaded_data
+        st.success("📊 Insights from your data")
+        st.markdown("---")
+        
+        numeric_cols = detect_numeric_columns(df)
+        display_cols = [c for c in numeric_cols if c.lower() != 'date'][:4]
+        
+        if display_cols:
+            cols = st.columns(len(display_cols))
+            for i, col_name in enumerate(display_cols):
+                with cols[i]:
+                    summary = get_metric_summary(df, col_name)
+                    if summary:
+                        if summary['total'] > 100000:
+                            display_val = f"${summary['total']/1000000:.2f}M" if 'revenue' in col_name.lower() else f"{summary['total']/1000:.1f}K"
+                        else:
+                            display_val = f"{summary['current']:,.0f}"
+                        delta = f"{summary['growth']:+.1f}%" if summary['growth'] else None
+                        st.metric(col_name.title(), display_val, delta)
+        
+        st.markdown("---")
+        st.subheader("🤖 AI Insights")
+        insights = generate_insights_from_data(df)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("#### Growth Analysis")
+            for i in [x for x in insights if x['type'] == 'growth']:
+                icon = "🔼" if i['growth'] > 0 else "🔽"
+                st.markdown(f"{icon} {i['insight']}")
+        with col2:
+            st.markdown("#### Trend Analysis")
+            for i in [x for x in insights if x['type'] == 'trend']:
+                icon = "📈" if i['growth'] > 0 else "📉"
+                st.markdown(f"{icon} {i['insight']}")
+        
+        if len(display_cols) >= 2:
+            st.markdown("---")
+            st.subheader("📊 Correlations")
+            fig = px.imshow(df[display_cols].corr(), text_auto=True, color_continuous_scale='RdBu_r')
+            st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.warning("⚠️ No data uploaded")
+        st.markdown("Upload data to see insights. Go to **Upload Data** page.")
+
+
+# ============= PREDICTIONS PAGE =============
+elif page == "Predictions":
+    st.title("AI Predictions")
+    
+    has_data = st.session_state.data_source == 'uploaded' and st.session_state.uploaded_data is not None
+    
+    if not has_data:
+        st.warning("⚠️ Upload data first")
+        st.info("Go to **Upload Data** and save to backend.")
+    else:
+        df = st.session_state.uploaded_data
+        numeric_cols = [c for c in detect_numeric_columns(df) if c.lower() != 'date']
+        
+        st.subheader("🎯 Configuration")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            metric_to_predict = st.selectbox("Metric", numeric_cols) if numeric_cols else st.text_input("Metric", "revenue")
+        with col2:
+            horizon_days = st.selectbox("Horizon", [7, 30, 90, 180, 365], format_func=lambda x: f"{x} Days", index=1)
+        with col3:
+            model_type = st.selectbox("Model", ["auto", "xgboost", "prophet"])
+        
+        business_id = st.number_input("Business ID", min_value=1, value=1)
+        
+        if st.button("🚀 Generate Forecast", type="primary"):
+            with st.spinner("Training..."):
+                try:
+                    response = requests.post(
+                        f"{BACKEND_API_URL}/api/v1/ml/forecast",
+                        json={"business_id": int(business_id), "metric_name": metric_to_predict, "horizon": horizon_days, "model_type": model_type},
+                        timeout=120
+                    )
+                    if response.status_code == 200:
+                        forecast_data = response.json()
+                        st.success(f"✅ Generated with {forecast_data.get('model_used', 'unknown')}!")
+                        
+                        points = forecast_data.get('points', [])
+                        if points:
+                            forecast_dates = [pd.to_datetime(p['date']) for p in points]
+                            forecast_values = [p['value'] for p in points]
+                            
+                            fig = go.Figure()
+                            
+                            if 'date' in df.columns and metric_to_predict in df.columns:
+                                hist_df = df[['date', metric_to_predict]].copy()
+                                hist_df['date'] = pd.to_datetime(hist_df['date'])
+                                fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df[metric_to_predict], name="Historical", line=dict(color="blue")))
+                            
+                            fig.add_trace(go.Scatter(x=forecast_dates, y=forecast_values, name="Forecast", line=dict(color="orange", dash='dash')))
+                            fig.update_layout(title=f"{metric_to_predict.title()} Forecast", template="plotly_white")
+                            st.plotly_chart(fig, use_container_width=True)
+                            
+                            metrics = forecast_data.get('metrics')
+                            if metrics:
+                                col1, col2, col3 = st.columns(3)
+                                with col1:
+                                    st.metric("MAE", f"{metrics.get('mae', 0):.2f}")
+                                with col2:
+                                    st.metric("RMSE", f"{metrics.get('rmse', 0):.2f}")
+                                with col3:
+                                    st.metric("Samples", metrics.get('train_samples', 0))
+                            
+                            avg_val = sum(forecast_values) / len(forecast_values)
+                            growth = ((forecast_values[-1] - forecast_values[0]) / forecast_values[0] * 100) if forecast_values[0] > 0 else 0
+                            st.info(f"📈 Average: {avg_val:,.2f} | Growth: {growth:+.2f}%")
+                    else:
+                        st.error(f"Error: {response.json().get('detail', 'Unknown')}")
+                except Exception as e:
+                    st.error(f"❌ {str(e)}")
+
+
 st.markdown("---")
-st.markdown("""
-<div style="text-align: center; color: #888; font-size: 0.85rem;">
-    © 2024 Echolon AI | Powered by XGBoost & Prophet
-</div>
-""", unsafe_allow_html=True)
+st.markdown("© 2024 Echolon AI")
