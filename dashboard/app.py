@@ -222,6 +222,27 @@ elif page == "Upload Data":
     st.download_button(label="Download sample CSV", data=csv_buffer.getvalue(), file_name="sample_data.csv", mime="text/csv")
     
     st.markdown("---")
+    
+    # Show currently loaded data if exists
+    if st.session_state.uploaded_data is not None:
+        st.success(f"✅ Data already loaded: {len(st.session_state.uploaded_data)} rows × {len(st.session_state.uploaded_data.columns)} columns")
+        st.dataframe(st.session_state.uploaded_data.head(10), use_container_width=True)
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Rows", len(st.session_state.uploaded_data))
+        with col2:
+            st.metric("Columns", len(st.session_state.uploaded_data.columns))
+        with col3:
+            st.metric("Missing", st.session_state.uploaded_data.isnull().sum().sum())
+        
+        numeric_cols = detect_numeric_columns(st.session_state.uploaded_data)
+        if numeric_cols:
+            st.info(f"📊 Metrics: {', '.join(numeric_cols)}")
+        
+        st.markdown("---")
+        st.markdown("**Upload a new file to replace current data:**")
+    
     uploaded_file = st.file_uploader("Upload CSV", type="csv")
     
     if uploaded_file is not None:
@@ -230,7 +251,7 @@ elif page == "Upload Data":
             st.session_state.uploaded_data = df
             st.session_state.data_source = 'uploaded'
             
-            st.success(f"Uploaded: {df.shape[0]} rows × {df.shape[1]} columns")
+            st.success(f"New file: {df.shape[0]} rows × {df.shape[1]} columns")
             st.dataframe(df.head(10), use_container_width=True)
             
             col1, col2, col3 = st.columns(3)
@@ -254,16 +275,20 @@ elif page == "Upload Data":
                         if response.status_code == 200:
                             result = response.json()
                             st.success(f"✅ Saved! ({result.get('rows_processed', 0)} rows)")
+                            st.session_state.data_saved = True
                             st.balloons()
                         else:
-                            st.error(f"Error: {response.json().get('detail', response.text)}")
+                            try:
+                                st.error(f"Error: {response.json().get('detail', response.text)}")
+                            except:
+                                st.error(f"Error: {response.text}")
                     except requests.exceptions.ConnectionError:
                         st.error("❌ Backend not connected")
                     except Exception as e:
                         st.error(f"Failed: {str(e)}")
         except Exception as e:
             st.error(f"Error: {str(e)}")
-    else:
+    elif st.session_state.uploaded_data is None:
         st.info("Upload a CSV file to begin")
 
 
@@ -387,7 +412,15 @@ elif page == "Predictions":
                             growth = ((forecast_values[-1] - forecast_values[0]) / forecast_values[0] * 100) if forecast_values[0] > 0 else 0
                             st.info(f"📈 Average: {avg_val:,.2f} | Growth: {growth:+.2f}%")
                     else:
-                        st.error(f"Error: {response.json().get('detail', 'Unknown')}")
+                        try:
+                            error_msg = response.json().get('detail', response.text)
+                        except:
+                            error_msg = response.text or f"HTTP {response.status_code}"
+                        st.error(f"Error: {error_msg}")
+                except requests.exceptions.ConnectionError:
+                    st.error("❌ Backend not connected. Start the backend server first.")
+                except requests.exceptions.Timeout:
+                    st.error("⏱️ Request timed out. Try again or use a smaller dataset.")
                 except Exception as e:
                     st.error(f"❌ {str(e)}")
 
