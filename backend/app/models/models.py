@@ -42,8 +42,7 @@ class Metrics(Base):
     metric_value = Column(Float)
     metric_category = Column(String)
     timestamp = Column(DateTime, default=datetime.utcnow)
-    metadata = Column(JSON)
-    
+        extra_metadata = Column("metadata", JSON)
     business_data = relationship("BusinessData", back_populates="metrics")
 
 class Predictions(Base):
