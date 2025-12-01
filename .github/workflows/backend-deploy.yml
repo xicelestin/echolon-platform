@@ -63,7 +63,8 @@ jobs:
             --update-env-vars=DATABASE_URL=${{ secrets.DATABASE_URL }},LOG_LEVEL=info \
             --memory=1Gi \
             --cpu=1 \
-            --timeout=3600 \
+            --timeout=600 \
+                  --no-traffic \
             --max-instances=10
       
       - name: Deployment notification
