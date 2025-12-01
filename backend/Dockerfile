@@ -20,4 +20,4 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Run with uvicorn
-CMD exec uvicorn main:app --host 0.0.0.0 --port ${PORT}
+CMD exec uvicorn main_minimal:app --host 0.0.0.0 --port ${PORT}
