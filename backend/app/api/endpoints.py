@@ -23,7 +23,7 @@ router = APIRouter()
 
 @router.post("/upload_csv")
 async def upload_csv(file: UploadFile = File(...), session: Session = Depends(get_db)):
-    """Upload CSV file with business data."""
+    """Upload CSV file with business data. Accepts any format."""
     # Validate file extension
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Only CSV files are accepted")
@@ -35,20 +35,50 @@ async def upload_csv(file: UploadFile = File(...), session: Session = Depends(ge
         # Parse CSV
         df = pd.read_csv(io.BytesIO(contents))
         
-        # Validate required columns
-        required_cols = ['date', 'metric_name', 'value']
-        missing_cols = [col for col in required_cols if col not in df.columns]
-        if missing_cols:
+        # Must have at least a date column
+        date_col = None
+        for col in ['date', 'Date', 'DATE', 'timestamp', 'Timestamp']:
+            if col in df.columns:
+                date_col = col
+                break
+        
+        if date_col is None:
             raise HTTPException(
                 status_code=400,
-                detail=f"CSV must contain columns: {required_cols}. Missing: {missing_cols}"
+                detail="CSV must contain a 'date' column"
             )
+        
+        # Normalize date column name
+        if date_col != 'date':
+            df = df.rename(columns={date_col: 'date'})
+        
+        # Check if it's already in long format (date, metric_name, value)
+        if 'metric_name' in df.columns and 'value' in df.columns:
+            # Already in correct format
+            data_records = df.to_dict('records')
+        else:
+            # Wide format - transform to long format for ML compatibility
+            # Keep original format for storage, but also create transformed version
+            numeric_cols = df.select_dtypes(include=['int64', 'float64']).columns.tolist()
+            
+            if numeric_cols:
+                # Melt wide format to long format
+                df_long = df.melt(
+                    id_vars=['date'],
+                    value_vars=numeric_cols,
+                    var_name='metric_name',
+                    value_name='value'
+                )
+                data_records = df_long.to_dict('records')
+            else:
+                # No numeric columns, store as-is
+                data_records = df.to_dict('records')
         
         # Store in database
         business_data = BusinessData(
             user_id=1,  # TODO: Get from auth context
             filename=file.filename,
-            data=df.to_dict('records'),
+            data=data_records,
             data_type='timeseries'
         )
         session.add(business_data)
@@ -58,9 +88,12 @@ async def upload_csv(file: UploadFile = File(...), session: Session = Depends(ge
             "message": "CSV uploaded successfully",
             "filename": file.filename,
             "rows_processed": len(df),
+            "columns": list(df.columns),
             "status": "success"
         }
     
+    except HTTPException:
+        raise
     except Exception as e:
         session.rollback()
         raise HTTPException(
