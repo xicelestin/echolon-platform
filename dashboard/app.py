@@ -34,6 +34,7 @@ st.markdown("""
 
 # Backend API URL (configure based on environment)
 BACKEND_API_URL = os.getenv("BACKEND_API_URL", "http://localhost:8000")
+# TODO: Deploy FastAPI backend to Cloud Run and set BACKEND_API_URL env var in dashboard deployment
 
 # Sidebar navigation
 st.sidebar.title("🚀 Echolon AI")
