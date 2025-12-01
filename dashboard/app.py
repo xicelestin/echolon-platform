@@ -61,7 +61,7 @@ if st.sidebar.button("Check Backend Connection"):
 # ============= HOME PAGE =============
 if page == "Home":
     st.title("Welcome back")
-    st.subtitle("Echolon AI Dashboard")
+    st.markdown("## ")("Echolon AI Dashboard")
     
     # Data source indicator badge
     col1, col2 = st.columns([3, 1])
