@@ -27,8 +27,6 @@ def load_timeseries_data(
         DataFrame with 'date' and 'value' columns
     """
     # Query BusinessData filtered by business_id
-    # Note: Adjust based on your actual schema - BusinessData may store
-    # time-series in JSON or related Metrics table
     query = session.query(BusinessData).filter(
         BusinessData.user_id == business_id
     ).all()
@@ -36,13 +34,22 @@ def load_timeseries_data(
     # Extract time-series from JSON data
     records = []
     for record in query:
-        if record.data and isinstance(record.data, dict):
-            # Assuming data structure: {"date": "2024-01-01", "metrics": {...}}
-            if metric_name in record.data.get("metrics", {}):
-                records.append({
-                    "date": pd.to_datetime(record.data.get("date")),
-                    "value": float(record.data["metrics"][metric_name])
-                })
+        if record.data:
+            # Handle list format from CSV upload: [{"date": "...", "metric_name": "...", "value": ...}, ...]
+            if isinstance(record.data, list):
+                for row in record.data:
+                    if isinstance(row, dict) and row.get("metric_name") == metric_name:
+                        records.append({
+                            "date": pd.to_datetime(row.get("date")),
+                            "value": float(row.get("value", 0))
+                        })
+            # Handle dict format: {"date": "2024-01-01", "metrics": {...}}
+            elif isinstance(record.data, dict):
+                if metric_name in record.data.get("metrics", {}):
+                    records.append({
+                        "date": pd.to_datetime(record.data.get("date")),
+                        "value": float(record.data["metrics"][metric_name])
+                    })
     
     df = pd.DataFrame(records)
     

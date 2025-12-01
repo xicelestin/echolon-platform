@@ -61,7 +61,7 @@ if st.sidebar.button("Check Backend Connection"):
 # ============= HOME PAGE =============
 if page == "Home":
     st.title("Welcome back")
-    st.markdown("## ")("Echolon AI Dashboard")
+    st.markdown("## Echolon AI Dashboard")
     
     # Data source indicator badge
     col1, col2 = st.columns([3, 1])
@@ -227,7 +227,7 @@ elif page == "Upload Data":
                     try:
                         data_records = df.to_dict(orient="records")
                         response = requests.post(
-                            f"{BACKEND_API_URL}/api/upload_csv",
+                            f"{BACKEND_API_URL}/api/v1/upload_csv",
                             json={"data": data_records},
                             timeout=30
                         )
@@ -259,7 +259,7 @@ elif page == "Insights":
     
     # Try to fetch from backend
     try:
-        response = requests.get(f"{BACKEND_API_URL}/api/insights", timeout=10)
+        response = requests.get(f"{BACKEND_API_URL}/api/v1/insights", timeout=10)
         if response.status_code == 200:
             insights_data = response.json()
             st.success("Connected to ML insights model")
@@ -283,38 +283,168 @@ elif page == "Predictions":
     st.title("AI-Powered Predictions")
     st.markdown("Configure and generate predictions for your business metrics")
     
-    st.markdown("---")
+    st.subheader("🎯 Prediction Configuration")
+    col1, col2, col3 = st.columns(3)
     
-    st.subheader("Prediction Configuration")
-    col1, col2 = st.columns(2)
     with col1:
-        metric_to_predict = st.selectbox(
-            "Select Metric",
-            ["Revenue", "Customer Growth", "Churn Rate"]
+        metric_to_predict = st.text_input(
+            "Metric Name",
+            value="Revenue",
+            help="Enter the exact metric name from your uploaded data"
         )
     with col2:
-        prediction_horizon = st.selectbox(
+        horizon_days = st.selectbox(
             "Prediction Horizon",
-            ["1 Month", "3 Months", "6 Months"]
+            [7, 30, 90, 180, 365],
+            format_func=lambda x: f"{x} Days",
+            index=1
         )
     
-    if st.button("Generate Predictions", type="primary"):
-        with st.spinner("Running ML model..."):
+    with col3:
+        model_type = st.selectbox(
+            "Model Type",
+            ["auto", "xgboost", "prophet"],
+            help="'auto' will choose the best available model"
+        )
+    
+    business_id = st.number_input(
+        "Business ID",
+        min_value=1,
+        value=1,
+        help="Your business/user ID (default: 1)"
+    )
+    
+    if st.button("🚀 Generate Forecast", type="primary"):
+        with st.spinner("Training model and generating forecast..."):
             try:
+                # Call the ML forecast endpoint
                 response = requests.post(
-                    f"{BACKEND_API_URL}/api/predictions",
+                    f"{BACKEND_API_URL}/api/v1/ml/forecast",
                     json={
-                        "metric": metric_to_predict,
-                        "horizon": prediction_horizon
+                        "business_id": int(business_id),
+                        "metric_name": metric_to_predict,
+                        "horizon": horizon_days,
+                        "model_type": model_type
                     },
-                    timeout=30
+                    timeout=120  # Longer timeout for model training
                 )
                 if response.status_code == 200:
-                    st.success("Predictions generated successfully!")
+                    forecast_data = response.json()
+                    
+                    st.success(f"✅ Forecast generated successfully using {forecast_data.get('model_used', 'unknown')} model!")
+                    
+                    # Display forecast results
+                    st.subheader("📈 Forecast Results")
+                    
+                    # Extract forecast points
+                    points = forecast_data.get('points', [])
+                    if not points:
+                        st.warning("No forecast points returned")
+                    else:
+                        # Prepare data for visualization
+                        forecast_dates = [pd.to_datetime(p['date']) for p in points]
+                        forecast_values = [p['value'] for p in points]
+                        lower_bounds = [p.get('lower_bound') for p in points if p.get('lower_bound')]
+                        upper_bounds = [p.get('upper_bound') for p in points if p.get('upper_bound')]
+                        
+                        # Create visualization
+                        fig = go.Figure()
+                        
+                        # Add forecast line
+                        fig.add_trace(go.Scatter(
+                            x=forecast_dates,
+                            y=forecast_values,
+                            name="Forecast",
+                            mode="lines+markers",
+                            line=dict(color="orange", width=2),
+                            marker=dict(size=6)
+                        ))
+                        
+                        # Add confidence intervals if available (Prophet)
+                        if lower_bounds and upper_bounds and len(lower_bounds) == len(forecast_dates):
+                            fig.add_trace(go.Scatter(
+                                x=forecast_dates,
+                                y=upper_bounds,
+                                name="Upper Bound",
+                                mode="lines",
+                                line=dict(width=0),
+                                showlegend=False
+                            ))
+                            fig.add_trace(go.Scatter(
+                                x=forecast_dates,
+                                y=lower_bounds,
+                                name="Confidence Interval",
+                                mode="lines",
+                                line=dict(width=0),
+                                fill="tonexty",
+                                fillcolor="rgba(255,165,0,0.2)",
+                                showlegend=True
+                            ))
+                        
+                        fig.update_layout(
+                            title=f"{metric_to_predict} Forecast - {horizon_days} Days",
+                            xaxis_title="Date",
+                            yaxis_title=metric_to_predict,
+                            hovermode="x unified"
+                        )
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+                        # Display model metrics if available
+                        model_metrics = forecast_data.get('metrics')
+                        if model_metrics:
+                            st.subheader("📊 Model Performance")
+                            col1, col2, col3 = st.columns(3)
+                            with col1:
+                                if 'mae' in model_metrics:
+                                    st.metric("Mean Absolute Error", f"{model_metrics['mae']:.2f}")
+                            with col2:
+                                if 'rmse' in model_metrics:
+                                    st.metric("Root Mean Squared Error", f"{model_metrics['rmse']:.2f}")
+                            with col3:
+                                if 'train_samples' in model_metrics:
+                                    st.metric("Training Samples", model_metrics['train_samples'])
+                        
+                        # Display forecast summary
+                        st.subheader("📋 Forecast Summary")
+                        if forecast_values:
+                            avg_forecast = sum(forecast_values) / len(forecast_values)
+                            first_value = forecast_values[0]
+                            last_value = forecast_values[-1]
+                            growth = ((last_value - first_value) / first_value * 100) if first_value > 0 else 0
+                            
+                            col1, col2, col3 = st.columns(3)
+                            with col1:
+                                st.metric("Average Forecast", f"{avg_forecast:,.2f}")
+                            with col2:
+                                st.metric("Starting Value", f"{first_value:,.2f}")
+                            with col3:
+                                st.metric("Ending Value", f"{last_value:,.2f}")
+                            
+                            if growth != 0:
+                                st.info(f"📈 Projected {'growth' if growth > 0 else 'decline'}: {growth:+.2f}% over {horizon_days} days")
+                        
+                        # Show data table
+                        with st.expander("📄 View Forecast Data Table"):
+                            forecast_df = pd.DataFrame(points)
+                            st.dataframe(forecast_df, use_container_width=True)
+                    
+                elif response.status_code == 503:
+                    st.error("❌ ML services not available. Please install required dependencies (XGBoost/Prophet).")
                 else:
-                    st.error(f"Prediction failed: {response.status_code}")
+                    error_detail = response.json().get('detail', 'Unknown error')
+                    st.error(f"❌ Forecast failed: {error_detail}")
+                    st.json(response.json())
+            
+            except requests.exceptions.Timeout:
+                st.error("⏱️ Request timed out. Model training may take longer. Please try again.")
+            except requests.exceptions.ConnectionError:
+                st.error("❌ Could not connect to backend. Make sure the backend is running on port 8000.")
             except Exception as e:
-                st.error(f"Error: {str(e)}")
+                st.error(f"❌ Error: {str(e)}")
+                st.info("💡 Make sure you have uploaded data first using the 'Upload Data' page")
+    
+    st.markdown("---")
+    st.info("💡 **Note**: Predictions are generated using machine learning models trained on historical data. Accuracy improves with more data points and regular retraining.")
 
 # Footer
 st.markdown("---")

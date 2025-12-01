@@ -1,0 +1,5 @@
+# This directory stores trained ML models
+# Models are auto-generated during training and should not be committed
+# XGBoost models: *.json
+# Prophet models: *.pkl
+

@@ -1,7 +1,7 @@
 """Pydantic schemas for ML forecasting requests and responses."""
 
 from pydantic import BaseModel, Field
-from datetime import date
+from datetime import date as date_type
 from typing import Optional, List
 
 
@@ -15,7 +15,7 @@ class ForecastRequest(BaseModel):
 
 class ForecastPoint(BaseModel):
     """Individual forecast data point."""
-    date: date = Field(..., description="Date of the forecast")
+    date: date_type = Field(..., description="Date of the forecast")
     value: float = Field(..., description="Predicted value")
     lower_bound: Optional[float] = Field(None, description="Lower confidence bound")
     upper_bound: Optional[float] = Field(None, description="Upper confidence bound")

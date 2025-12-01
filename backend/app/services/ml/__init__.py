@@ -7,14 +7,19 @@ This package provides machine learning capabilities including:
 - AI-powered insights generation
 """
 
-from .forecast_service import ForecastService
-from .insights_service import InsightsService
-from .schemas import ForecastRequest, ForecastResponse, ForecastPoint
-
-__all__ = [
-    "ForecastService",
-    "InsightsService",
-    "ForecastRequest",
-    "ForecastResponse",
-    "ForecastPoint",
-]
+# Optional imports - fail gracefully if dependencies not available
+try:
+    from .forecast_service import ForecastService
+    from .insights_service import InsightsService
+    from .schemas import ForecastRequest, ForecastResponse, ForecastPoint
+    
+    __all__ = [
+        "ForecastService",
+        "InsightsService",
+        "ForecastRequest",
+        "ForecastResponse",
+        "ForecastPoint",
+    ]
+except ImportError as e:
+    print(f"ML services not fully available: {e}")
+    __all__ = []

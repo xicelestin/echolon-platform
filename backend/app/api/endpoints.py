@@ -7,9 +7,17 @@ from app.models.models import BusinessData
 from datetime import datetime
 from sqlalchemy.orm import Session
 from app.db.database import get_db
-from app.services.ml.forecast_service import ForecastService
-from app.services.ml.insights_service import InsightsService
-from app.services.ml.schemas import ForecastRequest, ForecastResponse, InsightsRequest, InsightsResponse
+# Optional ML imports
+try:
+    from app.services.ml.forecast_service import ForecastService
+    from app.services.ml.insights_service import InsightsService
+    from app.services.ml.schemas import ForecastRequest, ForecastResponse, InsightsRequest, InsightsResponse
+    HAS_ML = True
+except ImportError as e:
+    print(f"ML services not available: {e}")
+    HAS_ML = False
+    ForecastService = None
+    InsightsService = None
 
 router = APIRouter()
 
@@ -96,26 +104,42 @@ async def get_predictions():
 # ML ENDPOINTS - Machine Learning Forecasting and Insights
 # =============================================================================
 
-@router.post("/ml/forecast", response_model=ForecastResponse)
-def create_forecast(request: ForecastRequest, session: Session = Depends(get_db)):
-    """Generate ML forecast for a specific business metric."""
-    service = ForecastService()
-    return service.generate_forecast(session, request)
+if HAS_ML:
+    @router.post("/ml/forecast", response_model=ForecastResponse)
+    def create_forecast(request: ForecastRequest, session: Session = Depends(get_db)):
+        """Generate ML forecast for a specific business metric."""
+        service = ForecastService()
+        return service.generate_forecast(session, request)
 
-@router.post("/ml/insights", response_model=InsightsResponse)
-def generate_insights(request: InsightsRequest):
-    """Generate AI-powered business insights from forecast data."""
-    return InsightsService.generate_insights(request)
+    @router.post("/ml/insights", response_model=InsightsResponse)
+    def generate_insights(request: InsightsRequest):
+        """Generate AI-powered business insights from forecast data."""
+        return InsightsService.generate_insights(request)
 
-@router.post("/ml/train/{business_id}/{metric_name}")
-def train_model(business_id: int, metric_name: str, model_type: str = "auto", session: Session = Depends(get_db)):
-    """Train ML model for a specific business and metric."""
-    service = ForecastService()
-    result = service.train_model(session, business_id, metric_name, model_type)
-    return {
-        "message": "Model training completed",
-        "business_id": business_id,
-        "metric_name": metric_name,
-        "model_type": result["model_type"],
-        "accuracy": result.get("accuracy", 0.0)
-    }
+    @router.post("/ml/train/{business_id}/{metric_name}")
+    def train_model(business_id: int, metric_name: str, model_type: str = "auto", session: Session = Depends(get_db)):
+        """Train ML model for a specific business and metric."""
+        service = ForecastService()
+        result = service.train_model(session, business_id, metric_name, model_type)
+        return {
+            "message": "Model training completed",
+            "business_id": business_id,
+            "metric_name": metric_name,
+            "model_type": result["model_type"],
+            "accuracy": result.get("accuracy", 0.0)
+        }
+else:
+    @router.post("/ml/forecast")
+    def create_forecast_unavailable():
+        """ML services not available."""
+        raise HTTPException(status_code=503, detail="ML services not available. Install XGBoost/Prophet dependencies.")
+    
+    @router.post("/ml/insights")
+    def generate_insights_unavailable():
+        """ML services not available."""
+        raise HTTPException(status_code=503, detail="ML services not available. Install required dependencies.")
+    
+    @router.post("/ml/train/{business_id}/{metric_name}")
+    def train_model_unavailable(business_id: int, metric_name: str):
+        """ML services not available."""
+        raise HTTPException(status_code=503, detail="ML services not available. Install required dependencies.")

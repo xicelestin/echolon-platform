@@ -205,3 +205,25 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# =============================================================================
+# Echolon Project-Specific
+# =============================================================================
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# ML Model artifacts (regenerated during training)
+backend/app/services/ml/models_store/*.json
+backend/app/services/ml/models_store/*.pkl
+!backend/app/services/ml/models_store/.gitkeep
+
+# Sample/test data files
+backend/sample.csv
+dashboard/sample_data.csv
+
+# Local environment overrides
+.env.local
+.env.*.local
