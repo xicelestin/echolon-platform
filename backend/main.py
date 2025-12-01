@@ -6,7 +6,7 @@ from app.db.database import engine, Base
 from app.models.models import User, BusinessData, Metrics, Predictions
 # Create database tables
 # Create database tables
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Echolon AI API",
