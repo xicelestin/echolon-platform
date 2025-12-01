@@ -31,25 +31,33 @@ def load_timeseries_data(
         BusinessData.user_id == business_id
     ).all()
     
-    # Extract time-series from JSON data
+    # Extract time-series from JSON data (case-insensitive metric matching)
+    metric_lower = metric_name.lower()
     records = []
     for record in query:
         if record.data:
             # Handle list format from CSV upload: [{"date": "...", "metric_name": "...", "value": ...}, ...]
             if isinstance(record.data, list):
                 for row in record.data:
-                    if isinstance(row, dict) and row.get("metric_name") == metric_name:
-                        records.append({
-                            "date": pd.to_datetime(row.get("date")),
-                            "value": float(row.get("value", 0))
-                        })
+                    if isinstance(row, dict):
+                        row_metric = row.get("metric_name", "")
+                        # Case-insensitive comparison
+                        if row_metric.lower() == metric_lower:
+                            records.append({
+                                "date": pd.to_datetime(row.get("date")),
+                                "value": float(row.get("value", 0))
+                            })
             # Handle dict format: {"date": "2024-01-01", "metrics": {...}}
             elif isinstance(record.data, dict):
-                if metric_name in record.data.get("metrics", {}):
-                    records.append({
-                        "date": pd.to_datetime(record.data.get("date")),
-                        "value": float(record.data["metrics"][metric_name])
-                    })
+                metrics = record.data.get("metrics", {})
+                # Case-insensitive key lookup
+                for key, val in metrics.items():
+                    if key.lower() == metric_lower:
+                        records.append({
+                            "date": pd.to_datetime(record.data.get("date")),
+                            "value": float(val)
+                        })
+                        break
     
     df = pd.DataFrame(records)
     
