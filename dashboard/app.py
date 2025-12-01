@@ -15,265 +15,213 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for styling
+# Custom CSS for styling matching the mockup
 st.markdown("""
 <style>
-    .main-header {
+    /* Clean minimal styling */
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    
+    /* Header styling */
+    h1 {
+        font-size: 2.5rem !important;
+        font-weight: 600 !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    h2 {
+        font-size: 1.2rem !important;
+        font-weight: 400 !important;
+        color: #666 !important;
+        margin-bottom: 2rem !important;
+    }
+    
+    /* Metric cards */
+    [data-testid="stMetricValue"] {
         font-size: 2.5rem;
-        font-weight: bold;
-        color: #1f77b4;
-        margin-bottom: 1rem;
-    }
-    .metric-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 1.5rem;
-        border-radius: 0.8rem;
-        margin: 0.5rem 0;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        color: white;
-    }
-    .kpi-card {
-        background-color: #ffffff;
-        padding: 1.5rem;
-        border-radius: 0.8rem;
-        border-left: 4px solid #667eea;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-        margin-bottom: 1rem;
-    }
-    .kpi-value {
-        font-size: 2.2rem;
-        font-weight: bold;
-        color: #1e293b;
-        margin: 0.5rem 0;
-    }
-    .kpi-label {
-        font-size: 0.9rem;
-        color: #64748b;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    .kpi-change-positive {
-        color: #10b981;
-        font-size: 0.9rem;
         font-weight: 600;
     }
-    .kpi-change-negative {
-        color: #ef4444;
+    
+    [data-testid="stMetricLabel"] {
         font-size: 0.9rem;
-        font-weight: 600;
+        color: #666;
+    }
+    
+    [data-testid="stMetricDelta"] {
+        font-size: 0.9rem;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Backend API URL (configure based on environment)
+# Backend API URL
 BACKEND_API_URL = os.getenv("BACKEND_API_URL", "http://localhost:8000")
 
 # Sidebar navigation
-st.sidebar.title("🚀 Echolon AI")
-st.sidebar.markdown("---")
+st.sidebar.title("ECHOLON")
+st.sidebar.markdown("AI powered business intelligence")
+st.sidebar.markdown("")
+
 page = st.sidebar.radio(
     "Navigation",
-    ["🏠 Home", "📤 Upload Data", "📊 Insights", "🔍 Predictions"]
+    ["Home", "Upload Data", "Insights", "Predictions"],
+    label_visibility="collapsed"
 )
-st.sidebar.markdown("---")
-st.sidebar.info("**Version:** 1.0.0\n\n**Status:** Active")
 
-# ============= HOME PAGE =============
-if page == "🏠 Home":
-    # Professional Dashboard Header
-    st.markdown('<p class="main-header">Business Intelligence Dashboard</p>', unsafe_allow_html=True)
-    st.markdown("**Real-time insights and analytics for data-driven decisions**")
-    st.markdown("---")
+st.sidebar.markdown("---")
+if st.sidebar.button("Check Backend Connection"):
+    try:
+        res = requests.get(f"{BACKEND_API_URL}/health", timeout=5)
+        if res.status_code == 200:
+            st.sidebar.success("Backend is LIVE")
+        else:
+            st.sidebar.warning(f"Backend returned {res.status_code}")
+    except Exception as e:
+        st.sidebar.error(f"Could not connect")
+
+# ================= HOME PAGE =============
+if page == "Home":
+    # Header
+    st.markdown("# Welcome back")
+    st.markdown("## Echolon AI Dashboard")
     
-    # Generate mock data for demonstration
-    def generate_mock_data():
-        # KPI Metrics
-        revenue = 2847650
-        revenue_growth = 18.4
-        customers = 8947
-        customer_growth = 12.8
-        mrr = 284500
-        mrr_growth = 15.2
-        churn = 2.8
-        churn_change = -0.4
-        
-        # Revenue trend data
-        dates = [(datetime.now() - timedelta(days=30-i)) for i in range(31)]
-        base_revenue = 85000
-        revenues = [base_revenue + (i * 1200) + random.randint(-5000, 8000) for i in range(31)]
-        
-        # Category distribution
-        categories = ["Enterprise", "Professional", "Starter", "Free Trial"]
-        cat_values = [45, 30, 18, 7]
-        
-        return {
-            "revenue": revenue,
-            "revenue_growth": revenue_growth,
-            "customers": customers,
-            "customer_growth": customer_growth,
-            "mrr": mrr,
-            "mrr_growth": mrr_growth,
-            "churn": churn,
-            "churn_change": churn_change,
-            "dates": dates,
-            "revenues": revenues,
-            "categories": categories,
-            "cat_values": cat_values
-        }
+    # Top KPI Metrics - exactly like mockup
+    col1, col2, col3, col4 = st.columns(4)
     
-    data = generate_mock_data()
-    
-    # KPI Metrics Row
-    st.subheader("📊 Key Performance Indicators")
-    kpi1, kpi2, kpi3, kpi4 = st.columns(4)
-    
-    with kpi1:
-        st.markdown(
-            f"""
-            <div class="kpi-card">
-                <div class="kpi-label">Total Revenue</div>
-                <div class="kpi-value">${data['revenue']:,.0f}</div>
-                <div class="kpi-change-positive">▲ {data['revenue_growth']}% vs last month</div>
-            </div>
-            """,
-            unsafe_allow_html=True
+    with col1:
+        st.metric(
+            label="Revenue Growth",
+            value="+15.3%",
+            delta="+15.3%"
         )
     
-    with kpi2:
-        st.markdown(
-            f"""
-            <div class="kpi-card">
-                <div class="kpi-label">Active Customers</div>
-                <div class="kpi-value">{data['customers']:,}</div>
-                <div class="kpi-change-positive">▲ {data['customer_growth']}% growth</div>
-            </div>
-            """,
-            unsafe_allow_html=True
+    with col2:
+        st.metric(
+            label="Customer Growth",
+            value="+1.8%",
+            delta="+1.8%"
         )
     
-    with kpi3:
-        st.markdown(
-            f"""
-            <div class="kpi-card">
-                <div class="kpi-label">Monthly Recurring Revenue</div>
-                <div class="kpi-value">${data['mrr']:,.0f}</div>
-                <div class="kpi-change-positive">▲ {data['mrr_growth']}% increase</div>
-            </div>
-            """,
-            unsafe_allow_html=True
+    with col3:
+        st.metric(
+            label="Acquisition Cost",
+            value="$241K",
+            delta="-10%",
+            delta_color="inverse"
         )
     
-    with kpi4:
-        st.markdown(
-            f"""
-            <div class="kpi-card">
-                <div class="kpi-label">Churn Rate</div>
-                <div class="kpi-value">{data['churn']}%</div>
-                <div class="kpi-change-positive">▼ {abs(data['churn_change'])}% improvement</div>
-            </div>
-            """,
-            unsafe_allow_html=True
+    with col4:
+        st.metric(
+            label="Churn Rate",
+            value="2.3%",
+            delta=None
         )
     
-    st.markdown("---")
+    st.markdown("")
+    st.markdown("")
     
     # Charts Row
     col1, col2 = st.columns([2, 1])
     
     with col1:
-        st.subheader("📈 Revenue Overview (Last 30 Days)")
-        # Create revenue trend chart
-        fig_revenue = go.Figure()
-        fig_revenue.add_trace(go.Scatter(
-            x=data['dates'],
-            y=data['revenues'],
-            mode='lines+markers',
-            name='Daily Revenue',
-            line=dict(color='#667eea', width=3),
-            marker=dict(size=6),
-            fill='tozeroy',
-            fillcolor='rgba(102, 126, 234, 0.1)'
+        st.subheader("Revenue Overview")
+        
+        # Generate weekly data like in mockup
+        weeks = ['Nov', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct']
+        # Create more realistic wave pattern
+        revenue_data = [8000, 12000, 10000, 15000, 18000, 16000, 22000, 19000, 24000, 20000]
+        
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=weeks,
+            y=revenue_data,
+            mode='lines',
+            name='Revenue',
+            line=dict(color='#FFA500', width=3),  # Orange color like mockup
+            fill=None
         ))
-        fig_revenue.update_layout(
-            xaxis_title="Date",
-            yaxis_title="Revenue ($)",
-            hovermode='x unified',
-            height=350,
-            margin=dict(l=0, r=0, t=0, b=0)
-        )
-        st.plotly_chart(fig_revenue, use_container_width=True)
-    
-    with col2:
-        st.subheader("🥧 Revenue by Plan")
-        # Create pie chart
-        fig_pie = go.Figure(data=[go.Pie(
-            labels=data['categories'],
-            values=data['cat_values'],
-            hole=0.4,
-            marker_colors=['#667eea', '#764ba2', '#f093fb', '#4facfe']
-        )])
-        fig_pie.update_layout(
+        
+        fig.update_layout(
+            xaxis_title="Weeks",
+            yaxis_title="$30K",
             height=350,
             margin=dict(l=0, r=0, t=0, b=0),
-            showlegend=True
+            showlegend=False,
+            plot_bgcolor='white',
+            yaxis=dict(
+                tickvals=[0, 10000, 20000, 30000],
+                ticktext=['$0', '$10K', '$20K', '$30K'],
+                gridcolor='#f0f0f0'
+            ),
+            xaxis=dict(
+                gridcolor='#f0f0f0'
+            )
         )
-        st.plotly_chart(fig_pie, use_container_width=True)
+        
+        st.plotly_chart(fig, use_container_width=True)
     
-    st.markdown("---")
+    with col2:
+        st.subheader("Sales by Category")
+        
+        # Match mockup colors
+        categories = ['SaaS', 'Support', 'Services', 'Other']
+        values = [45, 25, 20, 10]
+        colors = ['#4A90E2', '#7ED6D6', '#FFA07A', '#FFD700']
+        
+        fig2 = go.Figure(data=[go.Pie(
+            labels=categories,
+            values=values,
+            hole=0.5,  # Donut chart
+            marker_colors=colors,
+            textinfo='percent',
+            textfont_size=14
+        )])
+        
+        fig2.update_layout(
+            height=350,
+            margin=dict(l=0, r=0, t=0, b=0),
+            showlegend=True,
+            legend=dict(
+                orientation="v",
+                yanchor="middle",
+                y=0.5,
+                xanchor="right",
+                x=1.3
+            )
+        )
+        
+        st.plotly_chart(fig2, use_container_width=True)
     
-    # Insights and Actions Row
-    insight1, insight2, insight3 = st.columns(3)
+    st.markdown("")
+    st.markdown("")
     
-    with insight1:
+    # Bottom sections - Insights and Predictions
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.subheader("Insights")
         st.markdown("""
-        <div class="metric-card">
-            <h3>💡 AI Insight</h3>
-            <p>Customer acquisition cost decreased by 23% this quarter. Strong performance in digital channels.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        - Revenue growth has increased by 13.5% compared to the previous month.
+        - Higher customer engagement correlates with lower churn rates.
+        """)
     
-    with insight2:
+    with col2:
+        st.subheader("Predictions")
         st.markdown("""
-        <div class="metric-card">
-            <h3>🎯 Prediction</h3>
-            <p>Revenue forecast shows 12% growth for next month based on current trends and seasonality.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        - Revenue is forecasted to increase by 7% in the next quarter.
+        - Customer churn is expected to remain stable over the next months.
+        """)
     
-    with insight3:
+    with col3:
+        st.subheader("Predictions")
         st.markdown("""
-        <div class="metric-card">
-            <h3>⚡ Quick Action</h3>
-            <p>Review high-value accounts due for renewal this week. 15 accounts worth $120K MRR.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown("---")
-    
-    # Recent Activity
-    st.subheader("📋 Recent Activity")
-    activity_data = pd.DataFrame({
-        "Timestamp": [
-            "2 minutes ago",
-            "15 minutes ago",
-            "1 hour ago",
-            "3 hours ago",
-            "Yesterday"
-        ],
-        "Activity": [
-            "New customer signup - Enterprise Plan ($2,500/mo)",
-            "Data uploaded - Q4_Sales_Report.csv (1,450 rows)",
-            "Prediction completed - Revenue forecast for December",
-            "Report exported - Monthly_KPI_Dashboard.pdf",
-            "User invitation sent - jane.smith@example.com"
-        ],
-        "Status": ["✅ Success", "✅ Success", "✅ Success", "✅ Success", "⏳ Pending"]
-    })
-    st.dataframe(activity_data, use_container_width=True, hide_index=True)
+        - Revenue is forecasted to remain stable over the next months.
+        """)
 
 # ============= UPLOAD DATA PAGE =============
-elif page == "📤 Upload Data":
-    st.markdown('<p class="main-header">Upload Business Data</p>', unsafe_allow_html=True)
+elif page == "Upload Data":
+    st.markdown("# Upload Business Data")
     st.markdown("Upload your CSV file containing business data for analysis")
 
     uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"])
@@ -281,12 +229,12 @@ elif page == "📤 Upload Data":
     if uploaded_file is not None:
         try:
             df = pd.read_csv(uploaded_file)
-            st.success(f"✅ File uploaded successfully! Shape: {df.shape[0]} rows × {df.shape[1]} columns")
+            st.success(f"File uploaded successfully! Shape: {df.shape[0]} rows x {df.shape[1]} columns")
 
-            st.subheader("📋 Data Preview")
+            st.subheader("Data Preview")
             st.dataframe(df.head(10), use_container_width=True)
 
-            st.subheader("📈 Data Summary")
+            st.subheader("Data Summary")
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric("Total Rows", df.shape[0])
@@ -295,7 +243,7 @@ elif page == "📤 Upload Data":
             with col3:
                 st.metric("Missing Values", df.isnull().sum().sum())
 
-            st.subheader("🔍 Column Information")
+            st.subheader("Column Information")
             col_info = pd.DataFrame({
                 "Column Name": df.columns,
                 "Data Type": df.dtypes.values,
@@ -304,11 +252,9 @@ elif page == "📤 Upload Data":
             })
             st.dataframe(col_info, use_container_width=True)
 
-            # Upload to backend button
-            if st.button("🚀 Process & Save to Backend", type="primary"):
+            if st.button("Process & Save to Backend", type="primary"):
                 with st.spinner("Processing data..."):
                     try:
-                        # Convert dataframe to records for API
                         data_records = df.to_dict(orient="records")
                         response = requests.post(
                             f"{BACKEND_API_URL}/api/upload_csv",
@@ -316,30 +262,28 @@ elif page == "📤 Upload Data":
                             timeout=30
                         )
                         if response.status_code == 200:
-                            st.success("✅ Data successfully processed and saved!")
+                            st.success("Data successfully processed and saved!")
                             st.json(response.json())
                         else:
-                            st.error(f"❌ Error: {response.status_code} - {response.text}")
+                            st.error(f"Error: {response.status_code} - {response.text}")
                     except Exception as e:
-                        st.error(f"❌ Failed to connect to backend: {str(e)}")
-                        st.info("💡 Make sure the backend service is running")
+                        st.error(f"Failed to connect to backend: {str(e)}")
+                        st.info("Make sure the backend service is running")
         except Exception as e:
-            st.error(f"❌ Error reading file: {str(e)}")
+            st.error(f"Error reading file: {str(e)}")
     else:
-        st.info("👆 Please upload a CSV file to begin")
+        st.info("Please upload a CSV file to begin")
 
 # ============= INSIGHTS PAGE =============
-elif page == "📊 Insights":
-    st.markdown('<p class="main-header">Business Insights Dashboard</p>', unsafe_allow_html=True)
+elif page == "Insights":
+    st.markdown("# Business Insights Dashboard")
 
-    # Fetch insights from backend
     try:
         response = requests.get(f"{BACKEND_API_URL}/api/insights", timeout=10)
         if response.status_code == 200:
             insights_data = response.json()
 
-            # Display key metrics
-            st.subheader("📊 Key Performance Indicators")
+            st.subheader("Key Performance Indicators")
             col1, col2, col3, col4 = st.columns(4)
 
             with col1:
@@ -353,12 +297,10 @@ elif page == "📊 Insights":
 
             st.markdown("---")
 
-            # Sample visualizations
-            st.subheader("📈 Trend Analysis")
+            st.subheader("Trend Analysis")
             col1, col2 = st.columns(2)
 
             with col1:
-                # Sample revenue trend
                 dates = pd.date_range(start="2024-01-01", end="2024-12-31", freq="M")
                 revenue = [180000 + i * 15000 + (i % 3) * 10000 for i in range(12)]
                 fig = px.line(x=dates, y=revenue, title="Monthly Revenue Trend")
@@ -366,16 +308,14 @@ elif page == "📊 Insights":
                 st.plotly_chart(fig, use_container_width=True)
 
             with col2:
-                # Sample category distribution
                 categories = ["Product A", "Product B", "Product C", "Product D"]
                 values = [35, 28, 22, 15]
                 fig = px.pie(values=values, names=categories, title="Revenue by Category")
                 st.plotly_chart(fig, use_container_width=True)
 
             st.markdown("---")
-            st.subheader("🏆 Top Performing Segments")
+            st.subheader("Top Performing Segments")
 
-            # Sample data table
             performance_data = pd.DataFrame({
                 "Segment": ["Enterprise", "SMB", "Startup", "Individual"],
                 "Revenue": ["$980K", "$720K", "$450K", "$250K"],
@@ -384,18 +324,18 @@ elif page == "📊 Insights":
             })
             st.dataframe(performance_data, use_container_width=True)
         else:
-            st.warning("⚠️ Could not fetch insights from backend")
+            st.warning("Could not fetch insights from backend")
             st.info("Displaying sample data for demonstration")
     except Exception as e:
-        st.error(f"❌ Error connecting to backend: {str(e)}")
-        st.info("💡 Make sure the backend service is running")
+        st.error(f"Error connecting to backend: {str(e)}")
+        st.info("Make sure the backend service is running")
 
 # ============= PREDICTIONS PAGE =============
-elif page == "🔍 Predictions":
-    st.markdown('<p class="main-header">AI-Powered Predictions</p>', unsafe_allow_html=True)
+elif page == "Predictions":
+    st.markdown("# AI-Powered Predictions")
     st.markdown("Get intelligent forecasts and predictions for your business metrics")
 
-    st.subheader("🎯 Prediction Configuration")
+    st.subheader("Prediction Configuration")
     col1, col2 = st.columns(2)
 
     with col1:
@@ -410,7 +350,7 @@ elif page == "🔍 Predictions":
             ["7 Days", "30 Days", "90 Days", "1 Year"]
         )
 
-    if st.button("🚀 Generate Predictions", type="primary"):
+    if st.button("Generate Predictions", type="primary"):
         with st.spinner("Running AI models..."):
             try:
                 response = requests.post(
@@ -424,12 +364,10 @@ elif page == "🔍 Predictions":
 
                 if response.status_code == 200:
                     predictions = response.json()
-                    st.success("✅ Predictions generated successfully!")
+                    st.success("Predictions generated successfully!")
 
-                    # Display prediction results
-                    st.subheader("📈 Forecast Results")
+                    st.subheader("Forecast Results")
 
-                    # Sample prediction visualization
                     dates = pd.date_range(start=datetime.now(), periods=30, freq="D")
                     actual = [100 + i * 2 for i in range(15)]
                     predicted = [130 + i * 2.5 for i in range(30)]
@@ -450,7 +388,6 @@ elif page == "🔍 Predictions":
                     )
                     st.plotly_chart(fig, use_container_width=True)
 
-                    # Confidence metrics
                     col1, col2, col3 = st.columns(3)
                     with col1:
                         st.metric("Confidence Score", "87.5%")
@@ -459,18 +396,14 @@ elif page == "🔍 Predictions":
                     with col3:
                         st.metric("Model Accuracy", "92.3%")
                 else:
-                    st.error(f"❌ Prediction failed: {response.status_code}")
+                    st.error(f"Prediction failed: {response.status_code}")
             except Exception as e:
-                st.error(f"❌ Error: {str(e)}")
-                st.info("💡 Backend service may be unavailable")
+                st.error(f"Error: {str(e)}")
+                st.info("Backend service may be unavailable")
 
     st.markdown("---")
-    st.info("💡 **Note**: Predictions are generated using machine learning models trained on historical data. Accuracy improves with more data points and regular retraining.")
+    st.info("Note: Predictions are generated using machine learning models trained on historical data. Accuracy improves with more data points and regular retraining.")
 
 # Footer
 st.markdown("---")
-st.markdown("""
-<div style='text-align: center; color: #666;'>
-© 2024 Echolon AI | Built with ❤️ using Streamlit & FastAPI
-</div>
-""", unsafe_allow_html=True)
+st.markdown("© 2024 Echolon AI | Built with Streamlit & FastAPI", unsafe_allow_html=True)
