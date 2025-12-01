@@ -225,20 +225,26 @@ elif page == "Upload Data":
             if st.button("Process & Save to Backend", type="primary"):
                 with st.spinner("Processing data..."):
                     try:
-                        data_records = df.to_dict(orient="records")
+                        # Reset file position and send as multipart form
+                        uploaded_file.seek(0)
+                        files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "text/csv")}
                         response = requests.post(
                             f"{BACKEND_API_URL}/api/v1/upload_csv",
-                            json={"data": data_records},
+                            files=files,
                             timeout=30
                         )
                         if response.status_code == 200:
-                            st.success("Data successfully processed and saved!")
-                            st.session_state.api_response = response.json()
+                            result = response.json()
+                            st.success(f"✅ {result.get('message', 'Data saved!')} ({result.get('rows_processed', 0)} rows)")
+                            st.session_state.api_response = result
                         else:
-                            st.error(f"Error: {response.status_code}")
+                            error_detail = response.json().get('detail', response.text)
+                            st.error(f"Error {response.status_code}: {error_detail}")
+                    except requests.exceptions.ConnectionError:
+                        st.error("❌ Could not connect to backend")
+                        st.info("Make sure the backend service is running on port 8000")
                     except Exception as e:
-                        st.error(f"Failed to connect to backend: {str(e)}")
-                        st.info("Make sure the backend service is running")
+                        st.error(f"Failed: {str(e)}")
         
         except Exception as e:
             st.error(f"Error reading file: {str(e)}")
