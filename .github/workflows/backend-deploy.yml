@@ -64,7 +64,7 @@ jobs:
             --memory=1Gi \
             --cpu=1 \
             --timeout=3600 \
-            --max-instances=100
+            --max-instances=10
       
       - name: Deployment notification
         if: success()
