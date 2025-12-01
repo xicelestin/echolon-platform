@@ -23,7 +23,7 @@ router = APIRouter()
 
 @router.post("/upload_csv")
 async def upload_csv(file: UploadFile = File(...), session: Session = Depends(get_db)):
-    """Upload CSV file with business data. Accepts any format."""
+    """Upload CSV file with business data. Accepts any CSV with a date column."""
     # Validate file extension
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Only CSV files are accepted")
@@ -35,34 +35,27 @@ async def upload_csv(file: UploadFile = File(...), session: Session = Depends(ge
         # Parse CSV
         df = pd.read_csv(io.BytesIO(contents))
         
-        # Must have at least a date column
+        # Find date column (case-insensitive)
         date_col = None
-        for col in ['date', 'Date', 'DATE', 'timestamp', 'Timestamp']:
-            if col in df.columns:
+        for col in df.columns:
+            if col.lower() in ['date', 'timestamp', 'time', 'day']:
                 date_col = col
                 break
         
         if date_col is None:
-            raise HTTPException(
-                status_code=400,
-                detail="CSV must contain a 'date' column"
-            )
+            raise HTTPException(status_code=400, detail="CSV must contain a 'date' column")
         
-        # Normalize date column name
+        # Normalize date column name to 'date'
         if date_col != 'date':
             df = df.rename(columns={date_col: 'date'})
         
-        # Check if it's already in long format (date, metric_name, value)
+        # Check if already in long format (date, metric_name, value)
         if 'metric_name' in df.columns and 'value' in df.columns:
-            # Already in correct format
             data_records = df.to_dict('records')
         else:
             # Wide format - transform to long format for ML compatibility
-            # Keep original format for storage, but also create transformed version
             numeric_cols = df.select_dtypes(include=['int64', 'float64']).columns.tolist()
-            
             if numeric_cols:
-                # Melt wide format to long format
                 df_long = df.melt(
                     id_vars=['date'],
                     value_vars=numeric_cols,
@@ -71,7 +64,6 @@ async def upload_csv(file: UploadFile = File(...), session: Session = Depends(ge
                 )
                 data_records = df_long.to_dict('records')
             else:
-                # No numeric columns, store as-is
                 data_records = df.to_dict('records')
         
         # Store in database
