@@ -1,0 +1,63 @@
+# Debugging Dockerfile with verbose logging
+# Use for troubleshooting deployment issues
+
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PORT=8080 \
+    LOG_LEVEL=info
+
+# Display build information
+RUN echo "========== BUILD INFO ==========" && \
+    echo "Python version:" && python --version && \
+    echo "Pip version:" && pip --version && \
+    echo "Working directory:" && pwd && \
+    echo "================================"
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+
+RUN echo "========== INSTALLING DEPENDENCIES ==========" && \
+    echo "Contents of requirements.txt:" && \
+    cat requirements.txt && \
+    echo "Installing..." && \
+    pip install --no-cache-dir -r requirements.txt && \
+    echo "Installed packages:" && \
+    pip list && \
+    echo "============================================="
+
+# Copy application code
+COPY . .
+
+RUN echo "========== APPLICATION FILES ==========" && \
+    echo "Directory contents:" && \
+    ls -lah && \
+    echo "Checking for main files:" && \
+    ls -l main.py main_minimal.py 2>/dev/null || echo "Some main files missing" && \
+    echo "======================================="
+
+# Make start script executable if it exists
+RUN chmod +x start.sh 2>/dev/null || echo "start.sh not found, skipping"
+
+# Expose port
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Default command with verbose startup
+CMD echo "========== STARTING APPLICATION ==========" && \
+    echo "PORT: $PORT" && \
+    echo "LOG_LEVEL: $LOG_LEVEL" && \
+    echo "DATABASE_URL: ${DATABASE_URL:+***set***}" && \
+    echo "Current directory:" && pwd && \
+    echo "Directory contents:" && ls -lah && \
+    echo "Python packages:" && pip list | head -20 && \
+    echo "Starting uvicorn..." && \
+    echo "=========================================" && \
+    exec uvicorn main:app --host 0.0.0.0 --port $PORT --log-level $LOG_LEVEL
