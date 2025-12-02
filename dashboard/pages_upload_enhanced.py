@@ -20,6 +20,40 @@ def render_enhanced_upload():
     with tab1:
         st.subheader("Upload CSV File")
         st.info("📋 **Required columns**: Your CSV should include `date` and `value` columns for analysis.")
+
+                # Sample CSV Download Section
+        with st.expander("📥 Don't have a CSV? Download our sample template", expanded=False):
+            st.markdown("""
+            **What you'll get:**
+            - Example data format showing required columns
+            - Sample transaction data to test the platform
+            - Clear column headers (date, value, customer_id)
+            """)
+            
+            # Create sample data
+            sample_data = pd.DataFrame({
+                'date': ['2024-01-01', '2024-01-02', '2024-01-03', '2024-01-04', '2024-01-05',
+                        '2024-01-06', '2024-01-07', '2024-01-08', '2024-01-09', '2024-01-10'],
+                'value': [1500, 2000, 1750, 2200, 1900, 2100, 1800, 2300, 1950, 2150],
+                'customer_id': ['C001', 'C002', 'C003', 'C004', 'C005', 'C006', 'C007', 'C008', 'C009', 'C010']
+            })
+            
+            # Show preview
+            st.markdown("**Preview:**")
+            st.dataframe(sample_data.head(), use_container_width=True)
+            
+            # Download button
+            csv = sample_data.to_csv(index=False)
+            st.download_button(
+                label="⬇️ Download Sample CSV",
+                data=csv,
+                file_name="echolon_sample_data.csv",
+                mime="text/csv",
+                type="primary"
+            )
+            
+            st.info("💡 **Tip:** Replace the sample data with your own business transactions to get personalized insights!")
+
         
         uploaded_file = st.file_uploader(
             "Choose a CSV file",
