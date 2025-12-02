@@ -6,7 +6,6 @@ from datetime import datetime
 import requests
 import os
 import io
-import numpy as np
 
 # Page configuration
 st.set_page_config(
@@ -16,98 +15,39 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Backend API URL
+# Remove emojis from sidebar as per requirement
+st.markdown("""
+    <style>
+    .sidebar .sidebar-content { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
+    """, unsafe_allow_html=True)
+
+# Backend API URL (configure based on environment)
 BACKEND_API_URL = os.getenv("BACKEND_API_URL", "http://localhost:8000")
 
-# Initialize session state
+# Initialize session state for data tracking
 if 'uploaded_data' not in st.session_state:
     st.session_state.uploaded_data = None
+
 if 'data_source' not in st.session_state:
-    st.session_state.data_source = 'none'
+    st.session_state.data_source = 'demo'  # 'demo' or 'uploaded'
+
 if 'api_response' not in st.session_state:
     st.session_state.api_response = None
 
-
-# ============= HELPER FUNCTIONS =============
-def calculate_growth(series):
-    if series is None or len(series) < 2:
-        return None
-    first_val = series.iloc[0]
-    last_val = series.iloc[-1]
-    if first_val == 0:
-        return None
-    return ((last_val - first_val) / first_val) * 100
-
-
-def get_metric_summary(df, col_name):
-    if col_name not in df.columns:
-        return None
-    series = df[col_name]
-    return {
-        'current': series.iloc[-1] if len(series) > 0 else 0,
-        'average': series.mean(),
-        'total': series.sum(),
-        'growth': calculate_growth(series),
-    }
-
-
-def detect_numeric_columns(df):
-    return df.select_dtypes(include=[np.number]).columns.tolist()
-
-
-def generate_insights_from_data(df):
-    insights = []
-    numeric_cols = detect_numeric_columns(df)
-    
-    for col in numeric_cols:
-        if col.lower() == 'date':
-            continue
-        summary = get_metric_summary(df, col)
-        if summary and summary['growth'] is not None:
-            direction = "increased" if summary['growth'] > 0 else "decreased"
-            insights.append({
-                'metric': col.title(),
-                'insight': f"{col.title()} has {direction} by {abs(summary['growth']):.1f}%",
-                'growth': summary['growth'],
-                'type': 'growth'
-            })
-    
-    if 'date' in df.columns:
-        df_sorted = df.sort_values('date')
-        for col in numeric_cols[:3]:
-            if col.lower() == 'date':
-                continue
-            recent_avg = df_sorted[col].tail(len(df)//4).mean() if len(df) > 4 else df_sorted[col].mean()
-            older_avg = df_sorted[col].head(len(df)//4).mean() if len(df) > 4 else df_sorted[col].mean()
-            if older_avg > 0:
-                trend_change = ((recent_avg - older_avg) / older_avg) * 100
-                trend_direction = "upward" if trend_change > 0 else "downward"
-                insights.append({
-                    'metric': col.title(),
-                    'insight': f"Recent {col.lower()} shows {trend_direction} trend ({trend_change:+.1f}%)",
-                    'growth': trend_change,
-                    'type': 'trend'
-                })
-    
-    return insights
-
-
-# ============= SIDEBAR =============
+# Sidebar navigation - NO EMOJIS
 st.sidebar.title("ECHOLON")
 st.sidebar.markdown("AI powered business intelligence")
 st.sidebar.markdown("---")
 
-page = st.sidebar.radio("Navigation", ["Home", "Upload Data", "Insights", "Predictions"])
+page = st.sidebar.radio(
+    "Navigation",
+    ["Home", "Upload Data", "Insights", "Predictions"]
+)
 
 st.sidebar.markdown("---")
 
-if st.session_state.data_source == 'uploaded' and st.session_state.uploaded_data is not None:
-    st.sidebar.success(f"✓ Data loaded: {len(st.session_state.uploaded_data)} rows")
-else:
-    st.sidebar.warning("No data uploaded")
-
-st.sidebar.markdown("---")
-
+# Check backend connection button
 if st.sidebar.button("Check Backend Connection"):
     try:
         res = requests.get(f"{BACKEND_API_URL}/health", timeout=5)
@@ -118,312 +58,274 @@ if st.sidebar.button("Check Backend Connection"):
     except Exception as e:
         st.sidebar.error(f"Could not connect: {str(e)}")
 
-
 # ============= HOME PAGE =============
 if page == "Home":
-    st.title("Echolon AI Dashboard")
+    st.title("Welcome back")
+    st.markdown("## Echolon AI Dashboard")
     
-    has_data = st.session_state.data_source == 'uploaded' and st.session_state.uploaded_data is not None
-    
-    if has_data:
-        df = st.session_state.uploaded_data
-        st.success("📊 Showing metrics from your uploaded data")
-        st.markdown("---")
-        
-        numeric_cols = detect_numeric_columns(df)
-        display_cols = [c for c in numeric_cols if c.lower() != 'date'][:4]
-        
-        st.subheader("Key Performance Indicators")
-        
-        if display_cols:
-            cols = st.columns(len(display_cols))
-            for i, col_name in enumerate(display_cols):
-                with cols[i]:
-                    summary = get_metric_summary(df, col_name)
-                    if summary:
-                        if summary['current'] > 10000:
-                            display_val = f"${summary['current']/1000:.1f}K" if 'revenue' in col_name.lower() else f"{summary['current']/1000:.1f}K"
-                        elif summary['current'] < 1:
-                            display_val = f"{summary['current']*100:.1f}%"
-                        else:
-                            display_val = f"{summary['current']:,.0f}"
-                        delta = f"{summary['growth']:+.1f}%" if summary['growth'] is not None else None
-                        st.metric(label=col_name.replace('_', ' ').title(), value=display_val, delta=delta)
+    # Data source indicator badge
+    col1, col2 = st.columns([3, 1])
+    with col2:
+        if st.session_state.data_source == 'uploaded':
+            st.success("Connected to your uploaded data")
         else:
-            st.warning("No numeric columns found")
-        
-        st.markdown("---")
-        st.subheader("Data Trends")
-        
-        if 'date' in df.columns and len(display_cols) > 0:
-            chart_metric = st.selectbox("Select metric", display_cols)
-            chart_df = df[['date', chart_metric]].copy()
-            chart_df['date'] = pd.to_datetime(chart_df['date'])
-            chart_df = chart_df.sort_values('date')
-            
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(x=chart_df['date'], y=chart_df[chart_metric], mode='lines+markers', name=chart_metric.title(), line=dict(color='#FF6B35', width=2)))
-            fig.update_layout(title=f"{chart_metric.title()} Over Time", xaxis_title="Date", yaxis_title=chart_metric.title(), template="plotly_white")
-            st.plotly_chart(fig, use_container_width=True)
-        
-        st.markdown("---")
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.subheader("📈 Auto-Generated Insights")
-            insights = generate_insights_from_data(df)
-            if insights:
-                for insight in insights[:4]:
-                    icon = "🔼" if insight['growth'] > 0 else "🔽"
-                    st.markdown(f"{icon} **{insight['metric']}**: {insight['insight']}")
-            else:
-                st.info("Not enough data for insights")
-        
-        with col2:
-            st.subheader("📊 Data Summary")
-            st.markdown(f"**Total Records**: {len(df):,}")
-            if 'date' in df.columns:
-                st.markdown(f"**Date Range**: {df['date'].min()} to {df['date'].max()}")
-            st.markdown(f"**Metrics**: {', '.join(display_cols)}")
+            st.info("Using demo data")
     
+    st.markdown("---")
+    
+    # KPI Metrics
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Revenue Growth", "+15.3%", "Up 3.1% from last month")
+    with col2:
+        st.metric("Customer Growth", "+1.8%", "Up 0.5% from last month")
+    with col3:
+        st.metric("Acquisition Cost", "$241K", "Down 2% from last month")
+    with col4:
+        st.metric("Churn Rate", "2.3%", "Down 0.3% from last month")
+    
+    st.markdown("---")
+    
+    # Revenue chart
+    st.subheader("Revenue Overview")
+    
+    if st.session_state.data_source == 'uploaded' and st.session_state.uploaded_data is not None:
+        # Use uploaded data if available
+        df = st.session_state.uploaded_data
+        if 'date' in df.columns and 'revenue' in df.columns:
+            chart_data = df[['date', 'revenue']].set_index('date')
+            st.line_chart(chart_data, use_container_width=True, height=300, color="#FF9500")
+        else:
+            st.warning("CSV must contain 'date' and 'revenue' columns for revenue chart")
     else:
-        st.info("👋 Welcome! Upload your business data to get started.")
-        st.markdown("---")
+        # Demo data
+        demo_data = pd.DataFrame({
+            'Week': ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+            'Revenue': [45000, 48000, 52000, 51000, 55000, 58000, 62000, 60000, 65000, 68000, 70000, 68000]
+        }).set_index('Week')
+        st.line_chart(demo_data, use_container_width=True, height=300, color="#FF9500")
+    
+    st.markdown("---")
+    
+    # Sales by category
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("Sales by Category")
+        sales_data = {
+            'Category': ['SaaS', 'Support', 'Services', 'Other'],
+            'Sales': [45, 25, 20, 10]
+        }
+        fig = px.pie(values=sales_data['Sales'], names=sales_data['Category'],
+                     color_discrete_sequence=['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728'])
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        st.subheader("Key Metrics Summary")
+        st.markdown("""
+        **Total Customers**: 1,248
         
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.markdown("### 📤 Upload Data")
-            st.markdown("Upload CSV with `date`, `revenue`, `customers`")
-        with col2:
-            st.markdown("### 🔮 Get Predictions")
-            st.markdown("ML models forecast your metrics")
-        with col3:
-            st.markdown("### 📊 Discover Insights")
-            st.markdown("Auto-detect patterns and trends")
+        **Active Subscriptions**: 892
         
-        st.markdown("---")
-        st.subheader("Sample Data Format")
-        sample_df = pd.DataFrame({
-            'date': ['2024-01-01', '2024-01-02', '2024-01-03'],
-            'revenue': [50000, 52000, 51500],
-            'customers': [245, 248, 250]
-        })
-        st.dataframe(sample_df, use_container_width=True)
-
+        **Monthly Recurring Revenue**: $487K
+        
+        **Average Customer Lifetime Value**: $12,450
+        """)
+    
+    st.markdown("---")
+    
+    # Bottom sections - Insights, Predictions, Forecasts
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.subheader("Insights")
+        st.markdown("""
+        **Connect your data to see AI-generated insights**
+        
+        Upload CSV data and our ML models will analyze patterns, trends, and anomalies in your business metrics.
+        """)
+    
+    with col2:
+        st.subheader("Predictions")
+        st.markdown("""
+        **Connect your data to see predictions**
+        
+        Get AI-powered forecasts for your key metrics including revenue, customer churn, and growth trends.
+        """)
+    
+    with col3:
+        st.subheader("Forecasts")
+        st.markdown("""
+        **Connect your data to see forecasts**
+        
+        Advanced scenario modeling to explore different business outcomes and optimize strategy.
+        """)
 
 # ============= UPLOAD DATA PAGE =============
 elif page == "Upload Data":
     st.title("Upload Your Data")
+    st.markdown("Upload a CSV file containing your business data for analysis and AI-powered insights")
+    
     st.markdown("---")
     
-    sample_data = pd.DataFrame({'date': ['2024-01-01', '2024-01-02'], 'revenue': [50000, 52000], 'customers': [245, 248]})
+    # Sample CSV download
+    st.subheader("Sample CSV Format")
+    
+    # Generate 30 days of sample data
+    sample_df = pd.DataFrame({
+        'date': pd.date_range(start='2024-01-01', periods=30).strftime('%Y-%m-%d').tolist(),
+        'revenue': [45000 + i*1000 + (i % 3)*500 for i in range(30)],
+        'customers': [245 + i*2.5 for i in range(30)],
+        'churn_rate': [2.1 + (i % 5)*0.05 for i in range(30)],
+        'customer_acquisition_cost': [241000 - i*100 for i in range(30)],
+        'customer_lifetime_value': [12450 + i*50 for i in range(30)],
+        'support_tickets': [42 + (i % 7)*2 for i in range(30)],
+        'product_a_sales': [18000 + i*200 for i in range(30)],
+        'product_b_sales': [15000 + i*180 for i in range(30)],
+        'product_c_sales': [12000 + i*150 for i in range(30)]
+    })
+    
     csv_buffer = io.StringIO()
-    sample_data.to_csv(csv_buffer, index=False)
-    st.download_button(label="Download sample CSV", data=csv_buffer.getvalue(), file_name="sample_data.csv", mime="text/csv")
+    sample_df.to_csv(csv_buffer, index=False)
+    csv_string = csv_buffer.getvalue()
+    
+    st.download_button(
+        label="Download sample CSV (30 days of data)",
+        data=csv_string,
+        file_name="sample_data.csv",
+        mime="text/csv"
+    )
     
     st.markdown("---")
     
-    # Show currently loaded data if exists
-    if st.session_state.uploaded_data is not None:
-        st.success(f"✅ Data already loaded: {len(st.session_state.uploaded_data)} rows × {len(st.session_state.uploaded_data.columns)} columns")
-        st.dataframe(st.session_state.uploaded_data.head(10), use_container_width=True)
-        
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Rows", len(st.session_state.uploaded_data))
-        with col2:
-            st.metric("Columns", len(st.session_state.uploaded_data.columns))
-        with col3:
-            st.metric("Missing", st.session_state.uploaded_data.isnull().sum().sum())
-        
-        numeric_cols = detect_numeric_columns(st.session_state.uploaded_data)
-        if numeric_cols:
-            st.info(f"📊 Metrics: {', '.join(numeric_cols)}")
-        
-        st.markdown("---")
-        st.markdown("**Upload a new file to replace current data:**")
-    
-    uploaded_file = st.file_uploader("Upload CSV", type="csv")
+    # File uploader
+    st.subheader("Upload Your CSV")
+    uploaded_file = st.file_uploader(
+        "Drag and drop file here",
+        type="csv",
+        help="Limit 200MB per file"
+    )
     
     if uploaded_file is not None:
         try:
             df = pd.read_csv(uploaded_file)
+            
+            # Store in session state
             st.session_state.uploaded_data = df
             st.session_state.data_source = 'uploaded'
             
-            st.success(f"New file: {df.shape[0]} rows × {df.shape[1]} columns")
+            st.success(f"File uploaded successfully! Shape: {df.shape[0]} rows × {df.shape[1]} columns")
+            
+            st.subheader("Data Preview")
             st.dataframe(df.head(10), use_container_width=True)
             
+            st.subheader("Data Summary")
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("Rows", df.shape[0])
+                st.metric("Total Rows", df.shape[0])
             with col2:
-                st.metric("Columns", df.shape[1])
+                st.metric("Total Columns", df.shape[1])
             with col3:
-                st.metric("Missing", df.isnull().sum().sum())
+                st.metric("Missing Values", df.isnull().sum().sum())
             
-            numeric_cols = detect_numeric_columns(df)
-            if numeric_cols:
-                st.info(f"📊 Detected: {', '.join(numeric_cols)}")
-            
+            # Send to backend
             if st.button("Process & Save to Backend", type="primary"):
-                with st.spinner("Processing..."):
+                with st.spinner("Processing data..."):
                     try:
-                        uploaded_file.seek(0)
-                        files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "text/csv")}
-                        response = requests.post(f"{BACKEND_API_URL}/api/v1/upload_csv", files=files, timeout=30)
+                        data_records = df.to_dict(orient="records")
+                        response = requests.post(
+                            f"{BACKEND_API_URL}/api/upload_csv",
+                            json={"data": data_records},
+                            timeout=30
+                        )
                         if response.status_code == 200:
-                            result = response.json()
-                            st.success(f"✅ Saved! ({result.get('rows_processed', 0)} rows)")
-                            st.session_state.data_saved = True
-                            st.balloons()
+                            st.success("Data successfully processed and saved!")
+                            st.session_state.api_response = response.json()
                         else:
-                            try:
-                                st.error(f"Error: {response.json().get('detail', response.text)}")
-                            except:
-                                st.error(f"Error: {response.text}")
-                    except requests.exceptions.ConnectionError:
-                        st.error("❌ Backend not connected")
+                            st.error(f"Error: {response.status_code}")
                     except Exception as e:
-                        st.error(f"Failed: {str(e)}")
+                        st.error(f"Failed to connect to backend: {str(e)}")
+                        st.info("Make sure the backend service is running")
+            
         except Exception as e:
-            st.error(f"Error: {str(e)}")
-    elif st.session_state.uploaded_data is None:
-        st.info("Upload a CSV file to begin")
-
+            st.error(f"Error reading file: {str(e)}")
+    else:
+        st.info("Please upload a CSV file to begin")
 
 # ============= INSIGHTS PAGE =============
 elif page == "Insights":
-    st.title("Business Insights")
+    st.title("Business Insights Dashboard")
+    st.markdown("Connect your data to see AI-generated insights and business intelligence")
     
-    has_data = st.session_state.data_source == 'uploaded' and st.session_state.uploaded_data is not None
+    st.markdown("---")
     
-    if has_data:
-        df = st.session_state.uploaded_data
-        st.success("📊 Insights from your data")
-        st.markdown("---")
-        
-        numeric_cols = detect_numeric_columns(df)
-        display_cols = [c for c in numeric_cols if c.lower() != 'date'][:4]
-        
-        if display_cols:
-            cols = st.columns(len(display_cols))
-            for i, col_name in enumerate(display_cols):
-                with cols[i]:
-                    summary = get_metric_summary(df, col_name)
-                    if summary:
-                        if summary['total'] > 100000:
-                            display_val = f"${summary['total']/1000000:.2f}M" if 'revenue' in col_name.lower() else f"{summary['total']/1000:.1f}K"
-                        else:
-                            display_val = f"{summary['current']:,.0f}"
-                        delta = f"{summary['growth']:+.1f}%" if summary['growth'] else None
-                        st.metric(col_name.title(), display_val, delta)
-        
-        st.markdown("---")
-        st.subheader("🤖 AI Insights")
-        insights = generate_insights_from_data(df)
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("#### Growth Analysis")
-            for i in [x for x in insights if x['type'] == 'growth']:
-                icon = "🔼" if i['growth'] > 0 else "🔽"
-                st.markdown(f"{icon} {i['insight']}")
-        with col2:
-            st.markdown("#### Trend Analysis")
-            for i in [x for x in insights if x['type'] == 'trend']:
-                icon = "📈" if i['growth'] > 0 else "📉"
-                st.markdown(f"{icon} {i['insight']}")
-        
-        if len(display_cols) >= 2:
-            st.markdown("---")
-            st.subheader("📊 Correlations")
-            fig = px.imshow(df[display_cols].corr(), text_auto=True, color_continuous_scale='RdBu_r')
-            st.plotly_chart(fig, use_container_width=True)
+    if st.session_state.data_source == 'uploaded':
+        st.info("Insights connected to your uploaded data")
     else:
-        st.warning("⚠️ No data uploaded")
-        st.markdown("Upload data to see insights. Go to **Upload Data** page.")
-
+        st.info("Connect your data to see AI-generated insights")
+    
+    # Try to fetch from backend
+    try:
+        response = requests.get(f"{BACKEND_API_URL}/api/insights", timeout=10)
+        if response.status_code == 200:
+            insights_data = response.json()
+            st.success("Connected to ML insights model")
+    except Exception as e:
+        st.warning(f"Could not connect to insights backend: {str(e)}")
+    
+    # Display key metrics
+    st.subheader("Key Performance Indicators")
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Total Revenue", "$2.4M", "+12.5%")
+    with col2:
+        st.metric("Active Users", "8,432", "+8.2%")
+    with col3:
+        st.metric("Conversion Rate", "3.8%", "+0.5%")
+    with col4:
+        st.metric("Avg Order Value", "$285", "-2.1%")
 
 # ============= PREDICTIONS PAGE =============
 elif page == "Predictions":
-    st.title("AI Predictions")
+    st.title("AI-Powered Predictions")
+    st.markdown("Configure and generate predictions for your business metrics")
     
-    has_data = st.session_state.data_source == 'uploaded' and st.session_state.uploaded_data is not None
+    st.markdown("---")
     
-    if not has_data:
-        st.warning("⚠️ Upload data first")
-        st.info("Go to **Upload Data** and save to backend.")
-    else:
-        df = st.session_state.uploaded_data
-        numeric_cols = [c for c in detect_numeric_columns(df) if c.lower() != 'date']
-        
-        st.subheader("🎯 Configuration")
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            metric_to_predict = st.selectbox("Metric", numeric_cols) if numeric_cols else st.text_input("Metric", "revenue")
-        with col2:
-            horizon_days = st.selectbox("Horizon", [7, 30, 90, 180, 365], format_func=lambda x: f"{x} Days", index=1)
-        with col3:
-            model_type = st.selectbox("Model", ["auto", "xgboost", "prophet"])
-        
-        business_id = st.number_input("Business ID", min_value=1, value=1)
-        
-        if st.button("🚀 Generate Forecast", type="primary"):
-            with st.spinner("Training..."):
-                try:
-                    response = requests.post(
-                        f"{BACKEND_API_URL}/api/v1/ml/forecast",
-                        json={"business_id": int(business_id), "metric_name": metric_to_predict, "horizon": horizon_days, "model_type": model_type},
-                        timeout=120
-                    )
-                    if response.status_code == 200:
-                        forecast_data = response.json()
-                        st.success(f"✅ Generated with {forecast_data.get('model_used', 'unknown')}!")
-                        
-                        points = forecast_data.get('points', [])
-                        if points:
-                            forecast_dates = [pd.to_datetime(p['date']) for p in points]
-                            forecast_values = [p['value'] for p in points]
-                            
-                            fig = go.Figure()
-                            
-                            if 'date' in df.columns and metric_to_predict in df.columns:
-                                hist_df = df[['date', metric_to_predict]].copy()
-                                hist_df['date'] = pd.to_datetime(hist_df['date'])
-                                fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df[metric_to_predict], name="Historical", line=dict(color="blue")))
-                            
-                            fig.add_trace(go.Scatter(x=forecast_dates, y=forecast_values, name="Forecast", line=dict(color="orange", dash='dash')))
-                            fig.update_layout(title=f"{metric_to_predict.title()} Forecast", template="plotly_white")
-                            st.plotly_chart(fig, use_container_width=True)
-                            
-                            metrics = forecast_data.get('metrics')
-                            if metrics:
-                                col1, col2, col3 = st.columns(3)
-                                with col1:
-                                    st.metric("MAE", f"{metrics.get('mae', 0):.2f}")
-                                with col2:
-                                    st.metric("RMSE", f"{metrics.get('rmse', 0):.2f}")
-                                with col3:
-                                    st.metric("Samples", metrics.get('train_samples', 0))
-                            
-                            avg_val = sum(forecast_values) / len(forecast_values)
-                            growth = ((forecast_values[-1] - forecast_values[0]) / forecast_values[0] * 100) if forecast_values[0] > 0 else 0
-                            st.info(f"📈 Average: {avg_val:,.2f} | Growth: {growth:+.2f}%")
-                    else:
-                        try:
-                            error_msg = response.json().get('detail', response.text)
-                        except:
-                            error_msg = response.text or f"HTTP {response.status_code}"
-                        st.error(f"Error: {error_msg}")
-                except requests.exceptions.ConnectionError:
-                    st.error("❌ Backend not connected. Start the backend server first.")
-                except requests.exceptions.Timeout:
-                    st.error("⏱️ Request timed out. Try again or use a smaller dataset.")
-                except Exception as e:
-                    st.error(f"❌ {str(e)}")
+    st.subheader("Prediction Configuration")
+    col1, col2 = st.columns(2)
+    with col1:
+        metric_to_predict = st.selectbox(
+            "Select Metric",
+            ["Revenue", "Customer Growth", "Churn Rate"]
+        )
+    with col2:
+        prediction_horizon = st.selectbox(
+            "Prediction Horizon",
+            ["1 Month", "3 Months", "6 Months"]
+        )
+    
+    if st.button("Generate Predictions", type="primary"):
+        with st.spinner("Running ML model..."):
+            try:
+                response = requests.post(
+                    f"{BACKEND_API_URL}/api/predictions",
+                    json={
+                        "metric": metric_to_predict,
+                        "horizon": prediction_horizon
+                    },
+                    timeout=30
+                )
+                if response.status_code == 200:
+                    st.success("Predictions generated successfully!")
+                else:
+                    st.error(f"Prediction failed: {response.status_code}")
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
 
-
+# Footer
 st.markdown("---")
-st.markdown("© 2024 Echolon AI")
+st.markdown("""
+© 2024 Echolon AI | Built with Streamlit & FastAPI
+""")
