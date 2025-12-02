@@ -510,11 +510,8 @@ elif page == "What-If":
         st.session_state.baseline["inventory"],
     )
 
-    if run:
-        scenario = run_model(revenue, marketing, churn, growth, inventory)
-    else:
-        scenario = baseline
-
+# Scenario always calculates based on current inputs (reactive)
+    scenario = run_model(revenue, marketing, churn, growth, inventory)
     # ----- Scenario results (RIGHT COLUMN) -----
     with col_right:
         st.subheader("Scenario Results")
