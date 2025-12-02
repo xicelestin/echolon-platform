@@ -6,6 +6,7 @@ from datetime import datetime
 import requests
 import os
 import time
+from business_owner_fixes import show_personalized_onboarding, render_kpi_with_context, personalize_insights, show_tactical_recommendation, render_what_if_presets, get_health_badge
 
 st.set_page_config(page_title="Echolon AI", page_icon="📄", layout="wide", initial_sidebar_state="expanded")
 
@@ -83,7 +84,7 @@ with col2:
         st.sidebar.info("ℹ Using demo data")
 
 if st.session_state.uploaded_data is None and page != "Upload":
-    st.info("📊 No data uploaded yet. Visit the **Upload** page to import your CSV file for personalized insights.")
+    show_personalized_onboarding()
 
 # PAGE: HOME
 if page == "Home":
