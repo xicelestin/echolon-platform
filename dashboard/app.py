@@ -458,9 +458,9 @@ else:
     base_revenue = 2400000
     base_customers = 1248
     base_cac = 241000 
- # Calculate projections
- projected_revenue = [base_revenue * ((1 + revenue_growth/100) ** (m/12)) for m in projected_months]
- projected_customers = [base_customers * ((1 + customer_growth/100) ** (m/12)) for m in projected_months]
+     # Calculate projections
+     projected_revenue = [base_revenue * ((1 + revenue_growth/100) ** (m/12)) for m in projected_months]
+     projected_customers = [base_customers * ((1 + customer_growth/100) ** (m/12)) for m in projected_months]
  
  # Display KPIs
  col1, col2, col3, col4 = st.columns(4)
