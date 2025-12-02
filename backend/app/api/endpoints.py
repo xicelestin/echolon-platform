@@ -93,24 +93,24 @@ async def upload_csv(file: UploadFile = File(...), session: Session = Depends(ge
             detail=f"Error processing CSV: {str(e)}"
         )
 
-@router.get("/insights", response_model=List[schemas.MetricsOut])
-async def get_insights():
-    """Get business insights and metrics"""
-    # Placeholder: would run analytics and return metrics
-    # TODO: Implement analytics engine integration
-    placeholder_metrics = [
-        schemas.MetricsOut(
-            metric_name="Revenue Growth",
-            metric_value=15.3,
-            timestamp=datetime.now()
-        ),
-        schemas.MetricsOut(
-            metric_name="Customer Acquisition",
-            metric_value=342.0,
-            timestamp=datetime.now()
-        )
-    ]
-    return placeholder_metrics
+#@router.get("/insights", response_model=List[schemas.MetricsOut])
+#async def get_insights():
+#    """Get business insights and metrics"""
+#    # Placeholder: would run analytics and return metrics
+#    # TODO: Implement analytics engine integration
+#    placeholder_metrics = [
+#       schemas.MetricsOut(
+#            metric_name="Revenue Growth",
+ #           metric_value=15.3,
+ #           timestamp=datetime.now()
+ #       ),
+ #       schemas.MetricsOut(
+ #           metric_name="Customer Acquisition",
+  #          metric_value=342.0,
+  #          timestamp=datetime.now()
+  #      )
+  #  ]
+  #  return placeholder_metrics
 
 @router.get("/predictions", response_model=List[schemas.PredictionsOut])
 async def get_predictions():
@@ -237,4 +237,46 @@ def get_recommendations(data_source: str = "demo"):
         raise HTTPException(
             status_code=500,
             detail=f"Failed to generate recommendations: {str(e)}"
+        )
+
+# ============================================================================
+# BUSINESS INSIGHTS ENDPOINT
+# Provides baseline AI insights for the dashboard (demo logic for MVP)
+# ============================================================================
+@router.get("/insights")
+def get_business_insights(data_source: str = "demo"):
+    """Return AI/business insights for the dashboard."""
+    try:
+        # DEMO insights for MVP
+        insights = [
+            {
+                "category": "Revenue Trends",
+                "title": "Strong monthly growth",
+                "description": "Revenue increased 12.5% over last month.",
+                "confidence": 0.92
+            },
+            {
+                "category": "Customer Behavior",
+                "title": "Improved conversion rate",
+                "description": "Conversion rate rose by 0.5 percentage points.",
+                "confidence": 0.88
+            },
+            {
+                "category": "Risk Alert",
+                "title": "Average order value declining",
+                "description": "AOV decreased 2.1% — might require pricing review.",
+                "confidence": 0.85
+            }
+        ]
+
+        return {
+            "insights": insights,
+            "data_source": data_source,
+            "generated_at": datetime.now().isoformat()
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate insights: {str(e)}"
         )
