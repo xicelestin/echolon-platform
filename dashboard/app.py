@@ -44,7 +44,7 @@ st.sidebar.markdown("---")
 
 page = st.sidebar.radio(
     "Navigation",
-        ["Home", "Upload Data", "Insights", "Predictions", "Inventory Optimization"])
+        ["Home", "Upload Data", "Insights", "Predictions", "Inventory Optimization", "What-If"])
 
 st.sidebar.markdown("---")
 
@@ -411,6 +411,16 @@ elif page == "Inventory Optimization":
         st.success(f"✅ Optimal inventory level calculated with {reorder_point}d reorder point and {safety_stock_pct}% safety buffer.")
         st.metric("Recommended Stock Level", f"{6500 + (reorder_point * 50):.0f} units")
         st.metric("Annual Holding Cost (Projected)", f"${145000 * (holding_cost_pct/15):.0f}")
+
+
+
+# ============= WHAT-IF SCENARIO PLANNER PAGE =============
+elif page == "What-If":
+    st.title("What-If Scenario Planner")
+    st.markdown("Explore AI-powered recommendations and business scenarios")
+    st.markdown("---")
+    render_recommendations_panel(BACKEND_API_URL, st.session_state.data_source, st.session_state.uploaded_data)
+    st.markdown("---")
 
 
 # Footer
