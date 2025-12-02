@@ -459,8 +459,8 @@ else:
     base_customers = 1248
     base_cac = 241000 
      # Calculate projections
-     projected_revenue = [base_revenue * ((1 + revenue_growth/100) ** (m/12)) for m in projected_months]
-     projected_customers = [base_customers * ((1 + customer_growth/100) ** (m/12)) for m in projected_months]
+projected_revenue = [base_revenue * ((1 + revenue_growth/100) ** (m/12)) for m in projected_months]
+projected_customers = [base_customers * ((1 + customer_growth/100) ** (m/12)) for m in projected_months]
  
  # Display KPIs
  col1, col2, col3, col4 = st.columns(4)
@@ -521,7 +521,7 @@ else:
     st.markdown("*AI-powered efficiency recommendations based on your scenario*")
     
     # Call the recommendations handler from recommendations_handler.py
-    render_recommendations_panel()
+    render_recommendations_panel(BACKEND_API_URL, st.session_state.data_source, st.session_state.uploaded_data)
 # Footer
 st.markdown("---")
 st.markdown("""
