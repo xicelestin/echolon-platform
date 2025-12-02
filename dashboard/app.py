@@ -70,7 +70,6 @@ with col2:
         st.sidebar.info("App panel")
 
 st.sidebar.markdown("---")
-st.sidebar.success("Connected to data") if st.session_state.data_source == 'uploaded' else st.sidebar.info("Using demo data")
 
 if page == "Home":
     render_page_header("Welcome Back", "Echolon AI Dashboard")
