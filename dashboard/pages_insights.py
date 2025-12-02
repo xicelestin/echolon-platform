@@ -7,6 +7,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from advanced_components import SalesInsights
 from premium_enhancements import detect_anomalies, render_alert, predict_churn, cohort_table, benchmark_chart
+from enhancement_features import show_benchmark_comparison
 
 def create_kpi_card(icon, title, value, delta, delta_pct_color, help_text):
     """Create a professional KPI card."""
@@ -208,3 +209,7 @@ def render_insights_page():
     })
     
     st.dataframe(action_items, use_container_width=True, hide_index=True)
+
+    # Add benchmark comparison feature
+    st.markdown("""<div style='margin:32px 0;border-top:1px solid #374151;'></div>""", unsafe_allow_html=True)
+    show_benchmark_comparison()
