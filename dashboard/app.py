@@ -178,6 +178,26 @@ elif page == "Predictions":
             time.sleep(1)
         st.success("✓ Predictions updated successfully")
         st.info(f"Forecasting {metric} for {horizon}")
+                    
+            # Generate mock historical data for demonstration
+            historical_data = pd.Series(np.random.normal(100000, 15000, 30))
+            
+            # Generate forecast using PredictionMetrics
+            from advanced_components import PredictionMetrics
+            forecast_data = PredictionMetrics.generate_forecast_with_ci(
+                historical_data,
+                periods=12
+            )
+            
+            # Create and display forecast chart
+            st.markdown("""<div style='margin-top:30px; margin-bottom:20px'><h3 style='font-size:18px; font-weight:600;'>Forecast Visualization</h3></div>""", unsafe_allow_html=True)
+            
+            fig = PredictionMetrics.plot_forecast_with_ci(
+                historical_data,
+                forecast_data,
+                title=f"{metric} Forecast - {horizon}"
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
 # PAGE: INVENTORY
 elif page == "Inventory":
