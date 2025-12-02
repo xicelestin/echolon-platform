@@ -183,3 +183,58 @@ else:
     def train_model_unavailable(business_id: int, metric_name: str):
         """ML services not available."""
         raise HTTPException(status_code=503, detail="ML services not available. Install required dependencies.")
+
+
+# =============================================================================
+# RECOMMENDATIONS ENDPOINT - AI-powered efficiency recommendations
+# =============================================================================
+
+@router.get("/ml/recommendations")
+def get_recommendations(data_source: str = "demo"):
+    """Get AI-powered recommendations for business efficiency improvements."""
+    try:
+        # TODO: Integrate with actual ML model to generate personalized recommendations
+        # For now, return intelligent demo recommendations based on common business patterns
+        
+        recommendations = [
+            {
+                "title": "Focus on SaaS revenue stream",
+                "description": "Your SaaS category represents 45% of sales and shows 15% month-over-month growth. Consider allocating more marketing budget here.",
+                "impact": "High",
+                "timeframe": "This Week",
+                "category": "Revenue"
+            },
+            {
+                "title": "Reduce customer acquisition cost",
+                "description": "Current CAC is $241K. Optimize ad spend on underperforming channels to reduce by 10-15%.",
+                "impact": "High",
+                "timeframe": "This Month",
+                "category": "Efficiency"
+            },
+            {
+                "title": "Address churn rate increase",
+                "description": "Churn rate increased 0.3% this month. Implement customer success check-ins for at-risk accounts.",
+                "impact": "Medium",
+                "timeframe": "Today",
+                "category": "Retention"
+            },
+            {
+                "title": "Capitalize on customer growth trend",
+                "description": "Customer base grew 1.8% last month. Launch referral program to accelerate growth to 3-5%.",
+                "impact": "Medium",
+                "timeframe": "Next 2 Weeks",
+                "category": "Growth"
+            }
+        ]
+        
+        return {
+            "recommendations": recommendations,
+            "data_source": data_source,
+            "generated_at": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate recommendations: {str(e)}"
+        )
