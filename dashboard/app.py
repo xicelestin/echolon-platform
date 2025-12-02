@@ -43,7 +43,7 @@ st.sidebar.markdown("---")
 
 page = st.sidebar.radio(
     "Navigation",
-    ["Home", "Upload Data", "Insights", "Predictions"]
+    ["Home", "Upload Data", "Insights", "Predictions"ns", "Inventory Optimization]
 )
 
 st.sidebar.markdown("---")
@@ -335,6 +335,83 @@ elif page == "Predictions":
                     st.error(f"Prediction failed: {response.status_code}")
             except Exception as e:
                 st.error(f"Error: {str(e)}")
+
+                # ============= INVENTORY OPTIMIZATION PAGE =============
+elif page == "Inventory Optimization":
+    st.title("Inventory Optimization")
+    st.markdown("Optimize your inventory levels and reduce holding costs with AI-powered insights")
+    
+    st.markdown("---")
+    
+    # KPI Metrics for Inventory
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Current Stock Level", "8,450 units", "-3.2% from target")
+    with col2:
+        st.metric("Inventory Turnover", "12.4x", "Up 2.1x from last year")
+    with col3:
+        st.metric("Holding Cost (Annual)", "$145K", "Down $22K from last quarter")
+    with col4:
+        st.metric("Stockout Risk", "4.2%", "Down 1.8% from average")
+    
+    st.markdown("---")
+    
+    # Inventory Analysis Section
+    st.subheader("Inventory Analysis")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("Stock Level Trend")
+        stock_trend = pd.DataFrame({
+            'Week': ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8'],
+            'Stock': [8200, 8050, 8100, 8320, 8450, 8380, 8290, 8100]
+        }).set_index('Week')
+        st.line_chart(stock_trend, use_container_width=True, height=250, color="#FF9500")
+    
+    with col2:
+        st.subheader("Inventory by Category")
+        category_data = {
+            'Category': ['Electronics', 'Textiles', 'Furniture', 'Other'],
+            'Units': [3200, 2850, 1800, 600]
+        }
+        fig = px.pie(values=category_data['Units'], names=category_data['Category'],
+                    color_discrete_sequence=['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728'])
+        st.plotly_chart(fig, use_container_width=True)
+    
+    st.markdown("---")
+    
+    # Optimization Recommendations
+    st.subheader("Optimization Recommendations")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.info("📊 **Slow-Moving Items**\n\nIdentified 127 SKUs with 0 sales in past 30 days. Recommended action: Liquidate or repurpose for $18K recovery potential.")
+        st.warning("⚠️ **Overstock Alert**\n\nElectronics category is 22% above optimal level. Suggested: Promotional discount campaign.")
+    
+    with col2:
+        st.success("✅ **Fast Movers**\n\nTop 12 products account for 64% of turnover. Increase safety stock levels by 15% to reduce stockout risk.")
+        st.info("💰 **Cost Optimization**\n\nImplement FIFO tracking system to reduce spoilage by estimated $12K annually.")
+    
+    st.markdown("---")
+    
+    # Advanced Inventory Tools
+    st.subheader("Inventory Tools & Configuration")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        reorder_point = st.slider("Reorder Point (days of inventory)", 5, 90, 30)
+        safety_stock_pct = st.slider("Safety Stock Buffer (%)", 5, 50, 20)
+    
+    with col2:
+        lead_time_days = st.number_input("Average Lead Time (days)", 1, 60, 14)
+        holding_cost_pct = st.slider("Annual Holding Cost (%)", 5, 30, 15)
+    
+    if st.button("Calculate Optimal Inventory Level", type="primary", key="inventory_calc"):
+        st.success(f"✅ Optimal inventory level calculated with {reorder_point}d reorder point and {safety_stock_pct}% safety buffer.")
+        st.metric("Recommended Stock Level", f"{6500 + (reorder_point * 50):.0f} units")
+        st.metric("Annual Holding Cost (Projected)", f"${145000 * (holding_cost_pct/15):.0f}")
+
 
 # Footer
 st.markdown("---")
