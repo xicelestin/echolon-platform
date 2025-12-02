@@ -463,8 +463,7 @@ projected_revenue = [base_revenue * ((1 + revenue_growth/100) ** (m/12)) for m i
 projected_customers = [base_customers * ((1 + customer_growth/100) ** (m/12)) for m in projected_months]
  
  # Display KPIs
- col1, col2, col3, col4 = st.columns(4)
- 
+col1, col2, col3, col4 = st.columns(4) 
  with col1:
   st.metric("Projected Revenue", f"${projected_revenue[-1]/1000:.0f}K", f"+{(projected_revenue[-1]/base_revenue - 1)*100:.1f}%")
  
