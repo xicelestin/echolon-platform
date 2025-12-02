@@ -52,7 +52,7 @@ st.sidebar.markdown("---")
 
 page = st.sidebar.radio(
     "Navigation",
-        ["Home", "Upload Data", "Insights", "Predictions", "Inventory Optimization", "What-If"])
+        ["Home", "Upload Data", "Insights", "Predictions", "Inventory Optimization", "What-I", "AI Recommendationsf"])
 
 st.sidebar.markdown("---")
 
@@ -594,6 +594,26 @@ elif page == "What-If":
         st.markdown(f"• {r}")
 
     st.markdown("---")
+
+# ============= AI RECOMMENDATIONS PAGE =============
+elif page == "AI Recommendations":
+    st.title("AI-Powered Recommendations")
+    st.markdown("Get intelligent, data-driven recommendations tailored to your business.")
+    st.markdown("---")
+    st.subheader("Recommendation Categories")
+    tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
+    with tabs[0]:
+        st.markdown("### Growth")  
+        st.markdown("- Market expansion\n- Revenue optimization\n- Customer acquisition")
+    with tabs[1]:
+        st.markdown("### Retention")
+        st.markdown("- Churn prevention\n- Engagement programs\n- Loyalty incentives")
+    with tabs[2]:
+        st.markdown("### Efficiency")
+        st.markdown("- Cost reduction\n- Process automation\n- Resource optimization")
+    with tabs[3]:
+        st.markdown("### Innovation")
+        st.markdown("- New products\n- Technology\n- Partnerships")
 
 
 # Footer
