@@ -38,6 +38,13 @@ if 'data_source' not in st.session_state:
 if 'api_response' not in st.session_state:
     st.session_state.api_response = None
 
+# Scenario history and comparison
+if 'scenario_history' not in st.session_state:
+    st.session_state.scenario_history = []
+
+if 'scenario_name' not in st.session_state:
+    st.session_state.scenario_name = None
+
 # Sidebar navigation - NO EMOJIS
 st.sidebar.title("ECHOLON")
 st.sidebar.markdown("AI powered business intelligence")
@@ -137,7 +144,24 @@ if page == "Home":
     
     st.markdown("---")
     
-    # Bottom sections - Insights, Predictions, Forecasts
+
+     # ----- AI Recommendations Feature Section -----
+    st.markdown("---")
+    st.subheader("✨ AI-Powered Recommendations")
+    st.markdown("Get instant, scenario-specific business recommendations powered by our AI engine.")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.info("📊 **Smart Analysis**\n\nOur AI analyzes your KPIs, market trends, and business patterns to provide data-driven insights.")
+    with col2:
+        st.success("🎯 **Actionable Insights**\n\nEvery recommendation comes with specific actions you can take to improve your business.")
+    with col3:
+        st.warning("⚡ **Real-Time Updates**\n\nRecommendations update instantly as you adjust scenarios in the What-If planner.")
+    
+    st.markdown("Try our [What-If Scenario Planner](/?page=What-If) to see AI recommendations in action!")
+    st.markdown("---")
+    
+# Bottom sections - Insights, Predictions, Forecasts
     col1, col2, col3 = st.columns(3)
     
     with col1:
