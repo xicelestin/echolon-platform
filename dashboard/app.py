@@ -44,7 +44,7 @@ st.sidebar.markdown("---")
 
 page = st.sidebar.radio(
     "Navigation",
-    ["Home", "Upload Data", "Insights", "Predictions", "Inventory Optimization"]
+    ["Home", "Upload Data", "Insights", "Predictions", "Inventory Optimization", "What-If"]
 )
 
 st.sidebar.markdown("---")
@@ -413,6 +413,99 @@ elif page == "Inventory Optimization":
         st.metric("Recommended Stock Level", f"{6500 + (reorder_point * 50):.0f} units")
         st.metric("Annual Holding Cost (Projected)", f"${145000 * (holding_cost_pct/15):.0f}")
 
+
+# ============= WHAT-IF SCENARIO PLANNER PAGE =============
+elif page == "What-If":
+ st.title("What-If Scenario Planner")
+ st.markdown("Explore different business scenarios and predict outcomes")
+ 
+ st.markdown("---")
+ 
+ # Scenario Input Section
+ st.subheader("Configure Your Scenario")
+ col1, col2, col3 = st.columns(3)
+ 
+ with col1:
+  revenue_growth = st.slider("Revenue Growth Rate (%)", -20, 50, 15)
+  customer_growth = st.slider("Customer Growth Rate (%)", -10, 30, 10)
+ 
+ with col2:
+  churn_rate = st.slider("Churn Rate (%)", 0.5, 10.0, 2.3)
+  cac_change = st.slider("CAC Change (%)", -30, 30, 0)
+ 
+ with col3:
+  holding_cost = st.slider("Holding Cost (%)", 5, 30, 15)
+  scenario_months = st.selectbox("Forecast Period", ["3 Months", "6 Months", "12 Months"])
+ 
+ st.markdown("---")
+ 
+ # Scenario Visualization
+ st.subheader("Projected Outcomes")
+ 
+ # Create projection data
+ months = {"3 Months": 3, "6 Months": 6, "12 Months": 12}[scenario_months]
+ projected_months = list(range(1, months + 1))
+ 
+ # Base metrics
+ base_revenue = 2400000
+ base_customers = 1248
+ base_cac = 241000
+ 
+ # Calculate projections
+ projected_revenue = [base_revenue * ((1 + revenue_growth/100) ** (m/12)) for m in projected_months]
+ projected_customers = [base_customers * ((1 + customer_growth/100) ** (m/12)) for m in projected_months]
+ 
+ # Display KPIs
+ col1, col2, col3, col4 = st.columns(4)
+ 
+ with col1:
+  st.metric("Projected Revenue", f"${projected_revenue[-1]/1000:.0f}K", f"+{(projected_revenue[-1]/base_revenue - 1)*100:.1f}%")
+ 
+ with col2:
+  st.metric("Projected Customers", f"{projected_customers[-1]:.0f}", f"+{(projected_customers[-1]/base_customers - 1)*100:.1f}%")
+ 
+ with col3:
+  new_cac = base_cac * (1 + cac_change/100)
+  st.metric("New CAC", f"${new_cac/1000:.0f}K", f"{cac_change:+.0f}%")
+ 
+ with col4:
+  ltv = 12450
+  ltv_cac_ratio = ltv / new_cac if new_cac > 0 else 0
+  st.metric("LTV:CAC Ratio", f"{ltv_cac_ratio:.2f}x", "Healthy" if ltv_cac_ratio > 3 else "Needs Help")
+ 
+ st.markdown("---")
+ 
+ # Charts
+ col1, col2 = st.columns(2)
+ 
+ with col1:
+  st.subheader("Revenue Projection")
+  revenue_df = pd.DataFrame({"Month": projected_months, "Revenue": projected_revenue}).set_index("Month")
+  st.line_chart(revenue_df, use_container_width=True, height=300, color="#FF9500")
+ 
+ with col2:
+  st.subheader("Customer Growth")
+  customer_df = pd.DataFrame({"Month": projected_months, "Customers": projected_customers}).set_index("Month")
+  st.line_chart(customer_df, use_container_width=True, height=300, color="#00D9FF")
+ 
+ st.markdown("---")
+ 
+ # Scenario Insights
+ st.subheader("Scenario Analysis")
+ 
+ insight_col1, insight_col2 = st.columns(2)
+ 
+ with insight_col1:
+  if revenue_growth > 15:
+   st.success(f"Strong Revenue Growth: +{revenue_growth}% annually")
+  else:
+   st.info(f"Conservative Growth: +{revenue_growth}% annually")
+ 
+ with insight_col2:
+  if ltv_cac_ratio > 3:
+   st.success(f"Healthy Unit Economics: {ltv_cac_ratio:.2f}x LTV:CAC")
+  else:
+   st.warning(f"Watch Unit Economics: {ltv_cac_ratio:.2f}x LTV:CAC")
 
 # Footer
 st.markdown("---")
