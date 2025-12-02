@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from advanced_components import PredictionMetrics
+from enhancement_features import show_model_transparency_panel
 
 def render_predictions_page():
     """Render the comprehensive AI Predictions page."""
@@ -166,3 +167,7 @@ def render_predictions_page():
                 - Watch for competitive pressure
                 - Consider bundling or upsell strategies
                 """)
+
+    # Add model transparency panel
+    st.markdown("""<div style='margin:32px 0;border-top:1px solid #374151;'></div>""", unsafe_allow_html=True)
+    show_model_transparency_panel()
