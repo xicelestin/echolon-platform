@@ -4,6 +4,7 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 from advanced_components import WhatIfAnalysis
+from enhancement_features import render_scenario_presets, SCENARIO_PRESETS
 
 def render_whatif_page():
     """Render What-If Scenario Planner page"""
@@ -22,6 +23,13 @@ def render_whatif_page():
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+        # Scenario Presets Section
+        render_scenario_presets()
+
+    # Divider
+    st.markdown("""<div style='margin:24px 0;border-top:1px solid #374151;'></div>""", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:18px;font-weight:600;margin-top:16px;'>Or Customize Manually</h3>", unsafe_allow_html=True)
     
     # Scenario Controls
     st.markdown("<h3 style='margin-top: 32px; margin-bottom: 20px; color: #ffffff;'>Scenario Parameters</h3>", unsafe_allow_html=True)
