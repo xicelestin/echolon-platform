@@ -52,8 +52,7 @@ st.sidebar.markdown("---")
 
 page = st.sidebar.radio(
     "Navigation",
-        ["Home", Insights", "Predictions", "Inventory Optimization", "What-I", ""AI Recommendationsf"])
-
+            ["Home", "Insights", "Predictions", "Inventory Optimization", "What-If", "AI Recommendations"])
 st.sidebar.markdown("---")
 
 # Check backend connection button
