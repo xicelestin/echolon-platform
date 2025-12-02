@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 import numpy as np
 from datetime import datetime, timedelta
 from advanced_components import SalesInsights
+from premium_enhancements import detect_anomalies, render_alert, predict_churn, cohort_table, benchmark_chart
 
 def create_kpi_card(icon, title, value, delta, delta_pct_color, help_text):
     """Create a professional KPI card."""
