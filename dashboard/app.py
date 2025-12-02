@@ -7,6 +7,7 @@ from datetime import datetime
 import requests
 import os
 import io
+import numpy as np
 from recommendations_handler import render_recommendations_panel
 
 # Page configuration
@@ -417,9 +418,160 @@ elif page == "Inventory Optimization":
 # ============= WHAT-IF SCENARIO PLANNER PAGE =============
 elif page == "What-If":
     st.title("What-If Scenario Planner")
-    st.markdown("Explore AI-powered recommendations and business scenarios")
+    st.caption("Test business scenarios by adjusting key assumptions and comparing outcomes.")
+
+    # Initialize baseline scenario in session state
+    if "baseline" not in st.session_state:
+        st.session_state.baseline = {
+            "revenue": 100_000,
+            "marketing": 20_000,
+            "churn": 0.05,
+            "growth": 0.08,
+            "inventory": 1_000,
+        }
+
+    col_left, col_right = st.columns(2)
+
+    # ----- Scenario inputs (LEFT COLUMN) -----
+    with col_left:
+        st.subheader("Scenario Inputs")
+
+        revenue = st.number_input(
+            "Monthly Revenue",
+            min_value=0,
+            value=int(st.session_state.baseline["revenue"]),
+            step=1_000,
+            help="Expected monthly revenue under this scenario.",
+        )
+
+        marketing = st.number_input(
+            "Marketing Spend / CAC Proxy",
+            min_value=0,
+            value=int(st.session_state.baseline["marketing"]),
+            step=1_000,
+            help="Total monthly marketing spend or CAC proxy.",
+        )
+
+        churn = st.slider(
+            "Churn Rate",
+            min_value=0.0,
+            max_value=0.5,
+            value=float(st.session_state.baseline["churn"]),
+            step=0.01,
+            help="Fraction of customers leaving per month.",
+        )
+
+        growth = st.slider(
+            "Customer Growth Rate",
+            min_value=0.0,
+            max_value=0.5,
+            value=float(st.session_state.baseline["growth"]),
+            step=0.01,
+            help="Expected net customer growth per month.",
+        )
+
+        inventory = st.number_input(
+            "Inventory Level",
+            min_value=0,
+            value=int(st.session_state.baseline["inventory"]),
+            step=100,
+            help="Units available or safety stock level.",
+        )
+
+        run = st.button("Run Scenario", type="primary")
+
+    # ----- Scenario calculation -----
+    def run_model(revenue, marketing, churn, growth, inventory):
+        profit_margin = 0.25 - (marketing / max(revenue, 1)) * 0.1
+        profit_margin = max(min(profit_margin, 0.5), -0.5)
+        profit = revenue * profit_margin
+        customers = 1_000 * (1 + growth - churn)
+        stockouts_risk = max(0.0, 1 - inventory / 1_000)
+        months = np.arange(1, 13)
+        projected_revenue = revenue * (1 + growth - churn) ** (months - 1)
+        return {
+            "revenue": revenue,
+            "marketing": marketing,
+            "churn": churn,
+            "growth": growth,
+            "inventory": inventory,
+            "profit": profit,
+            "customers": customers,
+            "stockouts_risk": stockouts_risk,
+            "months": months,
+            "projected_revenue": projected_revenue,
+        }
+
+    baseline = run_model(
+        st.session_state.baseline["revenue"],
+        st.session_state.baseline["marketing"],
+        st.session_state.baseline["churn"],
+        st.session_state.baseline["growth"],
+        st.session_state.baseline["inventory"],
+    )
+
+    if run:
+        scenario = run_model(revenue, marketing, churn, growth, inventory)
+    else:
+        scenario = baseline
+
+    # ----- Scenario results (RIGHT COLUMN) -----
+    with col_right:
+        st.subheader("Scenario Results")
+
+        col_a, col_b = st.columns(2)
+        with col_a:
+            st.metric("Revenue (Scenario)", f"${scenario['revenue']:,.0f}", 
+                      delta=f"${scenario['revenue']-baseline['revenue']:,.0f}")
+            st.metric("Profit (Scenario)", f"${scenario['profit']:,.0f}",
+                      delta=f"${scenario['profit']-baseline['profit']:,.0f}")
+            st.metric("Customers (Scenario)", f"{scenario['customers']:,.0f}",
+                      delta=f"{scenario['customers']-baseline['customers']:,.0f}")
+        with col_b:
+            st.metric("Churn Rate", f"{scenario['churn']*100:.1f}%",
+                      delta=f"{(scenario['churn']-baseline['churn'])*100:.1f} pp")
+            st.metric("Growth Rate", f"{scenario['growth']*100:.1f}%",
+                      delta=f"{(scenario['growth']-baseline['growth'])*100:.1f} pp")
+            st.metric("Stockout Risk", f"{scenario['stockouts_risk']*100:.1f}%")
+
+        # Revenue projection chart
+        proj_df = pd.DataFrame({
+            "Month": scenario["months"],
+            "Baseline": baseline["projected_revenue"],
+            "Scenario": scenario["projected_revenue"],
+        })
+        st.line_chart(proj_df.set_index("Month"))
+
     st.markdown("---")
-    render_recommendations_panel(BACKEND_API_URL, st.session_state.data_source, st.session_state.uploaded_data)
+
+    # ----- AI Scenario Recommendations (SEPARATE SECTION) -----
+    st.subheader("AI Scenario Recommendations")
+
+    recs = []
+
+    if scenario["churn"] > baseline["churn"] + 0.02:
+        recs.append(
+            "Churn is higher than baseline; focus on retention programs, better onboarding, and customer support improvements."
+        )
+    if scenario["marketing"] > baseline["marketing"] * 1.2 and scenario["profit"] <= baseline["profit"]:
+        recs.append(
+            "Marketing spend is up but profit is not improving; review channel ROI and shift budget toward higher-ROAS campaigns."
+        )
+    if scenario["growth"] > baseline["growth"] + 0.05 and scenario["profit"] < baseline["profit"]:
+        recs.append(
+            "Growth is strong but margins are compressed; consider pricing adjustments or cost optimization to avoid unprofitable growth."
+        )
+    if scenario["stockouts_risk"] > 0.3:
+        recs.append(
+            "Stockout risk is elevated; increase safety stock, improve forecasting, or work with suppliers to reduce lead times."
+        )
+
+    if not recs:
+        recs.append("This scenario looks close to your baseline; consider pushing one assumption more aggressively to uncover risks or opportunities.")
+
+    for r in recs:
+        st.markdown(f"• {r}")
+
     st.markdown("---")
 
 
