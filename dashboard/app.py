@@ -159,6 +159,43 @@ if page == "Home":
     
     st.markdown("Try our [What-If Scenario Planner](/?page=What-If) to see AI recommendations in action!")
     st.markdown("---")
+
+        # Quick Data Upload Section
+    st.subheader("📤 Upload Your Data")
+    st.caption("Upload a CSV file to analyze your business metrics across all features")
+    
+    upload_col, info_col = st.columns([2, 1])
+    with upload_col:
+        uploaded_file = st.file_uploader(
+            "Choose a CSV file",
+            type="csv",
+            key="home_upload",
+            help="Upload business data with columns like: date, revenue, customers, churn_rate, etc."
+        )
+        
+        if uploaded_file is not None:
+            try:
+                df = pd.read_csv(uploaded_file)
+                # Store in session state for access across all pages
+                st.session_state.uploaded_data = df
+                st.session_state.data_source = 'uploaded'
+                st.success(f"✅ Data loaded! {df.shape[0]} rows × {df.shape[1]} columns")
+                
+                # Show sample data
+                with st.expander("Preview Data"):
+                    st.dataframe(df.head(10), use_container_width=True)
+                    
+            except Exception as e:
+                st.error(f"Error reading file: {str(e)}")
+    
+    with info_col:
+        if st.session_state.data_source == 'uploaded':
+            st.info("🟢 Connected to your data")
+        else:
+            st.info("⚪ Using demo data")
+            st.caption("Upload CSV to use your data")
+    
+    st.markdown("---")
     
 # Bottom sections - Insights, Predictions, Forecasts
     col1, col2, col3 = st.columns(3)
