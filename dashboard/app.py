@@ -178,15 +178,15 @@ elif page == "Predictions":
             time.sleep(1)
         st.success("✓ Predictions updated successfully")
         st.info(f"Forecasting {metric} for {horizon}")
-                    st.markdown("""<div style='margin-top:20px'><h3>📊 Forecast</h3></div>""", unsafe_allow_html=True)
-            # Create simple forecast visualization
-            dates = pd.date_range(start='2024-01-01', periods=12, freq='M')
-            historical = np.random.normal(100000, 15000, 12)
-            forecast = np.random.normal(105000, 12000, 12)
-            fig = px.line(x=dates, y=forecast, title=f'{metric} Forecast',
-                         labels={'x': 'Month', 'y': metric})
-            fig.add_scatter(x=dates, y=historical, name='Historical', mode='lines')
-            st.plotly_chart(fig, use_container_width=True)
+                st.markdown("""<div style='margin-top:20px'><h3>📊 Forecast</h3></div>""", unsafe_allow_html=True)
+        # Create simple forecast visualization
+        dates = pd.date_range(start='2024-01-01', periods=12, freq='M')
+        historical = np.random.normal(100000, 15000, 12)
+        forecast = np.random.normal(105000, 12000, 12)
+        fig = px.line(x=dates, y=forecast, title=f'{metric} Forecast',
+                     labels={'x': 'Month', 'y': metric})
+        fig.add_scatter(x=dates, y=historical, name='Historical', mode='lines')
+        st.plotly_chart(fig, use_container_width=True)
 
 # PAGE: INVENTORY
 elif page == "Inventory":
