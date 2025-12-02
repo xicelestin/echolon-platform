@@ -6,6 +6,7 @@ from datetime import datetime
 import requests
 import os
 import io
+from recommendations_handler import render_recommendations_panel
 
 # Page configuration
 st.set_page_config(
@@ -161,6 +162,17 @@ if page == "Home":
         
         Advanced scenario modeling to explore different business outcomes and optimize strategy.
         """)
+    
+    st.markdown("---")
+    
+    # AI Recommendations Panel
+    with st.sidebar:
+        st.markdown("---")
+        render_recommendations_panel(
+            BACKEND_API_URL, 
+            st.session_state.data_source, 
+            st.session_state.uploaded_data
+        )
 
 # ============= UPLOAD DATA PAGE =============
 elif page == "Upload Data":
