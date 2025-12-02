@@ -447,17 +447,17 @@ elif page == "What-If":
  projected_months = list(range(1, months + 1))
  
  # Base metrics
-    # Get base metrics from uploaded data
-    if st.session_state.uploaded_data is not None:
-        df = st.session_state.uploaded_data
-        base_revenue = df['Revenue'].sum() if 'Revenue' in df.columns else 2400000
-        base_customers = df['CustomerID'].nunique() if 'CustomerID' in df.columns else 1248
-        base_cac = df['CAC'].mean() if 'CAC' in df.columns else 241000
-    else:
-        # Fallback to demo data
-        base_revenue = 2400000
-        base_customers = 1248
-        base_cac = 241000 
+# Get base metrics from uploaded data
+if st.session_state.uploaded_data is not None:
+    df = st.session_state.uploaded_data
+    base_revenue = df['Revenue'].sum() if 'Revenue' in df.columns else 2400000
+    base_customers = df['CustomerID'].nunique() if 'CustomerID' in df.columns else 1248
+    base_cac = df['CAC'].mean() if 'CAC' in df.columns else 241000
+else:
+    # Fallback to demo data
+    base_revenue = 2400000
+    base_customers = 1248
+    base_cac = 241000 
  # Calculate projections
  projected_revenue = [base_revenue * ((1 + revenue_growth/100) ** (m/12)) for m in projected_months]
  projected_customers = [base_customers * ((1 + customer_growth/100) ** (m/12)) for m in projected_months]
