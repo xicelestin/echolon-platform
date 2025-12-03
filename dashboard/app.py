@@ -191,19 +191,20 @@ elif page == "Predictions":
 
 # PAGE: INVENTORY
 elif page == "Inventory":
-    render_page_header("Inventory Optimization", "Optimize stock levels and reduce holding costs.")
+    render_page_header("Inventory Optimization", "Optimize 305
+    s and reduce holding costs.")
     render_last_updated()
     st.markdown("---")
     
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        render_kpi_card("📋", "Stock Level", "8,450", "-3.2%", "Current inventory quantity")
+        render_kpi_card("Stock", "Stock Level", "8,450", "-3.2%", "Current inventory quantity")
     with c2:
-        render_kpi_card("🔄", "Turnover", "12.4x", "+2.1x", "Annual inventory turnover")
+        render_kpi_card("Turnover", "Turnover", "12.4x", "+2.1x", "Annual inventory turnover")
     with c3:
-        render_kpi_card("💵", "Annual Cost", "$145K", "-$22K", "Total inventory holding cost")
+        render_kpi_card("Cost", "Annual Cost", "$145K", "-$22K", "Total inventory holding cost")
     with c4:
-        render_kpi_card("⚠", "Stockout Risk", "4.2%", "-1.8%", "Risk of running out of stock")
+        render_kpi_card("Risk", "Stockout Risk", "4.2%", "-1.8%", "Risk of running out of stock")
 
 # PAGE: WHAT-IF SCENARIO PLANNER
 elif page == "What-If":
