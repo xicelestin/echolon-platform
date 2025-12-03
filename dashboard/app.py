@@ -397,7 +397,7 @@ def generate_ai_insights(kpis):
     
     return insights if insights else ["📊 Upload your data to see AI-powered insights!"]
 
-elif page == "Upload":
+if page == "Upload":
     render_page_header("Import Your Data", "Upload CSV data to analyze your business metrics.")
     st.markdown("---")
     st.info("Required columns: 'date' and 'value' for analysis.")
