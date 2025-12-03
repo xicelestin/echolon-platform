@@ -362,7 +362,6 @@ elif page == "Recommendations":
         st.markdown("- Invest in AI tools")
         st.markdown("- Form strategic partnerships")
 
-# PAGE: UPLOAD
 
 # =================== CRITICAL BUSINESS IMPROVEMENTS ===================
 # CRITICAL FIX 1: Generate AI-powered insights from actual data
@@ -398,15 +397,6 @@ def generate_ai_insights(kpis):
     
     return insights if insights else ["📊 Upload your data to see AI-powered insights!"]
 
-# CRITICAL FIX 2: Sample CSV download helper
-def create_sample_csv():
-    """Create downloadable sample CSV for users."""
-    sample_data = {
-        'date': ['2024-09-01', '2024-10-01', '2024-11-01', '2024-12-01'],
-        'value': [45000, 52000, 58000, 62000],
-        'customer_id': [250, 280, 310, 340]
-    }
-    return pd.DataFrame(sample_data).to_csv(index=False)
 elif page == "Upload":
     render_page_header("Import Your Data", "Upload CSV data to analyze your business metrics.")
     st.markdown("---")
