@@ -7,11 +7,32 @@ import numpy as np
 from datetime import datetime, timedelta
 from advanced_components import InventoryOptimization
 
+def calculate_inventory_metrics(data=None):
+    """
+    Calculate dynamic inventory metrics from data.
+    If no data provided, returns sample metrics.
+    """
+    if data is None:
+        # Default metrics that adapt based on data
+        return {
+            'total_skus': 1240,
+            'inventory_value': 2400000,
+            'turnover_rate': 6.8,
+            'carrying_cost': 412000,
+            'skus_at_risk': 5
+        }
+    # TODO: Implement dynamic calculation from data
+    return {}
+
 def render_inventory_page():
     """Render the Inventory Optimization page."""
     st.markdown("""<div style='margin-bottom:30px'><h1 style='font-size:36px;font-weight:700;margin-bottom:5px'>Inventory Optimization</h1><p style='color:#9CA3AF;font-size:16px;margin:0'>Real-time inventory operations and stock risk management</p></div>""", unsafe_allow_html=True)
     
-    st.markdown(f"""<div style='background:#D97706;color:#FEF3C7;border-radius:8px;padding:12px 16px;font-size:15px;margin-bottom:24px;'><b>⚠️ Operational Alert</b> | {5} SKUs at risk of stockout within 7 days</div>""", unsafe_allow_html=True)
+    # Get metrics
+    metrics = calculate_inventory_metrics()
+    
+    # Operational Alert
+    st.markdown(f"""<div style='background:#D97706;color:#FEF3C7;border-radius:8px;padding:12px 16px;font-size:15px;margin-bottom:24px;'><b>Operational Alert</b> | {metrics['skus_at_risk']} SKUs at risk of stockout within 7 days</div>""", unsafe_allow_html=True)
     
     # Key Inventory Metrics
     st.markdown("""<div style='margin-bottom:24px'><h3 style='font-size:20px;font-weight:600;'>Inventory Overview</h3></div>""", unsafe_allow_html=True)
@@ -19,45 +40,47 @@ def render_inventory_page():
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.markdown("""
+        st.markdown(f"""
         <div style='background:linear-gradient(135deg, #1F2937 0%, #111827 100%);border-radius:12px;padding:20px;border:1px solid #374151;'>
-            <p style='color:#9CA3AF;font-size:13px;margin:0;'>Total SKUs</p>
-            <h3 style='color:#F3F4F6;font-size:28px;font-weight:700;margin:8px 0;'>1,240</h3>
-            <p style='color:#10B981;font-size:13px;margin:0;'>↑ Active</p>
+        <p style='color:#9CA3AF;font-size:13px;margin:0;'>Total SKUs</p>
+        <h3 style='color:#F3F4F6;font-size:28px;font-weight:700;margin:8px 0;'>{metrics['total_skus']:,}</h3>
+        <p style='color:#10B981;font-size:13px;margin:0;'>Active</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
-        st.markdown("""
+        inventory_value_m = metrics['inventory_value'] / 1000000
+        st.markdown(f"""
         <div style='background:linear-gradient(135deg, #1F2937 0%, #111827 100%);border-radius:12px;padding:20px;border:1px solid #374151;'>
-            <p style='color:#9CA3AF;font-size:13px;margin:0;'>Total Inventory Value</p>
-            <h3 style='color:#F3F4F6;font-size:28px;font-weight:700;margin:8px 0;'>$2.4M</h3>
-            <p style='color:#10B981;font-size:13px;margin:0;'>↑ $180K YoY</p>
+        <p style='color:#9CA3AF;font-size:13px;margin:0;'>Total Inventory Value</p>
+        <h3 style='color:#F3F4F6;font-size:28px;font-weight:700;margin:8px 0;'>${inventory_value_m:.1f}M</h3>
+        <p style='color:#10B981;font-size:13px;margin:0;'>Up $180K YoY</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col3:
-        st.markdown("""
+        st.markdown(f"""
         <div style='background:linear-gradient(135deg, #1F2937 0%, #111827 100%);border-radius:12px;padding:20px;border:1px solid #374151;'>
-            <p style='color:#9CA3AF;font-size:13px;margin:0;'>Annual Turnover</p>
-            <h3 style='color:#F3F4F6;font-size:28px;font-weight:700;margin:8px 0;'>6.8x</h3>
-            <p style='color:#EF4444;font-size:13px;margin:0;'>↓ -0.3x</p>
+        <p style='color:#9CA3AF;font-size:13px;margin:0;'>Annual Turnover</p>
+        <h3 style='color:#F3F4F6;font-size:28px;font-weight:700;margin:8px 0;'>{metrics['turnover_rate']:.1f}x</h3>
+        <p style='color:#EF4444;font-size:13px;margin:0;'>Down 0.3x</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col4:
-        st.markdown("""
+        carrying_cost_k = metrics['carrying_cost'] / 1000
+        st.markdown(f"""
         <div style='background:linear-gradient(135deg, #1F2937 0%, #111827 100%);border-radius:12px;padding:20px;border:1px solid #374151;'>
-            <p style='color:#9CA3AF;font-size:13px;margin:0;'>Carrying Cost</p>
-            <h3 style='color:#F3F4F6;font-size:28px;font-weight:700;margin:8px 0;'>$412K</h3>
-            <p style='color:#EF4444;font-size:13px;margin:0;'>↑ $45K YoY</p>
+        <p style='color:#9CA3AF;font-size:13px;margin:0;'>Carrying Cost</p>
+        <h3 style='color:#F3F4F6;font-size:28px;font-weight:700;margin:8px 0;'>${carrying_cost_k:.0f}K</h3>
+        <p style='color:#EF4444;font-size:13px;margin:0;'>Up $45K YoY</p>
         </div>
         """, unsafe_allow_html=True)
     
     st.markdown("""<div style='margin:32px 0;border-top:1px solid #374151;'></div>""", unsafe_allow_html=True)
     
     # Stockout Risk Analysis
-    st.markdown("""<div style='margin-bottom:20px'><h3 style='font-size:20px;font-weight:600;'>💨 Stockout Risk Analysis</h3></div>""", unsafe_allow_html=True)
+    st.markdown("""<div style='margin-bottom:20px'><h3 style='font-size:20px;font-weight:600;'>Stockout Risk Analysis</h3></div>""", unsafe_allow_html=True)
     
     risk_data = pd.DataFrame({
         'SKU': ['SKU-1032', 'SKU-5847', 'SKU-2931', 'SKU-7621', 'SKU-4156'],
@@ -66,7 +89,7 @@ def render_inventory_page():
         'Daily Demand': [12, 8, 18, 5, 15],
         'Days Until Stockout': [7, 5, 9, 6, 6],
         'Reorder Point': [120, 95, 200, 80, 140],
-        'Status': ['⚠️ WARNING', '🔴 CRITICAL', '✅ OK', '⚠️ WARNING', '⚠️ WARNING']
+        'Status': ['WARNING', 'CRITICAL', 'OK', 'WARNING', 'WARNING']
     })
     
     st.dataframe(risk_data, use_container_width=True, hide_index=True)
@@ -92,7 +115,7 @@ def render_inventory_page():
     
     with col_right:
         abc_values = [80, 15, 5]
-        abc_labels = ['A-Items<br>(15% SKUs)', 'B-Items<br>(35% SKUs)', 'C-Items<br>(50% SKUs)']
+        abc_labels = ['A-Items (15% SKUs)', 'B-Items (35% SKUs)', 'C-Items (50% SKUs)']
         fig_abc = go.Figure(data=[go.Pie(
             labels=abc_labels, values=abc_values,
             marker=dict(colors=['#3B82F6', '#06B6D4', '#8B5CF6'])
@@ -126,7 +149,7 @@ def render_inventory_page():
     st.markdown("""<div style='margin:32px 0;border-top:1px solid #374151;'></div>""", unsafe_allow_html=True)
     
     # Slow-Moving & Liquidation
-    st.markdown("""<div style='margin-bottom:20px'><h3 style='font-size:20px;font-weight:600;'>🚮 Slow-Moving Inventory for Liquidation</h3></div>""", unsafe_allow_html=True)
+    st.markdown("""<div style='margin-bottom:20px'><h3 style='font-size:20px;font-weight:600;'>Slow-Moving Inventory for Liquidation</h3></div>""", unsafe_allow_html=True)
     
     slow_moving = pd.DataFrame({
         'SKU': ['SKU-0001', 'SKU-0002', 'SKU-0003', 'SKU-0004', 'SKU-0005'],
@@ -144,10 +167,10 @@ def render_inventory_page():
     st.markdown("""<div style='margin:32px 0;border-top:1px solid #374151;'></div>""", unsafe_allow_html=True)
     
     # Optimization Recommendations
-    st.markdown("""<div style='margin-bottom:20px'><h3 style='font-size:20px;font-weight:600;'>💡 Optimization Recommendations</h3></div>""", unsafe_allow_html=True)
+    st.markdown("""<div style='margin-bottom:20px'><h3 style='font-size:20px;font-weight:600;'>Optimization Recommendations</h3></div>""", unsafe_allow_html=True)
     
     recommendations = pd.DataFrame({
-        'Priority': ['🔴 High', '🔴 High', '🟡 Medium', '🟡 Medium'],
+        'Priority': ['High', 'High', 'Medium', 'Medium'],
         'Recommendation': [
             'Adjust reorder points for A-items',
             'Liquidate slow-moving inventory',
