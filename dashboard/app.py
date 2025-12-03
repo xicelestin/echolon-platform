@@ -258,10 +258,10 @@ elif page == "Insights":
     with st.spinner("Analyzing your data..."):
         time.sleep(0.5)
     st.markdown("### Key Insights")
-    st.markdown(f"- **Revenue Performance**: Your revenue is {kpis['revenue_formatted']} {kpis['revenue_delta']}")
-    st.markdown(f"- **Customer Base**: {kpis['customers_formatted']} active customers {kpis['customers_delta']}")
-    st.markdown(f"- **Churn Rate**: Currently at {kpis['churn_formatted']} {kpis['churn_delta']}")
-    st.markdown("- **Opportunity**: Focus on retention programs to reduce churn")
+        ai_insights = generate_ai_insights(kpis)
+    for insight in ai_insights:
+        st.markdown(f"- {insight}")
+    
 
 # PAGE: PREDICTIONS
 elif page == "Predictions":
@@ -367,6 +367,16 @@ elif page == "Recommendations":
 # =================== CRITICAL BUSINESS IMPROVEMENTS ===================
 # CRITICAL FIX 1: Generate AI-powered insights from actual data
 def generate_ai_insights(kpis):
+        st.markdown("---")
+    st.subheader("Get Started with a Sample")
+    st.markdown("Download a sample CSV to see the format:")
+    sample_csv = create_sample_csv()
+    st.download_button(
+        label="Download Sample CSV",
+        data=sample_csv,
+        file_name="sample_data.csv",
+        mime="text/csv"
+    )
     """Generate real AI insights based on actual metrics - not just displaying data."""
     insights = []
     
