@@ -257,11 +257,11 @@ elif page == "Insights":
     st.markdown("---")
     with st.spinner("Analyzing your data..."):
         time.sleep(0.5)
-            st.markdown("### Key Insights")
-        ai_insights = generate_ai_insights(kpis)
-    for insight in ai_insights:
-                st.markdown(f"- {insight}")
-    
+                st.markdown("### Key Insights")
+                ai_insights = generate_ai_insights(kpis)
+                for insight in ai_insights:
+                                st.markdown(f"- {insight}")
+            
 
 # PAGE: PREDICTIONS
 elif page == "Predictions":
