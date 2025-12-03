@@ -367,16 +367,6 @@ elif page == "Recommendations":
 # =================== CRITICAL BUSINESS IMPROVEMENTS ===================
 # CRITICAL FIX 1: Generate AI-powered insights from actual data
 def generate_ai_insights(kpis):
-        st.markdown("---")
-    st.subheader("Get Started with a Sample")
-    st.markdown("Download a sample CSV to see the format:")
-    sample_csv = create_sample_csv()
-    st.download_button(
-        label="Download Sample CSV",
-        data=sample_csv,
-        file_name="sample_data.csv",
-        mime="text/csv"
-    )
     """Generate real AI insights based on actual metrics - not just displaying data."""
     insights = []
     
