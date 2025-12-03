@@ -83,7 +83,7 @@ with col2:
     else:
         st.sidebar.info("ℹ Using demo data")
 
-if st.session_state.uploaded_data is None and page != "Upload":
+if st.session_state.uploaded_data is None and page == "Home":
     show_personalized_onboarding()
 
 # PAGE: HOME
