@@ -191,8 +191,7 @@ elif page == "Predictions":
 
 # PAGE: INVENTORY
 elif page == "Inventory":
-    render_page_header("Inventory Optimization", "Optimize 305
-    s and reduce holding costs.")
+    render_page_header("Inventory Optimization", "Optimize 305 stock levels and reduce holding costs.")
     render_last_updated()
     st.markdown("---")
     
