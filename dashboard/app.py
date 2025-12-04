@@ -146,6 +146,40 @@ def render_page_header(title, subtitle):
     """Render page header."""
     st.markdown(f'<div class="page-header"><h1>{title}</h1><p>{subtitle}</p></div>', unsafe_allow_html=True)
 
+# =================== CRITICAL BUSINESS IMPROVEMENTS ===================
+# CRITICAL FIX 1: Generate AI-powered insights from actual data
+def generate_ai_insights(kpis):
+    """Generate real AI insights based on actual metrics - not just displaying data."""
+    insights = []
+    
+    # Revenue insights
+    if kpis['revenue'] > DEMO_REVENUE:
+        pct = ((kpis['revenue']/DEMO_REVENUE - 1)*100)
+        insights.append(f"Revenue Outperformance: Your revenue of {kpis['revenue_formatted']} EXCEEDS baseline by {pct:.1f}%! Excellent growth.")
+    elif kpis['revenue'] < DEMO_REVENUE * 0.8:
+        insights.append(f"Revenue Gap: Your revenue is {((1 - kpis['revenue']/DEMO_REVENUE)*100):.0f}% below expectations. Consider pricing or market expansion.")
+    
+    # Unit economics - LTV:CAC ratio
+    ltv = kpis['revenue'] / kpis['customers'] if kpis['customers'] > 0 else 0
+    ltv_cac_ratio = ltv / kpis['cac'] if kpis['cac'] > 0 else 0
+    
+    if ltv_cac_ratio > 3:
+        insights.append(f"Healthy Unit Economics: Your LTV:CAC ratio is {ltv_cac_ratio:.1f}x (target: 3x+). Excellent acquisition efficiency!")
+    elif ltv_cac_ratio > 1:
+        insights.append(f"Acceptable Unit Economics: LTV:CAC ratio is {ltv_cac_ratio:.1f}x. Room to improve efficiency.")
+    elif ltv_cac_ratio > 0:
+        insights.append(f"Critical Unit Economics Alert: LTV:CAC ratio {ltv_cac_ratio:.1f}x - losing money on acquisition! Urgent action needed.")
+    
+    # Churn analysis
+    if kpis['churn'] < 2:
+        insights.append(f"Excellent Retention: {kpis['churn_formatted']} churn is outstanding! Continue current retention strategy.")
+    elif kpis['churn'] < 5:
+        insights.append(f"Healthy Churn: {kpis['churn_formatted']} is acceptable for SaaS. Monitor and optimize further.")
+    else:
+        insights.append(f"High Churn Alert: {kpis['churn_formatted']} is concerning! Prioritize retention programs immediately.")
+    
+    return insights if insights else ["📊 Upload your data to see AI-powered insights!"]
+
 # Sidebar
 st.sidebar.markdown('<div class="sidebar-header"><h2>ECHOLON</h2><p>AI powered business intelligence</p></div>', unsafe_allow_html=True)
 st.sidebar.markdown("---")
@@ -363,39 +397,7 @@ elif page == "Recommendations":
         st.markdown("- Form strategic partnerships")
 
 
-# =================== CRITICAL BUSINESS IMPROVEMENTS ===================
-# CRITICAL FIX 1: Generate AI-powered insights from actual data
-def generate_ai_insights(kpis):
-    """Generate real AI insights based on actual metrics - not just displaying data."""
-    insights = []
-    
-    # Revenue insights
-    if kpis['revenue'] > DEMO_REVENUE:
-        pct = ((kpis['revenue']/DEMO_REVENUE - 1)*100)
-        insights.append(f"Revenue Outperformance: Your revenue of {kpis['revenue_formatted']} EXCEEDS baseline by {pct:.1f}%! Excellent growth.")
-    elif kpis['revenue'] < DEMO_REVENUE * 0.8:
-        insights.append(f"Revenue Gap: Your revenue is {((1 - kpis['revenue']/DEMO_REVENUE)*100):.0f}% below expectations. Consider pricing or market expansion.")
-    
-    # Unit economics - LTV:CAC ratio
-    ltv = kpis['revenue'] / kpis['customers'] if kpis['customers'] > 0 else 0
-    ltv_cac_ratio = ltv / kpis['cac'] if kpis['cac'] > 0 else 0
-    
-    if ltv_cac_ratio > 3:
-        insights.append(f"Healthy Unit Economics: Your LTV:CAC ratio is {ltv_cac_ratio:.1f}x (target: 3x+). Excellent acquisition efficiency!")
-    elif ltv_cac_ratio > 1:
-        insights.append(f"Acceptable Unit Economics: LTV:CAC ratio is {ltv_cac_ratio:.1f}x. Room to improve efficiency.")
-    elif ltv_cac_ratio > 0:
-        insights.append(f"Critical Unit Economics Alert: LTV:CAC ratio {ltv_cac_ratio:.1f}x - losing money on acquisition! Urgent action needed.")
-    
-    # Churn analysis
-    if kpis['churn'] < 2:
-        insights.append(f"Excellent Retention: {kpis['churn_formatted']} churn is outstanding! Continue current retention strategy.")
-    elif kpis['churn'] < 5:
-        insights.append(f"Healthy Churn: {kpis['churn_formatted']} is acceptable for SaaS. Monitor and optimize further.")
-    else:
-        insights.append(f"High Churn Alert: {kpis['churn_formatted']} is concerning! Prioritize retention programs immediately.")
-    
-    return insights if insights else ["📊 Upload your data to see AI-powered insights!"]
+
 
 if page == "Upload":
     render_page_header("Import Your Data", "Upload CSV data to analyze your business metrics.")
