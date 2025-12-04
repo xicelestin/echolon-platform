@@ -227,8 +227,7 @@ st.sidebar.markdown('<div class="sidebar-section">Navigation</div>', unsafe_allo
 
 page = st.sidebar.radio(
     "nav",
-    ["Home", "Insights", "Predictions", "Inventory", "What-If", "Recommendations", "Upload"],
-    label_visibility="collapsed"
+    ["Home", "Profile", "Insights", "Predictions", "Inventory", "What-If", "Recommendations", "Upload"],    label_visibility="collapsed"
 )
 
 st.sidebar.markdown("---")
@@ -520,6 +519,55 @@ elif page == "Recommendations":
         )
 
 # PAGE: UPLOAD
+
+# PAGE: PROFILE
+elif page == "Profile":
+ render_page_header("👤 Company Profile", "Tell us about your business so we can customize AI insights.")
+ render_last_updated()
+ st.markdown("---")
+ 
+ st.subheader("📋 Company Information")
+ col1, col2 = st.columns(2)
+ with col1:
+ company_name = st.text_input("Company Name", value=st.session_state.get('profile', {}).get('company_name', ''), key="company_name_input")
+ industry = st.selectbox("Industry", ["Select an industry...", "SaaS", "E-Commerce", "Professional Services", "Retail", "Healthcare", "Manufacturing", "Finance", "Education", "Other"], key="industry_select")
+ with col2:
+ founded_year = st.number_input("Founded Year", min_value=1900, max_value=2025, value=st.session_state.get('profile', {}).get('founded_year', 2020), key="founded_year_input")
+ team_size = st.selectbox("Team Size", ["Select team size...", "1-10", "11-50", "51-200", "201-500", "500+"], key="team_size_select")
+ 
+ st.markdown("### 🎯 Business Metrics")
+ col1, col2, col3 = st.columns(3)
+ with col1:
+ annual_revenue = st.number_input("Annual Revenue ($)", min_value=0, step=10000, value=st.session_state.get('profile', {}).get('annual_revenue', 0), key="annual_rev_input")
+ with col2:
+ customer_count = st.number_input("Total Customers", min_value=0, step=10, value=st.session_state.get('profile', {}).get('customer_count', 0), key="customer_count_input")
+ with col3:
+ monthly_churn = st.slider("Average Monthly Churn (%)", min_value=0.0, max_value=50.0, value=st.session_state.get('profile', {}).get('monthly_churn', 5.0), step=0.5, key="churn_slider")
+ 
+ st.markdown("### 📝 Company Description")
+ company_desc = st.text_area("What does your company do?", value=st.session_state.get('profile', {}).get('company_description', ''), height=100, placeholder="Briefly describe your products/services and target market...", key="company_desc_area")
+ 
+ st.markdown("### 🎯 Business Goals")
+ goals = st.multiselect("What are your top priorities? (Select up to 3)", ["Growth", "Profitability", "Retention", "Efficiency", "Innovation", "Market Expansion"], default=st.session_state.get('profile', {}).get('goals', []), max_selections=3, key="goals_multi")
+ 
+ st.markdown("### 💡 Challenges")
+ challenges = st.multiselect("What are your biggest challenges?", ["High CAC", "Churn", "Low conversion", "Scaling costs", "Product development", "Team retention"], default=st.session_state.get('profile', {}).get('challenges', []), key="challenges_multi")
+ 
+ col1, col2 = st.columns(2)
+ with col1:
+ if st.button("💾 Save Profile", use_container_width=True, type="primary"):
+ st.session_state['profile'] = {'company_name': company_name, 'industry': industry, 'founded_year': founded_year, 'team_size': team_size, 'annual_revenue': annual_revenue, 'customer_count': customer_count, 'monthly_churn': monthly_churn, 'company_description': company_desc, 'goals': goals, 'challenges': challenges}
+ st.session_state.last_updated = datetime.now()
+ st.success("✅ Profile saved! AI insights will now be customized to your business.")
+ with col2:
+ if st.button("📊 View Demo Profile", use_container_width=True):
+ st.info("**Demo Profile Example:** SaaS startup with $2.4M revenue, 8,432 customers, 2.3% churn. Focus: Growth & Profitability.")
+ 
+ st.markdown("---")
+ if st.session_state.get('profile', {}).get('company_name'):
+ profile = st.session_state['profile']
+ st.info(f"📌 **Current Profile:** {profile['company_name']} | {profile['industry']} | {profile['team_size']}")
+
 if page == "Upload":
     render_page_header("Import Your Data", "Upload CSV data to analyze your business metrics.")
     st.markdown("---")
