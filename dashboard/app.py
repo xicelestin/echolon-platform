@@ -6,7 +6,7 @@ from datetime import datetime
 import requests
 import os
 import time
-from business_owner_fixes import show_personalized_onboarding, render_kpi_with_context, personalize_insights, show_tactical_recommendation, render_what_if_presets, get_health_badge
+from business_owner_fixes import show_personalized_onboarding, render_kpi_with_context, personalize_insights, show_tactical_recommendation, render_what_if_presets, get_health_badge, render_kpi_with_benchmark, generate_actionable_insights, display_actionable_insight, get_priority_score
 
 st.set_page_config(page_title="Echolon AI", page_icon="📊", layout="wide", initial_sidebar_state="expanded")
 
@@ -34,6 +34,52 @@ hr {border: none; border-top: 1px solid #1a1f38; margin: 24px 0;}
 """, unsafe_allow_html=True)
 
 BACKEND_API_URL = os.getenv("BACKEND_API_URL", "http://localhost:8000")
+
+# ===================  BENCHMARKS CONSTANT  ===================
+BENCHMARKS = {
+    "revenue": {
+        "industry_avg": 1500000,
+        "top_25_percent": 3000000,
+        "small_business_avg": 500000,
+        "saas_avg": 2000000,
+        "ecommerce_avg": 1200000
+    },
+    "churn_rate": {
+        "industry_avg": 5.0,
+        "top_25_percent": 2.0,
+        "saas_avg": 5.0,
+        "ecommerce_avg": 15.0,
+        "b2b_avg": 3.0
+    },
+    "cac_payback_period": {
+        "industry_avg": 12,
+        "top_25_percent": 6,
+        "saas_avg": 12,
+        "ecommerce_avg": 3,
+        "b2b_avg": 18
+    },
+    "ltv_cac_ratio": {
+        "industry_avg": 3.0,
+        "top_25_percent": 5.0,
+        "saas_avg": 3.0,
+        "ecommerce_avg": 2.5,
+        "b2b_avg": 4.0
+    },
+    "conversion_rate": {
+        "industry_avg": 2.5,
+        "top_25_percent": 5.0,
+        "ecommerce_avg": 2.0,
+        "saas_avg": 3.0,
+        "b2b_avg": 1.5
+    },
+    "customer_acquisition_cost": {
+        "industry_avg": 250,
+        "top_25_percent": 100,
+        "saas_avg": 300,
+        "ecommerce_avg": 50,
+        "b2b_avg": 500
+    }
+}
 
 # Initialize session state
 if 'uploaded_data' not in st.session_state:
@@ -70,23 +116,16 @@ def calculate_kpis_from_data():
             'churn_delta': "↓ 0.3%",
             'data_source': 'demo'
         }
-    
     try:
         df = st.session_state.uploaded_data
-        
-        # Calculate metrics from uploaded data
         revenue = df['value'].sum() if 'value' in df.columns else DEMO_REVENUE
         revenue_formatted = f"${revenue/1e6:.1f}M" if revenue >= 1e6 else f"${revenue/1e3:.1f}K"
-        
         customers = len(df) if 'customer_id' in df.columns else int(df['value'].sum() / 50000) or 1000
         customers_formatted = f"{customers:,}"
-        
         cac = (df['value'].sum() / len(df)) if len(df) > 0 else DEMO_CAC
         cac_formatted = f"${cac:,.0f}"
-        
         churn = (df['value'].std() / df['value'].mean() * 100) if df['value'].mean() > 0 else DEMO_CHURN
         churn_formatted = f"{churn:.1f}%"
-        
         return {
             'revenue': revenue,
             'revenue_formatted': revenue_formatted,
@@ -119,7 +158,7 @@ def calculate_kpis_from_data():
             'churn_delta': "↓ 0.3%",
             'data_source': 'demo'
         }
-
+        
 def get_data_source_badge():
     """Return HTML badge showing data source (Demo or Uploaded)."""
     if st.session_state.data_source == 'uploaded':
@@ -181,7 +220,8 @@ def generate_ai_insights(kpis):
     return insights if insights else ["📊 Upload your data to see AI-powered insights!"]
 
 # Sidebar
-st.sidebar.markdown('<div class="sidebar-header"><h2>ECHOLON</h2><p>AI powered business intelligence</p></div>', unsafe_allow_html=True)
+st.sidebar.markdown('<div class="sidebar-header"><h2>ECHOLON</h2></div>', unsafe_allow_html=True)
+st.sidebar.markdown('<p style="color: #888; font-size: 12px;">AI powered business intelligence</p>', unsafe_allow_html=True)
 st.sidebar.markdown("---")
 st.sidebar.markdown('<div class="sidebar-section">Navigation</div>', unsafe_allow_html=True)
 
@@ -212,31 +252,29 @@ with col2:
 # Show onboarding if needed
 if st.session_state.uploaded_data is None and page == "Home":
     show_personalized_onboarding()
-
+    
 # =================== PAGE: HOME ===================
 if page == "Home":
     render_page_header("Dashboard Overview", "Your key business metrics at a glance.")
     render_last_updated()
     st.markdown(get_data_source_badge(), unsafe_allow_html=True)
     st.markdown("---")
-    
     st.subheader("Key Performance Indicators")
     kpis = calculate_kpis_from_data()
     
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        render_kpi_card("💵", "Total Revenue", kpis['revenue_formatted'], kpis['revenue_delta'], "Total revenue from dataset")
+        render_kpi_with_benchmark("💵", "Total Revenue", kpis['revenue_formatted'], kpis['revenue_delta'], BENCHMARKS["revenue"]["industry_avg"], BENCHMARKS["revenue"]["top_25_percent"], "Revenue vs industry benchmarks")
     with c2:
-        render_kpi_card("👥", "Active Customers", kpis['customers_formatted'], kpis['customers_delta'], "Number of active customers")
+        render_kpi_with_benchmark("👥", "Active Customers", kpis['customers_formatted'], kpis['customers_delta'], 5000, 10000, "Total active customers")
     with c3:
-        render_kpi_card("💰", "CAC", kpis['cac_formatted'], kpis['cac_delta'], "Cost to acquire customer")
+        render_kpi_with_benchmark("💰", "CAC", kpis['cac_formatted'], kpis['cac_delta'], BENCHMARKS["customer_acquisition_cost"]["industry_avg"], BENCHMARKS["customer_acquisition_cost"]["top_25_percent"], "Lower is better")
     with c4:
-        render_kpi_card("📉", "Churn Rate", kpis['churn_formatted'], kpis['churn_delta'], "Customer churn rate")
+        render_kpi_with_benchmark("📉", "Churn Rate", kpis['churn_formatted'], kpis['churn_delta'], BENCHMARKS["churn_rate"]["industry_avg"], BENCHMARKS["churn_rate"]["top_25_percent"], "Lower is better")
     
     st.markdown("---")
     st.subheader("Monthly Revenue Trend")
     st.caption("Based on" + (" your uploaded dataset" if kpis['data_source'] == 'uploaded' else " demo dataset"))
-    
     if kpis['data_source'] == 'uploaded' and st.session_state.uploaded_data is not None:
         try:
             df = st.session_state.uploaded_data
@@ -276,34 +314,33 @@ elif page == "Insights":
     render_last_updated()
     st.markdown(get_data_source_badge(), unsafe_allow_html=True)
     st.markdown("---")
-    
     kpis = calculate_kpis_from_data()
+    
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        render_kpi_card("💵", "Revenue", kpis['revenue_formatted'], kpis['revenue_delta'])
+        render_kpi_with_benchmark("💵", "Revenue", kpis['revenue_formatted'], kpis['revenue_delta'], BENCHMARKS["revenue"]["industry_avg"], BENCHMARKS["revenue"]["top_25_percent"])
     with c2:
-        render_kpi_card("👥", "Users", kpis['customers_formatted'], kpis['customers_delta'])
+        render_kpi_with_benchmark("👥", "Users", kpis['customers_formatted'], kpis['customers_delta'], 5000, 10000)
     with c3:
-        render_kpi_card("📊", "Conversion", "3.8%", "+0.5%")
+        render_kpi_with_benchmark("📊", "Conversion", "3.8%", "+0.5%", BENCHMARKS["conversion_rate"]["industry_avg"], BENCHMARKS["conversion_rate"]["top_25_percent"])
     with c4:
-        render_kpi_card("💳", "Avg Order", "$285", "-2.1%")
+        render_kpi_with_benchmark("💳", "Avg Order", "$285", "-2.1%", 200, 400)
     
     st.markdown("---")
     with st.spinner("Analyzing your data..."):
         time.sleep(0.5)
+    
     st.markdown("### Key Insights")
-    ai_insights = generate_ai_insights(kpis)
+    ai_insights = generate_actionable_insights(kpis)
     for insight in ai_insights:
-        st.markdown(f"- {insight}")
-            
-
+        display_actionable_insight(insight)
+        
 # PAGE: PREDICTIONS
 elif page == "Predictions":
     render_page_header("AI Predictions", "Forecast future trends.")
     render_last_updated()
     st.markdown(get_data_source_badge(), unsafe_allow_html=True)
     st.markdown("---")
-    
     c1, c2 = st.columns(2)
     with c1:
         metric = st.selectbox("Select Metric", ["Revenue", "Churn", "Growth"])
@@ -314,7 +351,6 @@ elif page == "Predictions":
         with st.spinner("Building forecast model..."):
             time.sleep(1)
         st.success("Predictions updated")
-        
         dates = pd.date_range(start='2024-01-01', periods=12, freq='M')
         historical = np.random.normal(100000, 15000, 12)
         forecast = np.random.normal(105000, 12000, 12)
@@ -328,25 +364,24 @@ elif page == "Inventory":
     render_last_updated()
     st.markdown(get_data_source_badge(), unsafe_allow_html=True)
     st.markdown("---")
-    
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        render_kpi_card("📦", "Stock Level", "8,450", "-3.2%")
+        render_kpi_card("📦", "Stock Level", "8,450", "-3.2%", "")
     with c2:
-        render_kpi_card("🔄", "Turnover", "12.4x", "+2.1x")
+        render_kpi_card("🔄", "Turnover", "12.4x", "+2.1x", "")
     with c3:
-        render_kpi_card("💵", "Annual Cost", "$145K", "-$22K")
+        render_kpi_card("💵", "Annual Cost", "$145K", "-$22K", "")
     with c4:
-        render_kpi_card("⚠", "Stockout Risk", "4.2%", "-1.8%")
+        render_kpi_card("⚠", "Stockout Risk", "4.2%", "-1.8%", "")
 
 # PAGE: WHAT-IF
 elif page == "What-If":
     render_page_header("What-If Scenario Planner", "Test different business scenarios.")
     render_last_updated()
     st.markdown("---")
-    
     baseline = st.session_state.baseline
     col_left, col_right = st.columns(2)
+    
     with col_left:
         st.subheader("Scenario Inputs")
         rev = st.number_input("Monthly Revenue ($)", min_value=0, value=baseline["revenue"], step=5000)
@@ -354,19 +389,19 @@ elif page == "What-If":
         churn = st.slider("Monthly Churn Rate (%)", min_value=0.0, max_value=50.0, value=baseline["churn"]*100, step=0.5) / 100
         growth = st.slider("Customer Growth Rate (%)", min_value=0.0, max_value=50.0, value=baseline["growth"]*100, step=0.5) / 100
         run_btn = st.button("Run Scenario", type="primary", use_container_width=True)
-        if run_btn:
-            st.session_state.last_updated = datetime.now()
     
-    with col_right:
-        st.subheader("Scenario Results")
-        profit_margin = 0.25 - (mkt / max(rev, 1)) * 0.15
-        profit_margin = max(min(profit_margin, 0.6), -0.3)
-        profit = rev * profit_margin
-        customers = 1000 * (1 + growth - churn)
-        st.metric("Revenue", f"${rev:,}", delta=f"${rev - baseline['revenue']:,}")
-        st.metric("Estimated Profit", f"${profit:,.0f}")
-        st.metric("Active Customers", f"{customers:,.0f}")
-        st.metric("Churn Rate", f"{churn*100:.1f}%")
+    if run_btn:
+        st.session_state.last_updated = datetime.now()
+        with col_right:
+            st.subheader("Scenario Results")
+            profit_margin = 0.25 - (mkt / max(rev, 1)) * 0.15
+            profit_margin = max(min(profit_margin, 0.6), -0.3)
+            profit = rev * profit_margin
+            customers = 1000 * (1 + growth - churn)
+            st.metric("Revenue", f"${rev:,}", delta=f"${rev - baseline['revenue']:,}")
+            st.metric("Estimated Profit", f"${profit:,.0f}")
+            st.metric("Active Customers", f"{customers:,.0f}")
+            st.metric("Churn Rate", f"{churn*100:.1f}%")
 
 # PAGE: RECOMMENDATIONS
 elif page == "Recommendations":
@@ -375,36 +410,122 @@ elif page == "Recommendations":
     st.markdown("---")
     
     tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
+    
     with tabs[0]:
-        st.markdown("#### Growth Strategies")
-        st.markdown("- Expand to adjacent markets")
-        st.markdown("- Test pricing tiers")
-        st.markdown("- Launch targeted campaigns")
+        st.markdown("## Growth Strategies")
+        show_tactical_recommendation(
+            title="Market Expansion",
+            action="Launch targeted campaigns in 2 adjacent markets + test pricing tier",
+            roi="3-5x ROI in 6 months",
+            time="4-6 weeks",
+            priority="HIGH",
+            why="Your CAC is low and unit economics strong. Time to scale acquisition."
+        )
+        show_tactical_recommendation(
+            title="Product Expansion",
+            action="Launch premium tier with advanced features + support",
+            roi="30% revenue increase",
+            time="8-10 weeks",
+            priority="HIGH",
+            why="Your top customers show strong willingness to pay for premium features."
+        )
+        show_tactical_recommendation(
+            title="Partnership Strategy",
+            action="Identify 3 complementary products for co-marketing deals",
+            roi="2-3x ROI",
+            time="2-3 weeks",
+            priority="MEDIUM",
+            why="Low-cost way to reach new audiences through trusted partners."
+        )
+    
     with tabs[1]:
-        st.markdown("#### Retention Tactics")
-        st.markdown("- Improve customer onboarding")
-        st.markdown("- Build community forums")
-        st.markdown("- Implement loyalty rewards")
+        st.markdown("## Retention Tactics")
+        show_tactical_recommendation(
+            title="Improve Onboarding",
+            action="Create 5-email onboarding sequence + video walkthroughs",
+            roi="Reduce churn by 20-30%",
+            time="2 weeks",
+            priority="HIGH",
+            why="Strong onboarding is the #1 predictor of retention. Your churn suggests gaps here."
+        )
+        show_tactical_recommendation(
+            title="Build Community",
+            action="Launch Slack community for customers + monthly webinars",
+            roi="10-15% churn reduction",
+            time="4 weeks",
+            priority="MEDIUM",
+            why="Community creates switching costs and increases engagement."
+        )
+        show_tactical_recommendation(
+            title="Loyalty Rewards",
+            action="Implement referral program (20% discount) + rewards tier",
+            roi="5-10% churn reduction",
+            time="1 week",
+            priority="MEDIUM",
+            why="Incentivize long-term commitments and turn customers into advocates."
+        )
+    
     with tabs[2]:
-        st.markdown("#### Cost Optimization")
-        st.markdown("- Automate workflows")
-        st.markdown("- Reduce inventory waste")
-        st.markdown("- Renegotiate vendor contracts")
+        st.markdown("## Efficiency & Cost Optimization")
+        show_tactical_recommendation(
+            title="Automate Customer Success",
+            action="Implement NPS surveys + auto-triggered help content",
+            roi="Reduce support cost by 15-20%",
+            time="3 weeks",
+            priority="HIGH",
+            why="Proactive support reduces churn AND support overhead."
+        )
+        show_tactical_recommendation(
+            title="Operational Efficiency",
+            action="Audit vendor costs + renegotiate top 5 contracts",
+            roi="$50K-$100K annual savings",
+            time="2 weeks",
+            priority="MEDIUM",
+            why="Many vendors offer discounts for longer terms or higher volume."
+        )
+        show_tactical_recommendation(
+            title="Inventory Optimization",
+            action="Implement demand forecasting + reduce SKU count by 20%",
+            roi="$30K-$50K working capital freed up",
+            time="6 weeks",
+            priority="MEDIUM",
+            why="Reduce carrying costs and improve cash flow without affecting revenue."
+        )
+    
     with tabs[3]:
-        st.markdown("#### Innovation Ideas")
-        st.markdown("- Launch new product lines")
-        st.markdown("- Invest in AI tools")
-        st.markdown("- Form strategic partnerships")
+        st.markdown("## Innovation & New Products")
+        show_tactical_recommendation(
+            title="AI-Powered Features",
+            action="Add AI recommendations to your product (can use existing APIs)",
+            roi="Increase ARPU by 25-40%",
+            time="4-6 weeks",
+            priority="HIGH",
+            why="Customers love AI. It's differentiating and commands premium pricing."
+        )
+        show_tactical_recommendation(
+            title="Mobile App",
+            action="Launch iOS app with core features (MVP approach)",
+            roi="Increase engagement + reduce churn by 15%",
+            time="8-12 weeks",
+            priority="MEDIUM",
+            why="Mobile is now table stakes. Even basic app increases stickiness."
+        )
+        show_tactical_recommendation(
+            title="Adjacent Vertical",
+            action="Research + pilot 1 adjacent market segment",
+            roi="Potential $500K+ annual revenue",
+            time="12 weeks",
+            priority="LOW",
+            why="Reduce concentration risk + diversify revenue streams."
+        )
 
-
-
-
+# PAGE: UPLOAD
 if page == "Upload":
     render_page_header("Import Your Data", "Upload CSV data to analyze your business metrics.")
     st.markdown("---")
     st.info("Required columns: 'date' and 'value' for analysis.")
-    
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+    
     if uploaded_file:
         try:
             df = pd.read_csv(uploaded_file)
