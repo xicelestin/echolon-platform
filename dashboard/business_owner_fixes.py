@@ -157,51 +157,45 @@ def personalize_insights(df):
     return insights
 
 
-def show_tactical_recommendation(title, why_now, options, your_recommendation):
-    """Display a tactical, specific recommendation (not generic advice).
+def show_tactical_recommendation(title, action, roi, time, priority, why):
+    """Display tactical recommendation using Streamlit components"""
+    import streamlit as st
     
-    Example:
-        show_tactical_recommendation(
-            title="Market Expansion",
-            why_now="Your market is saturated (3.8% conversion = market avg)",
-            options=[
-                {
-                    'name': 'Dallas',
-                    'budget': '$5k',
-                    'timeline': '8 weeks',
-                    'revenue': '+$60k/month',
-                    'roi': '12x'
-                },
-                {...}
-            ],
-            your_recommendation="Dallas (best ROI + market size)"
-        )
-    """
-    st.markdown(f"""
-    ## {title}
+    # Priority badge colors and emojis
+    priority_config = {
+        "HIGH": {"emoji": "🔥", "color": "red"},
+        "MEDIUM": {"emoji": "⚡", "color": "orange"},
+        "LOW": {"emoji": "💡", "color": "blue"}
+    }
     
-    **Why now?**
-    {why_now}
+    config = priority_config.get(priority, priority_config["LOW"])
     
-    ### Your Options (Pick 1):
-    """)
-    
-    for i, option in enumerate(options, 1):
-        cols = st.columns([2, 1, 1, 1, 1])
-        with cols[0]:
-            st.markdown(f"**{i}. {option['name']}**")
-        with cols[1]:
-            st.caption(f"Budget: {option['budget']}")
-        with cols[2]:
-            st.caption(f"Timeline: {option['timeline']}")
-        with cols[3]:
-            st.caption(f"Revenue: {option['revenue']}")
-        with cols[4]:
-            st.caption(f"ROI: {option['roi']}")
+    # Create container with border
+    with st.container():
+        # Title with priority badge
+        st.markdown(f"### {config['emoji']} {title}")
+        
+        # Priority badge
+        if priority == "HIGH":
+            st.error(f"🔥 {priority} PRIORITY")
+        elif priority == "MEDIUM":
+            st.warning(f"⚡ {priority} PRIORITY")
+        else:
+            st.info(f"💡 {priority} PRIORITY")
+        
+        # Create columns for key info
+        col1, col2, col3 = st.columns([2, 1, 1])
+        
+        with col1:
+            st.markdown(f"**✅ Action:** {action}")
+        with col2:
+            st.markdown(f"**💰 Expected ROI:** {roi}")
+        with col3:
+            st.markdown(f"**⏱️ Time Investment:** {time}")
+        
+        # Why it matters section
+        st.info(f"**💡 Why this matters:** {why}")
         st.divider()
-    
-    st.markdown(f"""\n💡 **My Recommendation:** {your_recommendation}""")
-
 
 def render_what_if_presets():
     """Show quick preset scenarios instead of blank sliders."""
