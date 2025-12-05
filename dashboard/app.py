@@ -529,18 +529,18 @@ elif page == "Profile":
  st.subheader("📋 Company Information")
  col1, col2 = st.columns(2)
  with col1:
-                company_name = st.text_input("Company Name", value=st.session_state.get('profile', {}).get('company_name', ''))         industry = st.selectbox("Industry", ["Select an industry...", "SaaS", "E-Commerce", "Professional Services", "Retail", "Healthcare", "Manufacturing", "Finance", "Education", "Other"], key="industry_select")
+                    company_name = st.text_input("Company Name", value=st.session_state.get('profile', {}).get('company_name', ''))         industry = st.selectbox("Industry", ["Select an industry...", "SaaS", "E-Commerce", "Professional Services", "Retail", "Healthcare", "Manufacturing", "Finance", "Education", "Other"], key="industry_select")
  with col2:
-                founded_year = st.number_input("Founded Year", min_value=1900, max_value=2025, value=st.session_state.get('profile', {}).get('founded_year', 2020), key="founded_year_input")         team_size = st.selectbox("Team Size", ["Select team size...", "1-10", "11-50", "51-200", "201-500", "500+"], key="team_size_select")
+                    founded_year = st.number_input("Founded Year", min_value=1900, max_value=2025, value=st.session_state.get('profile', {}).get('founded_year', 2020), key="founded_year_input")         team_size = st.selectbox("Team Size", ["Select team size...", "1-10", "11-50", "51-200", "201-500", "500+"], key="team_size_select")
  
  st.markdown("### 🎯 Business Metrics")
  col1, col2, col3 = st.columns(3)
  with col1:
-                 annual_revenue = st.number_input("Annual Revenue ($)", min_value=0, step=10000, value=st.session_state.get('profile', {}).get('annual_revenue', 0), key="annual_rev_input")
+                     annual_revenue = st.number_input("Annual Revenue ($)", min_value=0, step=10000, value=st.session_state.get('profile', {}).get('annual_revenue', 0), key="annual_rev_input")
  with col2:
-                 customer_count = st.number_input("Total Customers", min_value=0, step=10, value=st.session_state.get('profile', {}).get('customer_count', 0), key="customer_count_input")
+                     customer_count = st.number_input("Total Customers", min_value=0, step=10, value=st.session_state.get('profile', {}).get('customer_count', 0), key="customer_count_input")
  with col3:
-                 monthly_churn = st.slider("Average Monthly Churn (%)", min_value=0.0, max_value=50.0, value=st.session_state.get('profile', {}).get('monthly_churn', 5.0), step=0.5, key="churn_slider")
+                     monthly_churn = st.slider("Average Monthly Churn (%)", min_value=0.0, max_value=50.0, value=st.session_state.get('profile', {}).get('monthly_churn', 5.0), step=0.5, key="churn_slider")
  
  st.markdown("### 📝 Company Description")
  company_desc = st.text_area("What does your company do?", value=st.session_state.get('profile', {}).get('company_description', ''), height=100, placeholder="Briefly describe your products/services and target market...", key="company_desc_area")
