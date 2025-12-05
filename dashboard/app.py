@@ -9,6 +9,7 @@ import time
 from business_owner_fixes import (show_personalized_onboarding, render_kpi_with_context, personalize_insights, show_tactical_recommendation, render_what_if_presets, get_health_badge, render_kpi_with_benchmark, generate_actionable_insights, display_actionable_insight, get_priority_score)
 st.set_page_config(page_title="Echolon AI", page_icon="📊", layout="wide", initial_sidebar_state="expanded")
 
+# Force redeploy
 # CUSTOM CSS
 st.markdown("""
 <style>
