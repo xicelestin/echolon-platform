@@ -528,63 +528,7 @@ elif page == "Profile":
  
  st.subheader("📋 Company Information")
  col1, col2 = st.columns(2)
- with col1:
+     with col1:
         company_name = st.text_input("🏢 Company Name", value=st.session_state.get('profile', {}).get('company_name', ''))
-             industry = st.selectbox("🏭 Industry", ["Technology", "Healthcare", "Finance", "E-Commerce", "Professional Services", "Retail", "Manufacturing", "Education", "Other"], key="industry_select")
- with col2:
-                    founded_year = st.number_input("Founded Year", min_value=1900, max_value=2025, value=st.session_state.get('profile', {}).get('founded_year', 2020), key="founded_year_input")         team_size = st.selectbox("Team Size", ["Select team size...", "1-10", "11-50", "51-200", "201-500", "500+"], key="team_size_select")
- 
- st.markdown("### 🎯 Business Metrics")
- col1, col2, col3 = st.columns(3)
- with col1:
-                     annual_revenue = st.number_input("Annual Revenue ($)", min_value=0, step=10000, value=st.session_state.get('profile', {}).get('annual_revenue', 0), key="annual_rev_input")
- with col2:
-                     customer_count = st.number_input("Total Customers", min_value=0, step=10, value=st.session_state.get('profile', {}).get('customer_count', 0), key="customer_count_input")
- with col3:
-                     monthly_churn = st.slider("Average Monthly Churn (%)", min_value=0.0, max_value=50.0, value=st.session_state.get('profile', {}).get('monthly_churn', 5.0), step=0.5, key="churn_slider")
- 
- st.markdown("### 📝 Company Description")
- company_desc = st.text_area("What does your company do?", value=st.session_state.get('profile', {}).get('company_description', ''), height=100, placeholder="Briefly describe your products/services and target market...", key="company_desc_area")
- 
- st.markdown("### 🎯 Business Goals")
- goals = st.multiselect("What are your top priorities? (Select up to 3)", ["Growth", "Profitability", "Retention", "Efficiency", "Innovation", "Market Expansion"], default=st.session_state.get('profile', {}).get('goals', []), max_selections=3, key="goals_multi")
- 
- st.markdown("### 💡 Challenges")
- challenges = st.multiselect("What are your biggest challenges?", ["High CAC", "Churn", "Low conversion", "Scaling costs", "Product development", "Team retention"], default=st.session_state.get('profile', {}).get('challenges', []), key="challenges_multi")
- 
- col1, col2 = st.columns(2)
- with col1:
- if st.button("💾 Save Profile", use_container_width=True, type="primary"):
- st.session_state['profile'] = {'company_name': company_name, 'industry': industry, 'founded_year': founded_year, 'team_size': team_size, 'annual_revenue': annual_revenue, 'customer_count': customer_count, 'monthly_churn': monthly_churn, 'company_description': company_desc, 'goals': goals, 'challenges': challenges}
- st.session_state.last_updated = datetime.now()
- st.success("✅ Profile saved! AI insights will now be customized to your business.")
- with col2:
- if st.button("📊 View Demo Profile", use_container_width=True):
- st.info("**Demo Profile Example:** SaaS startup with $2.4M revenue, 8,432 customers, 2.3% churn. Focus: Growth & Profitability.")
- 
- st.markdown("---")
- if st.session_state.get('profile', {}).get('company_name'):
- profile = st.session_state['profile']
- st.info(f"📌 **Current Profile:** {profile['company_name']} | {profile['industry']} | {profile['team_size']}")
-
-if page == "Upload":
-    render_page_header("532" \
-    " Your Data", "Upload CSV data to analyze your business metrics.")
-    st.markdown("---")
-    st.info("Required columns: 'date' and 'value' for analysis.")
-    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
-    
-    if uploaded_file:
-        try:
-            df = pd.read_csv(uploaded_file)
-            if 'date' not in df.columns or 'value' not in df.columns:
-                st.error("Missing required columns. Your CSV must include 'date' and 'value' columns.")
-            else:
-                st.session_state.uploaded_data = df
-                st.session_state.data_source = 'uploaded'
-                st.session_state.last_updated = datetime.now()
-                st.success(f"Data loaded successfully! Analyzing {df.shape[0]:,} rows and {df.shape[1]} columns.")
-                st.subheader("Data Preview")
-                st.dataframe(df.head(10), use_container_width=True)
-        except Exception as e:
-            st.error(f"Could not process your file. Error: {str(e)}")
+        industry = st.selectbox("🏭 Industry", ["Technology", "Healthcare", "Finance", "E-Commerce", "Professional Services", "Retail", "Manufacturing", "Education", "Other"], key="industry_select")
+    with col2:
