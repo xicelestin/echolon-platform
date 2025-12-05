@@ -529,7 +529,7 @@ elif page == "Profile":
  st.subheader("📋 Company Information")
  col1, col2 = st.columns(2)
         # Profile form columns
-     with col1:
+    with col1:
         company_name = st.text_input("🏢 Company Name", value=st.session_state.get('profile', {}).get('company_name', ''))
         industry = st.selectbox("🏭 Industry", ["Technology", "Healthcare", "Finance", "E-Commerce", "Professional Services", "Retail", "Manufacturing", "Education", "Other"], key="industry_select")
     with col2:
