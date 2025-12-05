@@ -1,3 +1,4 @@
+:532
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -530,7 +531,7 @@ elif page == "Profile":
  col1, col2 = st.columns(2)
  with col1:
                     company_name = st.text_input("Company Name", value=st.session_state.get('profile', {}).get('company_name', ''))  
-     industry = st.selectbox("Industry", ["Select an industry...", "SaaS", "E-Commerce", "Professional Services", "Retail", "Healthcare", "Manufacturing", "Finance", "Education", "Other"], key="industry_select")
+             industry = st.selectbox("Industry", ["Select an industry...", "SaaS", "E-Commerce", "Professional Services", "Retail", "Healthcare", "Manufacturing", "Finance", "Education", "Other"], key="industry_select")
  with col2:
                     founded_year = st.number_input("Founded Year", min_value=1900, max_value=2025, value=st.session_state.get('profile', {}).get('founded_year', 2020), key="founded_year_input")         team_size = st.selectbox("Team Size", ["Select team size...", "1-10", "11-50", "51-200", "201-500", "500+"], key="team_size_select")
  
