@@ -538,7 +538,7 @@ elif page == "Profile":
  col1, col2, col3 = st.columns(3)
  with col1:
      annual_revenue = st.number_input("Annual Revenue ($)", min_value=0, step=10000, value=st.session_state.get('profile', {}).get('annual_revenue', 0), key="annual_rev_input")
-     with col2:
+      col2:
      customer_count  = st.number_input("Total Customers", min_value=0, step=10, value=st.session_state.get('profile', {}).get('', 0), key="customer_count_input")
      with col3:
      monthly_churn = st.slider("Average Monthly Churn (%)", min_value=0.0, max_value=50.0, value=st.session_state.get('profile', {}).get('monthly_churn', 5.0), step=0.5, key="churn_slider")
