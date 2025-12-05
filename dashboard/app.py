@@ -524,11 +524,19 @@ elif page == "Recommendations":
 elif page == "Profile":
  render_page_header("👤 Company Profile", "Tell us about your business so we can customize AI insights.")
  render_last_updated()
- st.markdown("---")
- 
+# PAGE: PROFILE
+elif page == "Profile":
+    render_page_header("👤 Company Profile", "Tell us about your business so we can customize AI insights.")
+    render_last_updated()
+    st.markdown("---")
+    
     st.subheader("📋 Company Information")
     col1, col2 = st.columns(2)
     with col1:
         company_name = st.text_input("🏢 Company Name", value=st.session_state.get('profile', {}).get('company_name', ''))
         industry = st.selectbox("🏭 Industry", ["Technology", "Healthcare", "Finance", "E-Commerce", "Professional Services", "Retail", "Manufacturing", "Education", "Other"], key="industry_select")
     with col2:
+        annual_revenue = st.number_input("💵 Annual Revenue ($)", min_value=0, value=st.session_state.get('profile', {}).get('annual_revenue', 0), step=100000)
+        employee_count = st.number_input("👥 Employee Count", min_value=1, value=st.session_state.get('profile', {}).get('employee_count', 10), step=1)
+
+# PAGE: UPLOAD
