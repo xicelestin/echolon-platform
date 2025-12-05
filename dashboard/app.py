@@ -526,9 +526,8 @@ elif page == "Profile":
  render_last_updated()
  st.markdown("---")
  
- st.subheader("📋 Company Information")
- col1, col2 = st.columns(2)
-        # Profile form columns
+    st.subheader("📋 Company Information")
+    col1, col2 = st.columns(2)
     with col1:
         company_name = st.text_input("🏢 Company Name", value=st.session_state.get('profile', {}).get('company_name', ''))
         industry = st.selectbox("🏭 Industry", ["Technology", "Healthcare", "Finance", "E-Commerce", "Professional Services", "Retail", "Manufacturing", "Education", "Other"], key="industry_select")
