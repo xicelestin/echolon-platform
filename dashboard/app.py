@@ -540,3 +540,7 @@ elif page == "Profile":
         employee_count = st.number_input("👥 Employee Count", min_value=1, value=st.session_state.get('profile', {}).get('employee_count', 10), step=1)
 
 # PAGE: UPLOAD
+
+elif page == "Upload":
+    from pages_upload_enhanced import render_enhanced_upload
+    render_enhanced_upload()
