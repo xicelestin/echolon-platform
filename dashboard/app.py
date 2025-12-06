@@ -432,8 +432,7 @@ elif page == "What-If":
         
         # Display insights
         for insight in insights:
-            436
-            
+        st.markdown(insight)            
 
 # PAGE: RECOMMENDATIONS
 elif page == "Recommendations":
