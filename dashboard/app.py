@@ -361,7 +361,7 @@ elif page == "Predictions":
 elif page == "Inventory":
     from pages_inventory_ops import render_inventory_page
     render_inventory_page()
-# 434
+# PAGE: WHAT-IF
 
 elif page == "What-If":
     render_page_header("What-If Scenario Planner", "Test different business scenarios.")
