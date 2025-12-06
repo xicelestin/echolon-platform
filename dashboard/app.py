@@ -432,8 +432,7 @@ elif page == "What-If":
         
         # Display insights
         for insight in insights:
-            st.markdown(insight)
-# PAGE: RECOMMENDATIONS
+        st.markdown(insight)# PAGE: RECOMMENDATIONS
 elif page == "Recommendations":
         render_page_header("AI Recommendations", "Data-driven suggestions for your business.")
     render_last_updated()
