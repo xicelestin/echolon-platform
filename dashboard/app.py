@@ -235,7 +235,7 @@ st.sidebar.markdown('<div class="sidebar-section">System Status</div>', unsafe_a
 
 col1, col2 = st.sidebar.columns(2)
 with col1:
-    if st.button("Test Connection", width='streamlit'):
+    if st.button("Test Connection", use_container_width=True):
         try:
             requests.get(f"{BACKEND_API_URL}/health", timeout=5)
             st.sidebar.success("Backend online")
@@ -279,20 +279,20 @@ if page == "Home":
             df = st.session_state.uploaded_data
             if 'date' in df.columns and 'value' in df.columns:
                 df_sorted = df.sort_values('date')
-                st.line_chart(df_sorted.set_index('date')['value'], width='streamlit', height=300)
+                st.line_chart(df_sorted.set_index('date')['value'], use_container_width=True, height=300)
             else:
-                st.line_chart(DEMO_TREND, width='streamlit', height=300)
+                st.line_chart(DEMO_TREND, use_container_width=True, height=300)
         except:
-            st.line_chart(DEMO_TREND, width='streamlit', height=300)
+            st.line_chart(DEMO_TREND, use_container_width=True, height=300)
     else:
-        st.line_chart(DEMO_TREND, width='streamlit', height=300)
+        st.line_chart(DEMO_TREND, use_container_width=True, height=300)
     
     st.markdown("---")
     c1, c2 = st.columns(2)
     with c1:
         st.subheader("Sales Distribution")
         fig = px.pie(values=[45,25,20,10], names=['SaaS','Support','Services','Other'])
-        st.plotly_chart(fig, width='streamlit')
+        st.plotly_chart(fig, use_container_width=True)
     with c2:
         st.subheader("Key Metrics")
         st.markdown(f"**Total Customers**: {kpis['customers_formatted']}\n\n**Active Subscriptions**: {int(kpis['customers'] * 0.7):,}\n\n**MRR**: ${kpis['revenue'] / 12 / 1000:.0f}K\n\n**LTV**: ${kpis['revenue'] / kpis['customers'] if kpis['customers'] > 0 else 0:,.0f}")
@@ -346,7 +346,7 @@ elif page == "Predictions":
     with c2:
         horizon = st.selectbox("Forecast Window", ["1 Month", "3 Months", "6 Months", "12 Months"])
     
-    if st.button("Generate Predictions", type="primary", width='streamlit'):
+    if st.button("Generate Predictions", type="primary", use_container_width=True):
         with st.spinner("Building forecast model..."):
             time.sleep(1)
         st.success("Predictions updated")
@@ -355,7 +355,7 @@ elif page == "Predictions":
         forecast = np.random.normal(105000, 12000, 12)
         fig = px.line(x=dates, y=forecast, title=f'{metric} Forecast')
         fig.add_scatter(x=dates, y=historical, name='Historical', mode='lines')
-        st.plotly_chart(fig, width='streamlit')
+        st.plotly_chart(fig, use_container_width=True)
 
 # PAGE: INVENTORY
 elif page == "Inventory":
@@ -387,7 +387,7 @@ elif page == "What-If":
         mkt = st.number_input("Marketing Spend ($)", min_value=0, value=baseline["marketing"], step=1000)
         churn = st.slider("Monthly Churn Rate (%)", min_value=0.0, max_value=50.0, value=baseline["churn"]*100, step=0.5) / 100
         growth = st.slider("Customer Growth Rate (%)", min_value=0.0, max_value=50.0, value=baseline["growth"]*100, step=0.5) / 100
-        run_btn = st.button("Run Scenario", type="primary", width='streamlit')
+        run_btn = st.button("Run Scenario", type="primary", use_container_width=True)
     
     if run_btn:
         st.session_state.last_updated = datetime.now()
