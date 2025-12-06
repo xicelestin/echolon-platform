@@ -521,7 +521,7 @@ elif page == "Recommendations":
 # PAGE: UPLOAD
 
 # PAGE: PROFILE
-elif page == "Profile":
+elif False:  # page == "Profile" - DISABLED DUE TO SYNTAX ERRORS
  render_page_header("👤 Company Profile", "Tell us about your business so we can customize AI insights.")
  render_last_updated()
 # PAGE: PROFILE
