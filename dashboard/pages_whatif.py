@@ -6,6 +6,57 @@ import plotly.express as px
 from advanced_components import WhatIfAnalysis
 from enhancement_features import render_scenario_presets, SCENARIO_PRESETS
 
+def generate_scenario_insights(scenarios, revenue_growth, churn_rate, cac_change):
+    """Generate AI-powered insights based on scenario analysis"""
+    insights = []
+    
+    # Revenue analysis
+    expected_rev = scenarios['expected']['revenue']
+    best_rev = scenarios['best_case']['revenue']
+    worst_rev = scenarios['worst_case']['revenue']
+    
+    revenue_range_pct = ((best_rev - worst_rev) / expected_rev) * 100
+    
+    if revenue_growth < 0:
+        insights.append(f"⚠️ **Negative Growth Alert**: Revenue will DROP by {abs(revenue_growth)}% - Your business is contracting. Immediate action required to reverse this trend.")
+    elif revenue_growth < 10:
+        insights.append(f"📊 **Slow Growth**: {revenue_growth}% growth means you're expanding cautiously. Consider accelerating with new channels or products.")
+    elif revenue_growth >= 10 and revenue_growth < 30:
+        insights.append(f"✅ **Healthy Growth**: {revenue_growth}% growth is solid. You're on track - maintain current strategy and optimize execution.")
+    else:
+        insights.append(f"🚀 **Hypergrowth Mode**: {revenue_growth}% growth is exceptional! Ensure operations and team can scale to support this expansion.")
+    
+    # Churn analysis
+    if churn_rate > 7:
+        insights.append(f"🔴 **Critical Churn**: {churn_rate}% monthly churn means you're losing customers faster than you can acquire them. This is unsustainable - implement retention programs NOW.")
+    elif churn_rate > 5:
+        insights.append(f"⚠️ **High Churn Warning**: {churn_rate}% churn is concerning. Each month you lose {churn_rate}% of your customer base - focus on retention before scaling acquisition.")
+    elif churn_rate > 3:
+        insights.append(f"📈 **Moderate Churn**: {churn_rate}% churn is manageable but improvable. Target getting below 3% through better onboarding and customer success.")
+    else:
+        insights.append(f"✅ **Excellent Retention**: {churn_rate}% churn is outstanding! Your product has strong product-market fit - scale confidently.")
+    
+    # CAC impact
+    if cac_change > 20:
+        insights.append(f"💸 **CAC Spike**: Customer acquisition costs rising by {cac_change}% - Your unit economics are deteriorating. Find more efficient channels or improve conversion rates.")
+    elif cac_change > 0:
+        insights.append(f"📊 **CAC Increase**: Acquisition costs up {cac_change}% - Monitor closely. As you scale, efficiency typically improves, but watch for continued increases.")
+    elif cac_change < -15:
+        insights.append(f"💰 **CAC Optimization Win**: You've reduced acquisition costs by {abs(cac_change)}%! This dramatically improves profitability - document what's working.")
+    
+    # Scenario range analysis
+    if revenue_range_pct > 100:
+        insights.append(f"⚡ **High Uncertainty**: Best vs worst case differs by {revenue_range_pct:.0f}% - Your business has high variance. Create contingency plans for downside scenarios.")
+    
+    # Profitability insights
+    months_to_profit = scenarios.get('profitability_months', 12)
+    if months_to_profit > 18:
+        insights.append(f"⏰ **Long Road to Profitability**: Break-even in {months_to_profit:.0f} months means {months_to_profit//12} years+ - Ensure you have sufficient runway and consider faster paths to cash flow positive.")
+    elif months_to_profit <= 6:
+        insights.append(f"🎯 **Quick to Profitability**: Breaking even in {months_to_profit:.0f} months is excellent - You have a capital-efficient model.")
+    
+    return insights
+
 def render_whatif_page():
     """Render What-If Scenario Planner page"""
     
