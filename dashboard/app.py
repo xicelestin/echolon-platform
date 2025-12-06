@@ -434,66 +434,6 @@ elif page == "What-If":
         for insight in insights:
             436
             
-                # Dynamic Change Impact Insight
-                st.markdown("---")
-                st.subheader("💡 Change Impact Analysis")
-                
-                # Store current values for comparison
-                if 'prev_scenario' not in st.session_state:
-                    st.session_state.prev_scenario = {}
-                
-                prev = st.session_state.prev_scenario
-                change_insights = []
-                
-                # Compare with previous scenario if it exists
-                if prev:
-                    # Revenue change
-                    if 'revenue' in prev and rev != prev['revenue']:
-                        rev_diff = ((rev - prev['revenue']) / prev['revenue']) * 100
-                        if rev_diff > 0:
-                            change_insights.append(f"📈 Increasing revenue from ${prev['revenue']:,.0f} to ${rev:,.0f} (+{rev_diff:.1f}%) boosts total revenue significantly.")
-                        else:
-                            change_insights.append(f"📉 Decreasing revenue from ${prev['revenue']:,.0f} to ${rev:,.0f} ({rev_diff:.1f}%) reduces total revenue potential.")
-                    
-                    # Churn change  
-                    if 'churn' in prev and churn != prev['churn']:
-                        churn_diff = churn - prev['churn']
-                        customer_impact = int(1000 * churn_diff)
-                        if churn_diff > 0:
-                            change_insights.append(f"⚠️ Increasing churn rate from {prev['churn']:.1f}% to {churn:.1f}% means you lose ~{abs(customer_impact)} more customers, directly reducing revenue.")
-                        else:
-                            change_insights.append(f"✅ Reducing churn rate from {prev['churn']:.1f}% to {churn:.1f}% retains ~{abs(customer_impact)} more customers, increasing revenue stability.")
-                    
-                    # Growth change
-                    if 'growth' in prev and growth != prev['growth']:
-                        growth_diff = growth - prev['growth']
-                        if growth_diff > 0:
-                            change_insights.append(f"🚀 Boosting growth from {prev['growth']:.1f}% to {growth:.1f}% accelerates customer acquisition and revenue expansion.")
-                        else:
-                            change_insights.append(f"⚡ Lowering growth from {prev['growth']:.1f}% to {growth:.1f}% slows down new customer acquisition.")
-                    
-                    # Marketing spend change
-                    if 'marketing' in prev and mkt != prev['marketing']:
-                        mkt_diff = ((mkt - prev['marketing']) / prev['marketing']) * 100
-                        if mkt_diff > 0:
-                            change_insights.append(f"💰 Increasing marketing spend from ${prev['marketing']:,.0f} to ${mkt:,.0f} (+{mkt_diff:.1f}%) may drive more growth but reduces profit margin.")
-                        else:
-                            change_insights.append(f"💸 Reducing marketing spend from ${prev['marketing']:,.0f} to ${mkt:,.0f} ({mkt_diff:.1f}%) improves profit margins but may slow growth.")
-                
-                # Display change insights
-                if change_insights:
-                    for insight in change_insights:
-                        st.info(insight)
-                else:
-                    st.info("🔄 Adjust the scenario inputs above and run the scenario to see how changes impact your business metrics.")
-                
-                # Update stored values for next comparison
-                st.session_state.prev_scenario = {
-                    'revenue': rev,
-                    'marketing': mkt,
-                    'churn': churn,
-                    'growth': growth
-                }
 
 # PAGE: RECOMMENDATIONS
 elif page == "Recommendations":
