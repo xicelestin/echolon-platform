@@ -359,20 +359,8 @@ elif page == "Predictions":
 
 # PAGE: INVENTORY
 elif page == "Inventory":
-    render_page_header("Inventory Optimization", "Optimize stock levels.")
-    render_last_updated()
-    st.markdown(get_data_source_badge(), unsafe_allow_html=True)
-    st.markdown("---")
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        render_kpi_card("📦", "Stock Level", "8,450", "-3.2%", "")
-    with c2:
-        render_kpi_card("🔄", "Turnover", "12.4x", "+2.1x", "")
-    with c3:
-        render_kpi_card("💵", "Annual Cost", "$145K", "-$22K", "")
-    with c4:
-        render_kpi_card("⚠", "Stockout Risk", "4.2%", "-1.8%", "")
-
+    from pages_inventory_ops import render_inventory_page
+    render_inventory_page()
 # PAGE: WHAT-IF
 elif page == "What-If":
     render_page_header("What-If Scenario Planner", "Test different business scenarios.")
