@@ -361,7 +361,8 @@ elif page == "Predictions":
 elif page == "Inventory":
     from pages_inventory_ops import render_inventory_page
     render_inventory_page()
-# PAGE: WHAT-IF
+# 434
+
 elif page == "What-If":
     render_page_header("What-If Scenario Planner", "Test different business scenarios.")
     render_last_updated()
@@ -389,6 +390,110 @@ elif page == "What-If":
             st.metric("Estimated Profit", f"${profit:,.0f}")
             st.metric("Active Customers", f"{customers:,.0f}")
             st.metric("Churn Rate", f"{churn*100:.1f}%")
+
+        # AI-Powered Insights
+        st.markdown("---")
+        st.subheader("🧠 AI Insights")
+        
+        # Generate insights based on the scenario
+        insights = []
+        
+        # Revenue insight
+        if profit < 0:
+            insights.append(f"⚠️ **Negative Cash Flow**: Revenue of ${rev:,} with {mkt:,} marketing spend puts you at ${profit:,.0f} loss. Cut costs or increase prices immediately.")
+        elif profit < rev * 0.1:
+            insights.append(f"📉 **Thin Margins**: ${profit:,.0f} profit on ${rev:,} revenue ({(profit/rev*100):.1f}% margin). Your unit economics are weak - optimize spending.")
+        else:
+            insights.append(f"✅ **Healthy Profit**: ${profit:,.0f} profit ({(profit/rev*100):.1f}% margin) shows strong fundamentals. Scale confidently.")
+        
+        # Churn insight  
+        if churn > 0.20:
+            insights.append(f"🔴 **Critical Churn**: {churn*100:.1f}% monthly churn is catastrophic - you're losing customers faster than acquiring them. Implement retention programs NOW.")
+        elif churn > 0.10:
+            insights.append(f"⚠️ **High Churn**: {churn*100:.1f}% churn means you lose {int(churn*100)}% of customers monthly. Focus on retention before scaling acquisition.")
+        elif churn > 0.05:
+            insights.append(f"📈 **Moderate Churn**: {churn*100:.1f}% churn is manageable but room for improvement. Target getting below 5%.")
+        else:
+            insights.append(f"✅ **Excellent Retention**: {churn*100:.1f}% churn is outstanding! Strong product-market fit.")
+        
+        # Growth insight
+        if growth < 0:
+            insights.append(f"⚠️ **Negative Growth**: {growth*100:.1f}% shrinkage - your business is contracting. Urgent action needed.")
+        elif growth < 0.05:
+            insights.append(f"🐌 **Slow Growth**: {growth*100:.1f}% growth is too slow. Consider new channels or product improvements.")
+        elif growth > 0.15:
+            insights.append(f"🚀 **Strong Growth**: {growth*100:.1f}% monthly growth is excellent! Ensure operations can scale.")
+        
+        # Customer base insight
+        if customers < 500:
+            insights.append(f"🎯 **Early Stage**: {customers:,.0f} customers - you're still finding product-market fit. Focus on retention over acquisition.")
+        elif customers > 2000:
+            insights.append(f"📈 **Scale Stage**: {customers:,.0f} customers shows market validation. Time to optimize unit economics.")
+        
+        # Display insights
+        for insight in insights:
+            436
+            
+                # Dynamic Change Impact Insight
+                st.markdown("---")
+                st.subheader("💡 Change Impact Analysis")
+                
+                # Store current values for comparison
+                if 'prev_scenario' not in st.session_state:
+                    st.session_state.prev_scenario = {}
+                
+                prev = st.session_state.prev_scenario
+                change_insights = []
+                
+                # Compare with previous scenario if it exists
+                if prev:
+                    # Revenue change
+                    if 'revenue' in prev and rev != prev['revenue']:
+                        rev_diff = ((rev - prev['revenue']) / prev['revenue']) * 100
+                        if rev_diff > 0:
+                            change_insights.append(f"📈 Increasing revenue from ${prev['revenue']:,.0f} to ${rev:,.0f} (+{rev_diff:.1f}%) boosts total revenue significantly.")
+                        else:
+                            change_insights.append(f"📉 Decreasing revenue from ${prev['revenue']:,.0f} to ${rev:,.0f} ({rev_diff:.1f}%) reduces total revenue potential.")
+                    
+                    # Churn change  
+                    if 'churn' in prev and churn != prev['churn']:
+                        churn_diff = churn - prev['churn']
+                        customer_impact = int(1000 * churn_diff)
+                        if churn_diff > 0:
+                            change_insights.append(f"⚠️ Increasing churn rate from {prev['churn']:.1f}% to {churn:.1f}% means you lose ~{abs(customer_impact)} more customers, directly reducing revenue.")
+                        else:
+                            change_insights.append(f"✅ Reducing churn rate from {prev['churn']:.1f}% to {churn:.1f}% retains ~{abs(customer_impact)} more customers, increasing revenue stability.")
+                    
+                    # Growth change
+                    if 'growth' in prev and growth != prev['growth']:
+                        growth_diff = growth - prev['growth']
+                        if growth_diff > 0:
+                            change_insights.append(f"🚀 Boosting growth from {prev['growth']:.1f}% to {growth:.1f}% accelerates customer acquisition and revenue expansion.")
+                        else:
+                            change_insights.append(f"⚡ Lowering growth from {prev['growth']:.1f}% to {growth:.1f}% slows down new customer acquisition.")
+                    
+                    # Marketing spend change
+                    if 'marketing' in prev and mkt != prev['marketing']:
+                        mkt_diff = ((mkt - prev['marketing']) / prev['marketing']) * 100
+                        if mkt_diff > 0:
+                            change_insights.append(f"💰 Increasing marketing spend from ${prev['marketing']:,.0f} to ${mkt:,.0f} (+{mkt_diff:.1f}%) may drive more growth but reduces profit margin.")
+                        else:
+                            change_insights.append(f"💸 Reducing marketing spend from ${prev['marketing']:,.0f} to ${mkt:,.0f} ({mkt_diff:.1f}%) improves profit margins but may slow growth.")
+                
+                # Display change insights
+                if change_insights:
+                    for insight in change_insights:
+                        st.info(insight)
+                else:
+                    st.info("🔄 Adjust the scenario inputs above and run the scenario to see how changes impact your business metrics.")
+                
+                # Update stored values for next comparison
+                st.session_state.prev_scenario = {
+                    'revenue': rev,
+                    'marketing': mkt,
+                    'churn': churn,
+                    'growth': growth
+                }
 
 # PAGE: RECOMMENDATIONS
 elif page == "Recommendations":
