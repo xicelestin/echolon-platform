@@ -254,8 +254,8 @@ if st.session_state.uploaded_data is None and page == "Home":
     
 # =================== PAGE: HOME ===================
 if page == "Home":
-    render_page_header("Dashboard Overview", "Your key business metrics at a glance.")
-    render_last_updated()
+    render_page_header("Dashboard Overview", "AI-powered insights that tell you exactly what to do next to grow revenue") 
+        render_last_updated()
     st.markdown(get_data_source_badge(), unsafe_allow_html=True)
     st.markdown("---")
     st.subheader("Key Performance Indicators")
