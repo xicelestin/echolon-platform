@@ -64,7 +64,6 @@ jobs:
             --memory=1Gi \
             --cpu=1 \
             --timeout=600 \
-                  --no-traffic \
             --max-instances=10
       
       - name: Deployment notification
