@@ -454,8 +454,6 @@ elif page == "Recommendations":
     - **Competitive Insights**: How you compare to industry leaders
     """)
 
- render_page_header("👤 Company Profile", "Tell us about your business so we can customize AI insights.")
- render_last_updated()
 # PAGE: PROFILE
 elif page == "Profile":
     render_page_header("👤 Company Profile", "Tell us about your business so we can customize AI insights.")
