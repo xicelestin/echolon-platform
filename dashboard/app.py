@@ -433,14 +433,13 @@ elif page == "What-If":
         # Display insights
         for insight in insights:
                 st.markdown(insight)        
-elif age == "Recommendations":
+elif page == "Recommendations":
         render_page_header("AI Recommendations", "Data-driven suggestions for your business.")
         render_last_updated()
         st.markdown("---")
 
 
     
-    l446
 tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
     
         with tabs[0]:
