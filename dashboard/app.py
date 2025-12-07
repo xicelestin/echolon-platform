@@ -437,6 +437,23 @@ elif page == "What-If":
 
 # PAGE: PROFILE
 elif False:  # page == "Profile" - DISABLED DUE TO SYNTAX ERRORS
+
+    # PAGE: RECOMMENDATIONS
+elif page == "Recommendations":
+    render_page_header("AI Recommendations", "Data-driven suggestions to grow your business.")
+    render_last_updated()
+    st.markdown("---")
+    
+    st.info("💡 **Coming Soon!** AI-powered recommendations based on your data and industry best practices.")
+    
+    st.subheading("What You'll Get:")
+    st.markdown("""
+    - **Growth Strategies**: Specific actions to increase revenue
+    - **Retention Tactics**: Ways to reduce churn and keep customers
+    - **Efficiency Improvements**: Cost optimization opportunities  
+    - **Competitive Insights**: How you compare to industry leaders
+    """)
+
  render_page_header("👤 Company Profile", "Tell us about your business so we can customize AI insights.")
  render_last_updated()
 # PAGE: PROFILE
