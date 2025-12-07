@@ -442,7 +442,7 @@ elif page == "Recommendations":
     
 tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
     
-        with tabs[0]:
+    with tabs[0]:
             st.markdown("## Growth Strategies")
             show_tactical_recommendation(
             title="Market Expansion",
@@ -469,7 +469,7 @@ tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
             why="Low-cost way to reach new audiences through trusted partners."
         )
     
-        with tabs[1]:
+    with tabs[1]:
             st.markdown("## Retention Tactics")
             show_tactical_recommendation(
             title="Improve Onboarding",
@@ -496,7 +496,7 @@ tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
             why="Incentivize long-term commitments and turn customers into advocates."
         )
     
-        with tabs[2]:
+    with tabs[2]:
             st.markdown("## Efficiency & Cost Optimization")
             show_tactical_recommendation(
             title="Automate Customer Success",
@@ -523,7 +523,7 @@ tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
             why="Reduce carrying costs and improve cash flow without affecting revenue."
         )
     
-        with tabs[3]:
+    with tabs[3]:
             st.markdown("## Innovation & New Products")
             show_tactical_recommendation(
             title="AI-Powered Features",
