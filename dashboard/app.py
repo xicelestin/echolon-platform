@@ -446,8 +446,8 @@ elif age == "Recommendations":
 tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
     
         with tabs[0]:
-        st.markdown("## Growth Strategies")
-        show_tactical_recommendation(
+            st.markdown("## Growth Strategies")
+            show_tactical_recommendation(
             title="Market Expansion",
             action="Launch targeted campaigns in 2 adjacent markets + test pricing tier",
             roi="3-5x ROI in 6 months",
@@ -455,7 +455,7 @@ tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
             priority="HIGH",
             why="Your CAC is low and unit economics strong. Time to scale acquisition."
         )
-        show_tactical_recommendation(
+            show_tactical_recommendation(
             title="Product Expansion",
             action="Launch premium tier with advanced features + support",
             roi="30% revenue increase",
@@ -463,7 +463,7 @@ tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
             priority="HIGH",
             why="Your top customers show strong willingness to pay for premium features."
         )
-        show_tactical_recommendation(
+            show_tactical_recommendation(
             title="Partnership Strategy",
             action="Identify 3 complementary products for co-marketing deals",
             roi="2-3x ROI",
@@ -473,8 +473,8 @@ tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
         )
     
         with tabs[1]:
-        st.markdown("## Retention Tactics")
-        show_tactical_recommendation(
+            st.markdown("## Retention Tactics")
+            show_tactical_recommendation(
             title="Improve Onboarding",
             action="Create 5-email onboarding sequence + video walkthroughs",
             roi="Reduce churn by 20-30%",
@@ -482,7 +482,7 @@ tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
             priority="HIGH",
             why="Strong onboarding is the #1 predictor of retention. Your churn suggests gaps here."
         )
-        show_tactical_recommendation(
+            show_tactical_recommendation(
             title="Build Community",
             action="Launch Slack community for customers + monthly webinars",
             roi="10-15% churn reduction",
@@ -490,7 +490,7 @@ tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
             priority="MEDIUM",
             why="Community creates switching costs and increases engagement."
         )
-        show_tactical_recommendation(
+            show_tactical_recommendation(
             title="Loyalty Rewards",
             action="Implement referral program (20% discount) + rewards tier",
             roi="5-10% churn reduction",
@@ -500,8 +500,8 @@ tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
         )
     
         with tabs[2]:
-        st.markdown("## Efficiency & Cost Optimization")
-        show_tactical_recommendation(
+            st.markdown("## Efficiency & Cost Optimization")
+            show_tactical_recommendation(
             title="Automate Customer Success",
             action="Implement NPS surveys + auto-triggered help content",
             roi="Reduce support cost by 15-20%",
@@ -509,7 +509,7 @@ tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
             priority="HIGH",
             why="Proactive support reduces churn AND support overhead."
         )
-        show_tactical_recommendation(
+            show_tactical_recommendation(
             title="Operational Efficiency",
             action="Audit vendor costs + renegotiate top 5 contracts",
             roi="$50K-$100K annual savings",
@@ -517,7 +517,7 @@ tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
             priority="MEDIUM",
             why="Many vendors offer discounts for longer terms or higher volume."
         )
-        show_tactical_recommendation(
+            show_tactical_recommendation(
             title="Inventory Optimization",
             action="Implement demand forecasting + reduce SKU count by 20%",
             roi="$30K-$50K working capital freed up",
@@ -527,8 +527,8 @@ tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
         )
     
         with tabs[3]:
-        st.markdown("## Innovation & New Products")
-        show_tactical_recommendation(
+            st.markdown("## Innovation & New Products")
+            show_tactical_recommendation(
             title="AI-Powered Features",
             action="Add AI recommendations to your product (can use existing APIs)",
             roi="Increase ARPU by 25-40%",
@@ -536,7 +536,7 @@ tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
             priority="HIGH",
             why="Customers love AI. It's differentiating and commands premium pricing."
         )
-        show_tactical_recommendation(
+            show_tactical_recommendation(
             title="Mobile App",
             action="Launch iOS app with core features (MVP approach)",
             roi="Increase engagement + reduce churn by 15%",
@@ -544,7 +544,7 @@ tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
             priority="MEDIUM",
             why="Mobile is now table stakes. Even basic app increases stickiness."
         )
-        show_tactical_recommendation(
+            show_tactical_recommendation(
             title="Adjacent Vertical",
             action="Research + pilot 1 adjacent market segment",
             roi="Potential $500K+ annual revenue",
