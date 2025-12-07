@@ -177,7 +177,12 @@ def render_last_updated():
 
 def render_kpi_card(icon, title, metric, delta, help_text=""):
     """Render a KPI card with dynamic values."""
-    st.markdown(f'<div class="kpi-card"><div class="icon">{icon}</div><div class="title">{title}</div><div class="metric">{metric}</div><div class="delta">{delta}</div></div>', unsafe_allow_html=True)
+    # Use Streamlit native components instead of complex HTML
+    col = st.container()
+    with col:
+        st.markdown(f'<div style="font-size: 32px;">{icon}</div>', unsafe_allow_html=True)
+        st.caption(title)
+        st.metric(label="", value=metric, delta=delta)
     if help_text:
         st.caption(help_text)
 
