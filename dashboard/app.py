@@ -437,11 +437,12 @@ elif page == "What-If":
 elif age == "Recommendations":
         render_page_header("AI Recommendations", "Data-driven suggestions for your business.")
         render_last_updated()
-    st.markdown("---")
+        st.markdown("---")
 
 
     
-    tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
+    l446
+tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
     
     with tabs[0]:
         st.markdown("## Growth Strategies")
