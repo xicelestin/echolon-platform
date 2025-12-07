@@ -317,21 +317,20 @@ def render_kpi_with_benchmark(icon, title, value, delta, benchmark_avg, benchmar
         status = ""
         color = "#888"
     
+    # Use Streamlit native metric with custom styling
     st.markdown(f"""
-    <div class="kpi-card" style="position: relative;">
-        <div class="icon">{icon}</div>
-        <div class="title">{title}</div>
-        <div class="metric">{value}</div>
-        <div class="delta">{delta}</div>
-        
+    <div style="background: linear-gradient(135deg, #1e3c72, #2a5298); padding: 20px; border-radius: 12px; border-left: 4px solid #ff9500;">
+        <div style="font-size: 28px; margin-bottom: 8px;">{icon}</div>
+        <div style="font-size: 11px; color: #a0a0a0; text-transform: uppercase; font-weight: 600; margin-bottom: 8px;">{title}</div>
+        <div style="font-size: 32px; font-weight: 700; color: #fff; margin: 4px 0;">{value}</div>
+        <div style="font-size: 12px; color: #90ee90; font-weight: 500; margin: 8px 0;">{delta}</div>
         <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px;">
             <div style="color: {color}; font-weight: 600; margin-bottom: 4px;">{status}</div>
-            <div style="color: #888;">vs. Industry Avg: {benchmark_avg}</div>
-            <div style="color: #888;">vs. Top 25%: {benchmark_top}</div>
+            <div style="color: #888; font-size: 10px;">Industry Avg: {benchmark_avg:,.0f}</div>
+            <div style="color: #888; font-size: 10px;">Top 25%: {benchmark_top:,.0f}</div>
         </div>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """, unsafe_allow_html=True)    
     if help_text:
         st.caption(help_text)
 
