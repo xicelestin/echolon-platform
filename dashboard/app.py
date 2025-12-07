@@ -433,14 +433,14 @@ elif page == "What-If":
         # Display insights
         for insight in insights:
                 st.markdown(insight)        
-elif page == "Recommendations":
+# TEMPORARILY DISABLED - FIX INDENTATION
+# elif page == "Recommendations":
         render_page_header("AI Recommendations", "Data-driven suggestions for your business.")
         render_last_updated()
         st.markdown("---")
 
 
-    
-tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
+TEMP FIX: Comment out Recommendations page to unblock deploymenttabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
     
         with tabs[0]:
             st.markdown("## Growth Strategies")
