@@ -440,7 +440,7 @@ elif page == "What-If":
         st.markdown("---")
 
 
-TEMP FIX: Comment out Recommendations page to unblock deploymenttabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
+tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
     
         with tabs[0]:
             st.markdown("## Growth Strategies")
