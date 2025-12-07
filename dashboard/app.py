@@ -437,7 +437,7 @@ elif page == "What-If":
 
 # PAGE: PROFILE
 elif False:  # page == "Profile" - DISABLED DUE TO SYNTAX ERRORS
-
+    pass
     # PAGE: RECOMMENDATIONS
 elif page == "Recommendations":
     render_page_header("AI Recommendations", "Data-driven suggestions to grow your business.")
