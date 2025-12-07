@@ -442,7 +442,7 @@ elif page == "Recommendations":
     
 tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
     
-    with tabs[0]:
+        with tabs[0]:
             st.markdown("## Growth Strategies")
             show_tactical_recommendation(
             title="Market Expansion",
