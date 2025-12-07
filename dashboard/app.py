@@ -437,6 +437,8 @@ elif page == "What-If":
         render_page_header("AI Recommendations", "Data-driven suggestions for your business.")
         render_last_updated()
     st.markdown("---")
+
+
     
     tabs = st.tabs(["Growth", "Retention", "Efficiency", "Innovation"])
     
