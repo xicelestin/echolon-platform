@@ -451,30 +451,21 @@ def display_actionable_insight(insight):
     
     color = severity_colors.get(insight['severity'], '#888')
     
+    # Simplified HTML rendering - more reliable
+    actions_html = "<ul style='margin: 8px 0; padding-left: 20px;'>"
+    for action in insight.get('actions', []):
+        actions_html += f"<li style='margin: 4px 0;'>{action}</li>"
+    actions_html += "</ul>"
+    
+    timeline_text = insight.get('timeline', '')
+    
     st.markdown(f"""
-    <div style="
-        background: rgba(255,255,255,0.05);
-        border-left: 4px solid {color};
-        border-radius: 8px;
-        padding: 20px;
-        margin: 16px 0;
-    ">
+    <div style="background: rgba(255,255,255,0.05); border-left: 4px solid {color}; border-radius: 8px; padding: 20px; margin: 16px 0;">
         <h3 style="margin: 0 0 8px 0; color: {color};">{insight['severity']} {insight['title']}</h3>
-        <p style="font-size: 16px; margin: 8px 0;"><strong>{insight['message']}</strong></p>
-        <p style="color: #ffaa00; margin: 8px 0;"><strong>💰 Impact:</strong> {insight['impact']}</p>
-        
+        <p style="font-size: 16px; margin: 8px 0;">{insight['message']}</p>
+        <p style="color: #ffa000; margin: 8px 0;"><strong>💡 Impact:</strong> {insight['impact']}</p>
         <p style="margin: 16px 0 8px 0; font-weight: 600;">Quick actions to take:</p>
-        <ul style="margin: 0; padding-left: 20px;">
-    """, unsafe_allow_html=True)
-    
-    for action in insight['actions']:
-        st.markdown(f"<li style='margin: 4px 0;'>{action}</li>", unsafe_allow_html=True)
-    
-    st.markdown(f"""
-        </ul>
-        <p style="margin: 16px 0 0 0; font-style: italic; color: #888;">
-            ⏱️ {insight['timeline']}
-        </p>
+        {actions_html}
+        <p style="margin: 16px 0 0 0; font-style: italic; color: #888;">⏱️ {timeline_text}</p>
     </div>
     """, unsafe_allow_html=True)
-
