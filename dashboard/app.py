@@ -451,11 +451,10 @@ elif page == "Recommendations":
     
     st.info("💡 **Coming Soon!** AI-powered recommendations based on your data and industry best practices.")
     
-    st.subheader
+    st.subheader("What You'll Get:")
     st.markdown("""
     - **Growth Strategies**: Specific actions to increase revenue
     - **Retention Tactics**: Ways to reduce churn and keep customers
-    - **Efficiency Improvements**: Cost optimization opportunities  
     - **Competitive Insights**: How you compare to industry leaders
     """)
 
