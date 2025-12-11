@@ -445,36 +445,5 @@ elif False:  # page == "Profile" - DISABLED DUE TO SYNTAX ERRORS
     pass
     # PAGE: RECOMMENDATIONS
 elif page == "Recommendations":
-    render_page_header("AI Recommendations", "Data-driven suggestions to grow your business.")
-    render_last_updated()
-    st.markdown("---")
-    
-    st.info("💡 **Coming Soon!** AI-powered recommendations based on your data and industry best practices.")
-    
-    st.subheader("What You'll Get:")
-    st.markdown("""
-    - **Growth Strategies**: Specific actions to increase revenue
-    - **Retention Tactics**: Ways to reduce churn and keep customers
-    - **Competitive Insights**: How you compare to industry leaders
-    """)
-
-# PAGE: PROFILE
-elif page == "Profile":
-    render_page_header("👤 Company Profile", "Tell us about your business so we can customize AI insights.")
-    render_last_updated()
-    st.markdown("---")
-    
-    st.subheader("📋 Company Information")
-    col1, col2 = st.columns(2)
-    with col1:
-        company_name = st.text_input("🏢 Company Name", value=st.session_state.get('profile', {}).get('company_name', ''))
-        industry = st.selectbox("🏭 Industry", ["Technology", "Healthcare", "Finance", "E-Commerce", "Professional Services", "Retail", "Manufacturing", "Education", "Other"], key="industry_select")
-    with col2:
-        annual_revenue = st.number_input("💵 Annual Revenue ($)", min_value=0, value=st.session_state.get('profile', {}).get('annual_revenue', 0), step=100000)
-        employee_count = st.number_input("👥 Employee Count", min_value=1, value=st.session_state.get('profile', {}).get('employee_count', 10), step=1)
-
-# PAGE: UPLOAD
-
-elif page == "Upload":
-    from pages_upload_enhanced import render_enhanced_upload
-    render_enhanced_upload()
+            from pages_recommendations import render_recommendations_page
+        render_recommendations_page()
