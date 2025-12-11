@@ -654,22 +654,75 @@ elif page == "Recommendations":
     from pages_recommendations import render_recommendations_page
 # PAGE: UPLOAD
 elif page == "Upload":
+    # Callback function for CSV upload
+    def on_csv_upload():
+        if st.session_state.get('uploaded_csv_file'):
+            try:
+                df = pd.read_csv(st.session_state.uploaded_csv_file)
+                st.session_state['uploaded_data'] = df
+                st.session_state['data_source'] = 'uploaded'
+                st.session_state['last_updated'] = datetime.now()
+            except Exception as e:
+                st.error(f"Error loading CSV: {str(e)}")
+    
     st.title('Upload & Data Processing')
-    st.markdown('Upload CSV files to analyze across all modules')
+    st.markdown('Upload CSV files to analyze metrics across all dashboard pages')
+    st.markdown("---")
     
-    uploaded_file = st.file_uploader('Choose CSV file', type='csv')
+    # File uploader with callback
+    st.file_uploader(
+        'Choose CSV file',
+        type='csv',
+        key='uploaded_csv_file',
+        on_change=on_csv_upload,
+        help='Supported format: CSV files with columns like date, value, customer_id'
+    )
     
-    if uploaded_file:
-        df = pd.read_csv(uploaded_file)
-        st.session_state['uploaded_data'] = df
-                        
-        st.success(f'Data loaded! ({len(df)} rows)')
-                
-        st.dataframe(df.head())
-        csv = df.to_csv(index=False)
-        st.download_button('Download Data', data=csv, file_name='data.csv', mime='text/csv')
+    # Display upload status
+    if st.session_state.get('uploaded_data') is not None:
+        df = st.session_state['uploaded_data']
+        st.success(f'Data loaded successfully! ({len(df)} rows, {len(df.columns)} columns)')
+        st.markdown("---")
+        
+        # Show data preview
+        st.subheader('Data Preview')
+        st.dataframe(df.head(10), use_container_width=True)
+        
+        # Download options
+        st.markdown("---")
+        st.subheader('Download Options')
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            csv = df.to_csv(index=False)
+            st.download_button(
+                'Download as CSV',
+                data=csv,
+                file_name=f'data_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv',
+                mime='text/csv',
+                use_container_width=True
+            )
+        
+        with col2:
+            import json
+            json_str = json.dumps(df.to_dict(orient='records'), indent=2)
+            st.download_button(
+                'Download as JSON',
+                data=json_str,
+                file_name=f'data_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json',
+                mime='application/json',
+                use_container_width=True
+            )
+        
+        with col3:
+            st.info(f"Data Source: {st.session_state['data_source'].title()}")
+        
+        st.markdown("---")
+        st.info('Your data is now live across all dashboard pages! KPIs will update automatically.')
     else:
-        st.info('Upload a CSV file to get started')    # Footer
+        st.info('Upload a CSV file to get started.')
+
+    st.markdown("---")        st.info('Upload a CSV file to get started')    # Footer
 st.markdown("---")
 # Display data upload status indicator across all pages
 if 'uploaded_data' in st.session_state and st.session_state['uploaded_data'] is not None:
