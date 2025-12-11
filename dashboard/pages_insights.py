@@ -107,6 +107,33 @@ def render_insights_page():
     
     # Divider
     st.markdown("""<div style='margin:32px 0;border-top:1px solid #374151;'></div>""", unsafe_allow_html=True)
+
+        # Export Insights Report
+    if st.button("📥 Export Insights Report"):
+        report = f"""
+ECHOLON AI - BUSINESS INSIGHTS REPORT
+Generated: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}
+
+KEY PERFORMANCE INDICATORS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Revenue: ${total_revenue:,.0f}
+Active Customers: {active_customers:,}
+Average Order Value: ${avg_order_value:.2f}
+Customer LTV: ${ltv:,.0f}
+CAC: ${cac:.0f}
+LTV/CAC Ratio: {ltv_cac_ratio:.1f}x
+MRR Growth: {mrr_growth:.1f}%
+Churn Rate: {churn_rate:.1f}%
+
+This report provides a comprehensive overview of your business metrics.
+For detailed analysis, please visit the Insights page in the Echolon platform.
+"""
+        st.download_button(
+            label="Download Report",
+            data=report,
+            file_name=f"echolon_insights_{datetime.now().strftime('%Y%m%d')}.txt",
+            mime="text/plain"
+        )
     
     # Breakdown Analysis
     st.markdown("""<div style='margin-bottom:20px'><h3 style='font-size:20px;font-weight:600;'>Sales Breakdown Analysis</h3></div>""", unsafe_allow_html=True)
