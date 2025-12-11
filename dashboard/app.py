@@ -503,138 +503,138 @@ elif page == "What-If":
 # PAGE: PROFILE
 elif page == "Profile":
 
-        render_page_header("Business Profile", "Your company metrics and account settings")
-    
-    # Company Information Section
-        st.subheader("🏢 Company Information")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.text_input("Company Name", value="Demo Company", key="company_name")
-        st.text_input("Industry", value="E-commerce / Retail", key="industry")
-        st.number_input("Year Founded", min_value=1900, max_value=2025, value=2020, key="year_founded")
+            render_page_header("Business Profile", "Your company metrics and account settings")
         
-    with col2:
-        st.text_input("Website", value="www.democompany.com", key="website")
-        st.selectbox("Business Type", ["B2C", "B2B", "B2B2C", "Marketplace"], key="business_type")
-        st.selectbox("Company Size", ["1-10", "11-50", "51-200", "201-500", "500+"], index=1, key="company_size")
-    
-    st.markdown("---")
-    
-    # Business Goals Section
-    st.subheader("🎯 Goal Tracking")
-    st.markdown("Set quarterly targets and track progress")
-    
-    goal_col1, goal_col2, goal_col3 = st.columns(3)
-    
-    with goal_col1:
-        st.metric("Revenue Goal", "$3.0M", "+$600K to goal")
-        revenue_progress = (2.4 / 3.0) * 100
-        st.progress(revenue_progress / 100)
-        st.caption(f"{revenue_progress:.0f}% of Q1 2025 goal")
+        # Company Information Section
+            st.subheader("🏢 Company Information")
         
-    with goal_col2:
-        st.metric("Customer Goal", "10,000", "+1,568 to goal")
-        customer_progress = (8432 / 10000) * 100
-        st.progress(customer_progress / 100)
-        st.caption(f"{customer_progress:.0f}% of Q1 2025 goal")
+        col1, col2 = st.columns(2)
         
-    with goal_col3:
-        st.metric("Churn Goal", "<3.0%", "0.7% under target")
-        st.progress(0.77)  # 2.3 / 3.0 = 0.77
-        st.caption("✅ On track")
-    
-    st.markdown("---")
-    
-    # Integration Status
-    st.subheader("🔌 Connected Data Sources")
-    
-    integration_col1, integration_col2 = st.columns(2)
-    
-    with integration_col1:
-        st.markdown("""
-        ✅ **Shopify** - Connected
-        - Last synced: 2 minutes ago
-        - Status: Active
-        
-        🟡 **Stripe** - Pending
-        - Setup required
-        - [Connect Now](#)
-        """)
-        
-    with integration_col2:
-        st.markdown("""
-        ✅ **Google Analytics** - Connected
-        - Last synced: 5 minutes ago
-        - Status: Active
-        
-        ⚪ **QuickBooks** - Not Connected
-        - Optional integration
-        - [Learn More](#)
-        """)
-    
-    st.markdown("---")
-    
-    # Notification Settings
-    st.subheader("🔔 Notification Preferences")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.checkbox("📧 Email daily summary", value=True)
-        st.checkbox("🚨 Alert on critical metrics", value=True)
-        st.checkbox("📊 Weekly performance report", value=True)
-        
-    with col2:
-        st.checkbox("💰 Revenue milestones", value=True)
-        st.checkbox("⚠️ Churn warnings", value=True)
-        st.checkbox("🎉 Goal achievements", value=True)
-    
-    st.markdown("---")
-    
-    # Account Plan
-    st.subheader("💳 Subscription Plan")
-    
-    plan_col1, plan_col2, plan_col3 = st.columns([2, 1, 1])
-    
-    with plan_col1:
-        st.markdown("""
-        **Current Plan:** Professional  
-        **Price:** $199/month  
-        **Next billing:** January 15, 2026  
-        
-        **Includes:**
-        - Unlimited data connections
-        - AI-powered insights
-        - Priority support
-        - Custom integrations
-        """)
-        
-    with plan_col2:
-        if st.button("⬆️ Upgrade Plan", use_container_width=True):
-            st.info("Contact sales for Enterprise plan")
+        with col1:
+            st.text_input("Company Name", value="Demo Company", key="company_name")
+            st.text_input("Industry", value="E-commerce / Retail", key="industry")
+            st.number_input("Year Founded", min_value=1900, max_value=2025, value=2020, key="year_founded")
             
-    with plan_col3:
-        if st.button("📥 Download Invoice", use_container_width=True):
-            st.success("Invoice downloaded!")
-    
-    st.markdown("---")
-    
-    # Team Members
-    st.subheader("👥 Team Members")
-    
-    team_data = pd.DataFrame({
-        "Name": ["John Smith", "Sarah Johnson", "Mike Chen"],
-        "Role": ["Owner", "Finance Manager", "Marketing Manager"],
-        "Access Level": ["Admin", "Editor", "Viewer"],
-        "Last Active": ["Just now", "5 mins ago", "1 hour ago"]
-    })
-    
-    st.dataframe(team_data, use_container_width=True, hide_index=True)
-    
-    if st.button("➕ Invite Team Member", use_container_width=False):
-        st.info("Enter email address to send invitation")
+        with col2:
+            st.text_input("Website", value="www.democompany.com", key="website")
+            st.selectbox("Business Type", ["B2C", "B2B", "B2B2C", "Marketplace"], key="business_type")
+            st.selectbox("Company Size", ["1-10", "11-50", "51-200", "201-500", "500+"], index=1, key="company_size")
+        
+        st.markdown("---")
+        
+        # Business Goals Section
+        st.subheader("🎯 Goal Tracking")
+        st.markdown("Set quarterly targets and track progress")
+        
+        goal_col1, goal_col2, goal_col3 = st.columns(3)
+        
+        with goal_col1:
+            st.metric("Revenue Goal", "$3.0M", "+$600K to goal")
+            revenue_progress = (2.4 / 3.0) * 100
+            st.progress(revenue_progress / 100)
+            st.caption(f"{revenue_progress:.0f}% of Q1 2025 goal")
+            
+        with goal_col2:
+            st.metric("Customer Goal", "10,000", "+1,568 to goal")
+            customer_progress = (8432 / 10000) * 100
+            st.progress(customer_progress / 100)
+            st.caption(f"{customer_progress:.0f}% of Q1 2025 goal")
+            
+        with goal_col3:
+            st.metric("Churn Goal", "<3.0%", "0.7% under target")
+            st.progress(0.77)  # 2.3 / 3.0 = 0.77
+            st.caption("✅ On track")
+        
+        st.markdown("---")
+        
+        # Integration Status
+        st.subheader("🔌 Connected Data Sources")
+        
+        integration_col1, integration_col2 = st.columns(2)
+        
+        with integration_col1:
+            st.markdown("""
+            ✅ **Shopify** - Connected
+            - Last synced: 2 minutes ago
+            - Status: Active
+            
+            🟡 **Stripe** - Pending
+            - Setup required
+            - [Connect Now](#)
+            """)
+            
+        with integration_col2:
+            st.markdown("""
+            ✅ **Google Analytics** - Connected
+            - Last synced: 5 minutes ago
+            - Status: Active
+            
+            ⚪ **QuickBooks** - Not Connected
+            - Optional integration
+            - [Learn More](#)
+            """)
+        
+        st.markdown("---")
+        
+        # Notification Settings
+        st.subheader("🔔 Notification Preferences")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.checkbox("📧 Email daily summary", value=True)
+            st.checkbox("🚨 Alert on critical metrics", value=True)
+            st.checkbox("📊 Weekly performance report", value=True)
+            
+        with col2:
+            st.checkbox("💰 Revenue milestones", value=True)
+            st.checkbox("⚠️ Churn warnings", value=True)
+            st.checkbox("🎉 Goal achievements", value=True)
+        
+        st.markdown("---")
+        
+        # Account Plan
+        st.subheader("💳 Subscription Plan")
+        
+        plan_col1, plan_col2, plan_col3 = st.columns([2, 1, 1])
+        
+        with plan_col1:
+            st.markdown("""
+            **Current Plan:** Professional  
+            **Price:** $199/month  
+            **Next billing:** January 15, 2026  
+            
+            **Includes:**
+            - Unlimited data connections
+            - AI-powered insights
+            - Priority support
+            - Custom integrations
+            """)
+            
+        with plan_col2:
+            if st.button("⬆️ Upgrade Plan", use_container_width=True):
+                st.info("Contact sales for Enterprise plan")
+                
+        with plan_col3:
+            if st.button("📥 Download Invoice", use_container_width=True):
+                st.success("Invoice downloaded!")
+        
+        st.markdown("---")
+        
+        # Team Members
+        st.subheader("👥 Team Members")
+        
+        team_data = pd.DataFrame({
+            "Name": ["John Smith", "Sarah Johnson", "Mike Chen"],
+            "Role": ["Owner", "Finance Manager", "Marketing Manager"],
+            "Access Level": ["Admin", "Editor", "Viewer"],
+            "Last Active": ["Just now", "5 mins ago", "1 hour ago"]
+        })
+        
+        st.dataframe(team_data, use_container_width=True, hide_index=True)
+        
+        if st.button("➕ Invite Team Member", use_container_width=False):
+            st.info("Enter email address to send invitation")
     # PAGE: RECOMMENDATIONS
 elif page == "Recommendations":
             from pages_recommendations import render_recommendations_page
