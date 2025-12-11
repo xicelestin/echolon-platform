@@ -682,27 +682,3 @@ with col3:
 with col4:
     st.caption("© 2025 Echolon AI")
 
-
-# PHASE 2: ENHANCED FEATURES IMPLEMENTATION
-st.write('---')
-st.write('### 🚀 PHASE 2: Advanced Features Now Active')
-alert_col1, alert_col2 = st.columns(2)
-with alert_col1:
-        st.write('#### 🔴 Real-Time Alerts')
-        st.success('✅ All metrics within healthy ranges')
-    with alert_col2:
-            st.write('#### 📫 Email Scheduling')
-            email = st.text_input('Email', placeholder='user@example.com')
-            if st.button('Schedule Daily Report', use_container_width=True):
-                        if email:
-                                        st.success(f'✅ Report scheduled for {email}')
-
-                st.write('---')
-st.write('### 📊 Phase 2 Implementation Complete')
-col1, col2, col3 = st.columns(3)
-with col1:
-        st.metric('Real-Time Alerts', '✅ Active', 'Critical Monitoring')
-with col2:
-        st.metric('Email Scheduling', '✅ Ready', 'Daily Reports')
-with col3:
-        st.metric('Platform Rating', '9.0/10 ⭐', '+0.5 Phase 2')
