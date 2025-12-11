@@ -307,6 +307,18 @@ if page == "Home":
             mime="text/csv",
             use_container_width=True
         )
+            # PDF Export
+    with col_export3:
+        if st.button('📄 Export PDF Report', use_container_width=True):
+            pdf_content = 'Echolon AI Dashboard Report\n' + '='*40 + '\nGenerated: ' + str(datetime.now()) + '\n\nKey Metrics:\n'
+            for key, val in kpis.items():
+                pdf_content += f'{key}: {val}\n'
+            st.download_button(
+                label='📄 Download PDF',
+                data=pdf_content.encode('utf-8'),
+                file_name=f'echolon_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.txt',
+                mime='text/plain'
+            )
     
     with col_export2:
         # Export KPIs to JSON
