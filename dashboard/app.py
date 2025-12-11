@@ -649,6 +649,7 @@ st.dataframe(team_data, use_container_width=True, hide_index=True)
 if st.button("➕ Invite Team Member", use_container_width=False):
     st.info("Enter email address to send invitation")
 # PAGE: RECOMMENDATIONS
+# Enhanced Recommendations with session data persistence and actionable insights
 elif page == "Recommendations":
     from pages_recommendations import render_recommendations_page
 # PAGE: UPLOAD
@@ -668,6 +669,9 @@ elif page == "Upload":
     else:
         st.info('Upload a CSV file to get started')    # Footer
 st.markdown("---")
+# Display data upload status indicator across all pages
+if 'uploaded_data' in st.session_state and st.session_state['uploaded_data'] is not None:
+        st.info(f'✅ Custom data loaded: {len(st.session_state["uploaded_data"])} rows available across all pages')
 col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.caption("[📧 Contact Support](mailto:support@echolon.ai)")
