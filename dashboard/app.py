@@ -519,7 +519,7 @@ with col1:
 with col2:
         st.text_input("Website", value="www.democompany.com", key="website")
         st.selectbox("Business Type", ["B2C", "B2B", "B2B2C", "Marketplace"], key="business_type")
-    st.selectbox("Company Size", ["1-10", "11-50", "51-200", "201-500", "500+"], index=1, key="company_size")
+        st.selectbox("Company Size", ["1-10", "11-50", "51-200", "201-500", "500+"], index=1, key="company_size")
 
 st.markdown("---")
 
