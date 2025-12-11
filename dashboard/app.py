@@ -722,7 +722,7 @@ elif page == "Upload":
     else:
         st.info('Upload a CSV file to get started.')
 
-    st.markdown("---")        st.info('Upload a CSV file to get started')    # Footer
+    st.markdown("---")
 st.markdown("---")
 # Display data upload status indicator across all pages
 if 'uploaded_data' in st.session_state and st.session_state['uploaded_data'] is not None:
