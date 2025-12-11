@@ -643,7 +643,7 @@ elif page == "Recommendations":
 elif page == "Upload":
  from pages_upload_enhanced import render_enhanced_upload
          render_enhanced_upload()
-# Footer
+    # Footer
 st.markdown("---")
 col1, col2, col3, col4 = st.columns(4)
 with col1:
