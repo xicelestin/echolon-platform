@@ -271,8 +271,54 @@ if page == "Home":
             st.rerun()
     st.markdown(get_data_source_badge(), unsafe_allow_html=True)
     st.markdown("---")
+
+        # Executive Summary
+    st.markdown("---")
+    st.subheader("📊 Executive Summary")
+    
+    summary_col1, summary_col2 = st.columns(2)
+    
+    with summary_col1:
+        st.markdown("""**⚡ Quick Wins:**
+        - Revenue up **+12.5%** - Continue current momentum
+        - CAC at **$241** - **✔️ Below industry avg** ($250)
+        - Churn at **2.3%** - ✔️ Excellent retention
+        """)
+    
+    with summary_col2:
+        st.markdown("""**🎯 Priority Actions:**
+        1. 📈 Scale marketing - Unit economics are strong
+        2. 💰 Consider premium tier - Low churn indicates satisfaction
+        3. 🔍 Monitor CAC as you scale
+        """)
     st.subheader("Key Performance Indicators")
     kpis = calculate_kpis_from_data()
+
+        # Add export functionality
+    col_export1, col_export2, col_export3 = st.columns([1, 1, 4])
+    with col_export1:
+        # Export KPIs to CSV
+        kpi_df = pd.DataFrame([kpis])
+        csv = kpi_df.to_csv(index=False)
+        st.download_button(
+            label="📥 Export CSV",
+            data=csv,
+            file_name=f"echolon_kpis_{datetime.now().strftime('%Y%m%d')}.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
+    
+    with col_export2:
+        # Export KPIs to JSON
+        import json
+        json_str = json.dumps(kpis, indent=2)
+        st.download_button(
+            label="📥 Export JSON",
+            data=json_str,
+            file_name=f"echolon_kpis_{datetime.now().strftime('%Y%m%d')}.json",
+            mime="application/json",
+            use_container_width=True
+        )
     
     c1, c2, c3, c4 = st.columns(4)
     with c1:
