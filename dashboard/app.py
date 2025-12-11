@@ -501,7 +501,8 @@ elif page == "What-If":
 # PAGE: UPLOAD
 
 # PAGE: PROFILE
-elif page == "Profile":
+# PROFILE PAGE DISABLED - TODO: Fix indentation issues
+if False:  # Disabled temporarily
 
     render_page_header("Business Profile", "Your company metrics and account settings")
 
