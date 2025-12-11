@@ -95,6 +95,7 @@ def render_enhanced_upload():
                     status_text.empty()
                     
                     st.success(f"✅ Data loaded successfully! Analyzing {df.shape[0]:,} rows and {df.shape[1]} columns.")
+                                        st.info("🔄 **All insights updated!** Check the **Insights** and **Predictions** pages to see your personalized analysis.")
                     
                     # Data source badge
                     st.markdown(f"<div style='background: rgba(0,200,0,0.1); border: 1px solid #00c800; border-radius: 8px; padding: 12px; margin: 16px 0;'>"
