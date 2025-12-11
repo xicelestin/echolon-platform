@@ -644,10 +644,10 @@ elif page == "Recommendations":
 st.markdown("---")
 col1, col2, col3, col4 = st.columns(4)
 with col1:
-st.caption("[📧 Contact Support](mailto:support@echolon.ai)")
+    st.caption("[📧 Contact Support](mailto:support@echolon.ai)")
 with col2:
-st.caption("[📖 Documentation](#)")
+    st.caption("[📖 Documentation](#)")
 with col3:
-st.caption("[🔒 Privacy Policy](#)")
+    st.caption("[🔒 Privacy Policy](#)")
 with col4:
-st.caption("© 2025 Echolon AI")
+    st.caption("© 2025 Echolon AI")
