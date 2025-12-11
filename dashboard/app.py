@@ -662,7 +662,7 @@ elif page == "Upload":
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
         st.session_state['uploaded_data'] = df
-                    st.session_state['data_source'] = 'uploaded'
+                            st.session_state['data_source'] = 'uploaded'
         st.success(f'Data loaded! ({len(df)} rows)')
                     st.rerun()
         st.dataframe(df.head())
