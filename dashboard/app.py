@@ -261,6 +261,14 @@ if st.session_state.uploaded_data is None and page == "Home":
 if page == "Home":
     render_page_header("Dashboard Overview", "AI-powered insights that tell you exactly what to do next to grow revenue") 
     render_last_updated()
+        
+    # Data refresh button
+    col1, col2, col3 = st.columns([1, 1, 4])
+    with col1:
+        if st.button("🔄 Refresh Data", use_container_width=True):
+            st.cache_data.clear()
+            st.success("✅ Data refreshed successfully!")
+            st.rerun()
     st.markdown(get_data_source_badge(), unsafe_allow_html=True)
     st.markdown("---")
     st.subheader("Key Performance Indicators")
@@ -382,6 +390,12 @@ elif page == "What-If":
         churn = st.slider("Monthly Churn Rate (%)", min_value=0.0, max_value=50.0, value=baseline["churn"]*100, step=0.5) / 100
         growth = st.slider("Customer Growth Rate (%)", min_value=0.0, max_value=50.0, value=baseline["growth"]*100, step=0.5) / 100
         run_btn = st.button("Run Scenario", type="primary", use_container_width=True)
+
+            # Input validation
+        if rev <= 0:
+            st.error("⚠️ Revenue must be greater than $0. Please enter a valid revenue amount.")
+        elif mkt > rev:
+            st.warning("⚠️ Marketing spend exceeds revenue. This will result in negative cash flow.")
     
     if run_btn:
         st.session_state.last_updated = datetime.now()
