@@ -371,5 +371,38 @@ def render_whatif_page():
     
     st.dataframe(actions, use_container_width=True, hide_index=True)
 
+def create_scenario_comparison_chart(scenarios, metric_name):
+    """Create visual comparison of multiple scenarios."""
+        scenario_names = [k.replace('_', ' ').title() for k in scenarios.keys()]
+    scenario_values = [scenarios[k].get(metric_name, 0) for k in scenarios.keys()]
+    colors = ['#2ecc71' if 'best' in k else '#e74c3c' if 'worst' in k else '#3498db' for k in scenarios.keys()]
+    
+    fig = go.Figure(data=[go.Bar(x=scenario_names, y=scenario_values, marker_color=colors)])
+    fig.update_layout(title=f"{metric_name.title()} by Scenario", template='plotly_dark', height=400)
+    return fig
+
+def create_scenario_timeline(scenario_projections):
+    """Create timeline visualization showing scenario progression over months."""
+    months = list(range(1, 13))
+    fig = go.Figure()
+    
+    for scenario_name, monthly_data in scenario_projections.items():
+        color = '#2ecc71' if 'best' in scenario_name else '#e74c3c' if 'worst' in scenario_name else '#3498db'
+        fig.add_trace(go.Scatter(
+            x=months, y=monthly_data, mode='lines+markers',
+            name=scenario_name.replace('_', ' ').title(),
+            line=dict(color=color, width=2)
+        ))
+    
+    fig.update_layout(
+        title='Revenue Projection Timeline',
+        xaxis_title='Month',
+        yaxis_title='Revenue ($)',
+        template='plotly_dark',
+        height=400,
+        hovermode='x unified'
+    )
+    return fig
+
 if __name__ == "__main__":
     render_whatif_page()
