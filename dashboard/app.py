@@ -553,25 +553,25 @@ elif page == "Profile":
         integration_col1, integration_col2 = st.columns(2)
         
         with integration_col1:
-            st.markdown("""
-            ✅ **Shopify** - Connected
-            - Last synced: 2 minutes ago
-            - Status: Active
-            
-            🟡 **Stripe** - Pending
-            - Setup required
-            - [Connect Now](#)
-            """)
+                st.markdown("""
+                ✅ **Shopify** - Connected
+                - Last synced: 2 minutes ago
+                - Status: Active
+                
+                🟡 **Stripe** - Pending
+                - Setup required
+                - [Connect Now](#)
+                """)
             
         with integration_col2:
-            st.markdown("""
-            ✅ **Google Analytics** - Connected
-            - Last synced: 5 minutes ago
-            - Status: Active
-            
-            ⚪ **QuickBooks** - Not Connected
-            - Optional integration
-            - [Learn More](#)
+                st.markdown("""
+                ✅ **Google Analytics** - Connected
+                - Last synced: 5 minutes ago
+                - Status: Active
+                
+                ⚪ **QuickBooks** - Not Connected
+                - Optional integration
+                - [Learn More](#)
             """)
         
         st.markdown("---")
@@ -582,14 +582,14 @@ elif page == "Profile":
         col1, col2 = st.columns(2)
         
         with col1:
-            st.checkbox("📧 Email daily summary", value=True)
-            st.checkbox("🚨 Alert on critical metrics", value=True)
-            st.checkbox("📊 Weekly performance report", value=True)
+                st.checkbox("📧 Email daily summary", value=True)
+                st.checkbox("🚨 Alert on critical metrics", value=True)
+                st.checkbox("📊 Weekly performance report", value=True)
             
         with col2:
-            st.checkbox("💰 Revenue milestones", value=True)
-            st.checkbox("⚠️ Churn warnings", value=True)
-            st.checkbox("🎉 Goal achievements", value=True)
+                st.checkbox("💰 Revenue milestones", value=True)
+                st.checkbox("⚠️ Churn warnings", value=True)
+                st.checkbox("🎉 Goal achievements", value=True)
         
         st.markdown("---")
         
@@ -599,25 +599,25 @@ elif page == "Profile":
         plan_col1, plan_col2, plan_col3 = st.columns([2, 1, 1])
         
         with plan_col1:
-            st.markdown("""
-            **Current Plan:** Professional  
-            **Price:** $199/month  
-            **Next billing:** January 15, 2026  
-            
-            **Includes:**
-            - Unlimited data connections
-            - AI-powered insights
-            - Priority support
-            - Custom integrations
-            """)
+                st.markdown("""
+                **Current Plan:** Professional  
+                **Price:** $199/month  
+                **Next billing:** January 15, 2026  
+                
+                **Includes:**
+                - Unlimited data connections
+                - AI-powered insights
+                - Priority support
+                - Custom integrations
+                """)
             
         with plan_col2:
-            if st.button("⬆️ Upgrade Plan", use_container_width=True):
-                st.info("Contact sales for Enterprise plan")
+                if st.button("⬆️ Upgrade Plan", use_container_width=True):
+                    st.info("Contact sales for Enterprise plan")
                 
         with plan_col3:
-            if st.button("📥 Download Invoice", use_container_width=True):
-                st.success("Invoice downloaded!")
+                if st.button("📥 Download Invoice", use_container_width=True):
+                    st.success("Invoice downloaded!")
         
         st.markdown("---")
         
