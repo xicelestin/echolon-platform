@@ -262,12 +262,6 @@ if page == "Home":
     render_page_header("Dashboard Overview", "AI-powered insights that tell you exactly what to do next to grow revenue") 
     render_last_updated()
     st.markdown(get_data_source_badge(), unsafe_allow_html=True)
-
-            # Add helpful tip for navigation
-        if st.session_state.data_source == 'demo':
-            st.info("💡 **Exploring with Demo Data** | Go to **Upload** to analyze your own business data, or explore **Insights**, **Predictions**, and **Recommendations** to see what Echolon can do for you.")
-        else:
-            st.info("✅ **Your Data Loaded** | Insights across all pages are customized to your business. Check **Recommendations** for AI-powered action items.")
     st.markdown("---")
     st.subheader("Key Performance Indicators")
     kpis = calculate_kpis_from_data()
