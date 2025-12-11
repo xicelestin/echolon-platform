@@ -81,6 +81,7 @@ def render_enhanced_upload():
                     progress_bar.progress(100)
                     status_text.empty()
                     st.error("⚠ Missing required columns. Your CSV must include 'date' and 'value' columns.")
+                                        st.info("💡 Download the sample template to see the correct format.")
                 else:
                     status_text.text("⏳ Processing...")
                     progress_bar.progress(75)
@@ -128,6 +129,7 @@ def render_enhanced_upload():
                         
             except Exception as e:
                 st.error(f"⚠ We couldn't process your file. Error: {str(e)}")
+                                    st.info("💡 Please check your CSV format and try again.")
     
     # TAB 2: SHOPIFY INTEGRATION
     with tab2:
