@@ -508,7 +508,7 @@ elif page == "Profile":
         # Company Information Section
             st.subheader("🏢 Company Information")
         
-        col1, col2 = st.columns(2)
+col1, col2 = st.columns(2)
         
         with col1:
                 st.text_input("Company Name", value="Demo Company", key="company_name")
