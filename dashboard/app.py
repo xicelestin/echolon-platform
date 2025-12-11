@@ -639,7 +639,6 @@ if st.button("➕ Invite Team Member", use_container_width=False):
 # PAGE: RECOMMENDATIONS
 elif page == "Recommendations":
     from pages_recommendations import render_recommendations_page
-     render_recommendations_page()
 # PAGE: UPLOAD
 elif page == "Upload":
  from pages_upload_enhanced import render_enhanced_upload
