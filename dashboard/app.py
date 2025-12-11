@@ -641,8 +641,20 @@ elif page == "Recommendations":
     from pages_recommendations import render_recommendations_page
 # PAGE: UPLOAD
 elif page == "Upload":
- from pages_upload_enhanced import render_enhanced_upload
-    # Footer
+    st.title('Upload & Data Processing')
+    st.markdown('Upload CSV files to analyze across all modules')
+    
+    uploaded_file = st.file_uploader('Choose CSV file', type='csv')
+    
+    if uploaded_file:
+        df = pd.read_csv(uploaded_file)
+        st.session_state['uploaded_data'] = df
+        st.success(f'Data loaded! ({len(df)} rows)')
+        st.dataframe(df.head())
+        csv = df.to_csv(index=False)
+        st.download_button('Download Data', data=csv, file_name='data.csv', mime='text/csv')
+    else:
+        st.info('Upload a CSV file to get started')    # Footer
 st.markdown("---")
 col1, col2, col3, col4 = st.columns(4)
 with col1:
