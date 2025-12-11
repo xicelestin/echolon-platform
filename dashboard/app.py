@@ -446,7 +446,7 @@ elif False:  # page == "Profile" - DISABLED DUE TO SYNTAX ERRORS
     # PAGE: RECOMMENDATIONS
 elif page == "Recommendations":
             from pages_recommendations import render_recommendations_page
-    render_recommendations_page()
+#    render_recommendations_page()
 # Footer
 st.markdown("---")
 col1, col2, col3, col4 = st.columns(4)
