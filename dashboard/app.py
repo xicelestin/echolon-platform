@@ -516,7 +516,7 @@ with col1:
         st.text_input("Industry", value="E-commerce / Retail", key="industry")
         st.number_input("Year Founded", min_value=1900, max_value=2025, value=2020, key="year_founded")
     
-    with col2:
+with col2:
         st.text_input("Website", value="www.democompany.com", key="website")
         st.selectbox("Business Type", ["B2C", "B2B", "B2B2C", "Marketplace"], key="business_type")
     st.selectbox("Company Size", ["1-10", "11-50", "51-200", "201-500", "500+"], index=1, key="company_size")
