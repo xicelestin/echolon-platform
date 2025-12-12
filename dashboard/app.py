@@ -7,6 +7,9 @@ import requests
 import os
 import time
 from business_owner_fixes import (show_personalized_onboarding, render_kpi_with_context, personalize_insights, show_tactical_recommendation, render_what_if_presets, get_health_badge, render_kpi_with_benchmark, generate_actionable_insights, display_actionable_insight, get_priority_score)
+from data_validation import DataValidator, validate_csv_file
+from performance_optimizer import PerformanceOptimizer, cached_data_processing
+from data_transformer import DataTransformer, get_transformation_options
 st.set_page_config(page_title="Echolon AI", page_icon="📊", layout="wide", initial_sidebar_state="expanded")
 
 # Force redeploy - 2025-12-06
