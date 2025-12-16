@@ -648,7 +648,7 @@ team_data = pd.DataFrame({
 
 st.dataframe(team_data, width="stretch", hide_index=True)
 
-if st.button("➕ Invite Team Member", width="stretch"=False):
+if st.button("➕ Invite Team Member"):
     st.info("Enter email address to send invitation")
 # PAGE: RECOMMENDATIONS
 # Enhanced Recommendations with session data persistence and actionable insights
