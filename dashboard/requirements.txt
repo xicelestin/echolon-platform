@@ -9,3 +9,4 @@ google-auth>=2.23.0
 google-api-python-client>=2.108.0
 reportlab>=4.0.7
 python-dotenv>=1.0.0
+psutil>=5.9.0
