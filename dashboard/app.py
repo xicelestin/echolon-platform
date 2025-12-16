@@ -101,7 +101,8 @@ DEMO_CAC = 241
 DEMO_CHURN = 2.3
 DEMO_TREND = pd.DataFrame({'Month': ['May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], 'Revenue': [45000,48000,52000,51000,55000,58000,62000,60000]}).set_index('Month')
 
-def calculate_kpis_from_data():    """Calculate KPIs from uploaded data or return demo values."""
+def calculate_kpis_from_data()):
+    """Calculate KPIs from uploaded data or return demo values."""
     if st.session_state.uploaded_data is None or st.session_state.uploaded_data.empty:
         return {
             'revenue': DEMO_REVENUE,
