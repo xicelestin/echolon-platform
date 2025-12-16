@@ -137,7 +137,8 @@ def calculate_kpis_from_data():
                 raise ValueError("No numeric value column found in uploaded data")
         
         revenue = df[value_col].sum()
-        revenue_formatted = f"${revenue/1e6:.1f}M" if revenue >= 1e6 else f"${revenue/1e3:.1f}K"        customers = len(df) if 'customer_id' in df.columns else int(df[value_col].sum() / 50000) or 1000
+        revenue_formatted = f"${revenue/1e6:.1f}M" if revenue >= 1e6 else f"${revenue/1e3:.1f}K"
+                customers = len(df) if 'customer_id' in df.columns else int(df[value_col].sum() / 50000) or 1000
         customers_formatted = f"{customers:,}"
         cac = (df[value_col].sum() / len(df)) if len(df) > 0 else DEMO_CAC
         cac_formatted = f"${cac:,.0f}"
