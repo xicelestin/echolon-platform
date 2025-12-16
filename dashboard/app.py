@@ -120,13 +120,28 @@ def calculate_kpis_from_data():
         }
     try:
         df = st.session_state.uploaded_data
-        revenue = df['value'].sum() if 'value' in df.columns else DEMO_REVENUE
-        revenue_formatted = f"${revenue/1e6:.1f}M" if revenue >= 1e6 else f"${revenue/1e3:.1f}K"
-        customers = len(df) if 'customer_id' in df.columns else int(df['value'].sum() / 50000) or 1000
+                
+        # Detect value column name (flexible handling)
+        value_col = None
+        for col in ['value', 'revenue', 'amount', 'sales', 'total', 'price']:
+            if col in df.columns:
+                value_col = col
+                break
+        
+        if value_col is None:
+            # Try to find numeric column
+            numeric_cols = df.select_dtypes(include=['number']).columns
+            if len(numeric_cols) > 0:
+                value_col = numeric_cols[0]
+            else:
+                raise ValueError("No numeric value column found in uploaded data")
+        
+        revenue = df[value_col].sum()
+        revenue_formatted = f"${revenue/1e6:.1f}M" if revenue >= 1e6 else f"${revenue/1e3:.1f}K"        customers = len(df) if 'customer_id' in df.columns else int(df[value_col].sum() / 50000) or 1000
         customers_formatted = f"{customers:,}"
-        cac = (df['value'].sum() / len(df)) if len(df) > 0 else DEMO_CAC
+        cac = (df[value_col].sum() / len(df)) if len(df) > 0 else DEMO_CAC
         cac_formatted = f"${cac:,.0f}"
-        churn = (df['value'].std() / df['value'].mean() * 100) if df['value'].mean() > 0 else DEMO_CHURN
+        churn = (df[value_col].std() / df[value_col].mean() * 100) if df[value_col].mean() > 0 else DEMO_CHURN
         churn_formatted = f"{churn:.1f}%"
         return {
             'revenue': revenue,
