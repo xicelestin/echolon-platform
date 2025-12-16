@@ -242,7 +242,7 @@ st.sidebar.markdown('<div class="sidebar-section">System Status</div>', unsafe_a
 
 col1, col2 = st.sidebar.columns(2)
 with col1:
-    if st.button("Test Connection", use_container_width=True):
+    if st.button("Test Connection", width="stretch"):
         try:
             requests.get(f"{BACKEND_API_URL}/health", timeout=5)
             st.sidebar.success("Backend online")
@@ -267,7 +267,7 @@ if page == "Home":
     # Data refresh button
     col1, col2, col3 = st.columns([1, 1, 4])
     with col1:
-        if st.button("🔄 Refresh Data", use_container_width=True):
+        if st.button("🔄 Refresh Data", width="stretch"):
             st.cache_data.clear()
             st.success("✅ Data refreshed successfully!")
             st.rerun()
@@ -307,11 +307,11 @@ if page == "Home":
             data=csv,
             file_name=f"echolon_kpis_{datetime.now().strftime('%Y%m%d')}.csv",
             mime="text/csv",
-            use_container_width=True
+            width="stretch"
         )
             # PDF Export
     with col_export3:
-        if st.button('📄 Export PDF Report', use_container_width=True):
+        if st.button('📄 Export PDF Report', width="stretch"):
             pdf_content = 'Echolon AI Dashboard Report\n' + '='*40 + '\nGenerated: ' + str(datetime.now()) + '\n\nKey Metrics:\n'
             for key, val in kpis.items():
                 pdf_content += f'{key}: {val}\n'
@@ -331,7 +331,7 @@ if page == "Home":
             data=json_str,
             file_name=f"echolon_kpis_{datetime.now().strftime('%Y%m%d')}.json",
             mime="application/json",
-            use_container_width=True
+            width="stretch"
         )
     
     c1, c2, c3, c4 = st.columns(4)
@@ -352,20 +352,20 @@ if page == "Home":
             df = st.session_state.uploaded_data
             if 'date' in df.columns and 'value' in df.columns:
                 df_sorted = df.sort_values('date')
-                st.line_chart(df_sorted.set_index('date')['value'], use_container_width=True, height=300)
+                st.line_chart(df_sorted.set_index('date')['value'], width="stretch", height=300)
             else:
-                st.line_chart(DEMO_TREND, use_container_width=True, height=300)
+                st.line_chart(DEMO_TREND, width="stretch", height=300)
         except:
-            st.line_chart(DEMO_TREND, use_container_width=True, height=300)
+            st.line_chart(DEMO_TREND, width="stretch", height=300)
     else:
-        st.line_chart(DEMO_TREND, use_container_width=True, height=300)
+        st.line_chart(DEMO_TREND, width="stretch", height=300)
     
     st.markdown("---")
     c1, c2 = st.columns(2)
     with c1:
         st.subheader("Sales Distribution")
         fig = px.pie(values=[45,25,20,10], names=['SaaS','Support','Services','Other'])
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     with c2:
         st.subheader("Key Metrics")
         st.markdown(f"**Total Customers**: {kpis['customers_formatted']}\n\n**Active Subscriptions**: {int(kpis['customers'] * 0.7):,}\n\n**MRR**: ${kpis['revenue'] / 12 / 1000:.0f}K\n\n**LTV**: ${kpis['revenue'] / kpis['customers'] if kpis['customers'] > 0 else 0:,.0f}")
@@ -419,7 +419,7 @@ elif page == "Predictions":
     with c2:
         horizon = st.selectbox("Forecast Window", ["1 Month", "3 Months", "6 Months", "12 Months"])
     
-    if st.button("Generate Predictions", type="primary", use_container_width=True):
+    if st.button("Generate Predictions", type="primary", width="stretch"):
         with st.spinner("Building forecast model..."):
             time.sleep(1)
         st.success("Predictions updated")
@@ -428,7 +428,7 @@ elif page == "Predictions":
         forecast = np.random.normal(105000, 12000, 12)
         fig = px.line(x=dates, y=forecast, title=f'{metric} Forecast')
         fig.add_scatter(x=dates, y=historical, name='Historical', mode='lines')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 # PAGE: INVENTORY
 elif page == "Inventory":
@@ -449,7 +449,7 @@ elif page == "What-If":
         mkt = st.number_input("Marketing Spend ($)", min_value=0, value=baseline["marketing"], step=1000)
         churn = st.slider("Monthly Churn Rate (%)", min_value=0.0, max_value=50.0, value=baseline["churn"]*100, step=0.5) / 100
         growth = st.slider("Customer Growth Rate (%)", min_value=0.0, max_value=50.0, value=baseline["growth"]*100, step=0.5) / 100
-        run_btn = st.button("Run Scenario", type="primary", use_container_width=True)
+        run_btn = st.button("Run Scenario", type="primary", width="stretch")
 
             # Input validation
         if rev <= 0:
@@ -627,11 +627,11 @@ with plan_col1:
         """)
     
 with plan_col2:
-        if st.button("⬆️ Upgrade Plan", use_container_width=True):
+        if st.button("⬆️ Upgrade Plan", width="stretch"):
             st.info("Contact sales for Enterprise plan")
         
 with plan_col3:
-        if st.button("📥 Download Invoice", use_container_width=True):
+        if st.button("📥 Download Invoice", width="stretch"):
             st.success("Invoice downloaded!")
 
 st.markdown("---")
@@ -646,9 +646,9 @@ team_data = pd.DataFrame({
     "Last Active": ["Just now", "5 mins ago", "1 hour ago"]
 })
 
-st.dataframe(team_data, use_container_width=True, hide_index=True)
+st.dataframe(team_data, width="stretch", hide_index=True)
 
-if st.button("➕ Invite Team Member", use_container_width=False):
+if st.button("➕ Invite Team Member", width="stretch"=False):
     st.info("Enter email address to send invitation")
 # PAGE: RECOMMENDATIONS
 # Enhanced Recommendations with session data persistence and actionable insights
@@ -705,7 +705,7 @@ elif page == "Upload":
             data=csv_template,
             file_name='data_template.csv',
             mime='text/csv',
-            use_container_width=True
+            width="stretch"
         )
     
     # PHASE 2 ENHANCEMENT 2: Input Data Validation
@@ -808,7 +808,7 @@ elif page == "Upload":
         
         # Show data preview
         st.subheader('Data Preview')
-        st.dataframe(df.head(10), use_container_width=True)
+        st.dataframe(df.head(10), width="stretch")
         
         # Download options
         st.markdown("---")
@@ -822,7 +822,7 @@ elif page == "Upload":
                 data=csv,
                 file_name=f'data_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv',
                 mime='text/csv',
-                use_container_width=True
+                width="stretch"
             )
         
         with col2:
@@ -833,7 +833,7 @@ elif page == "Upload":
                 data=json_str,
                 file_name=f'data_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json',
                 mime='application/json',
-                use_container_width=True
+                width="stretch"
             )
         
         with col3:
