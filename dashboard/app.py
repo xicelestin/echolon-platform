@@ -104,7 +104,7 @@ def calculate_kpis_from_data():
     """Calculate KPIs from uploaded data or return demo values."""
     if st.session_state.uploaded_data is None or st.session_state.uploaded_data.empty:
         return {
-            'revenue': DEMO_EVENUE,
+            'revenue': DEMO_REVENUE,
             'revenue_formatted': f"${DEMO_REVENUE/1e6:.1f}M",
             'revenue_delta': "+12.5%",
             'customers': DEMO_CUSTOMERS,
