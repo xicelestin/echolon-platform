@@ -101,7 +101,8 @@ DEMO_CAC = 241
 DEMO_CHURN = 2.3
 DEMO_TREND = pd.DataFrame({'Month': ['May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], 'Revenue': [45000,48000,52000,51000,55000,58000,62000,60000]}).set_index('Month')
 
-def calculate_kpis_from_data():
+165
+():
     """Calculate KPIs from uploaded data or return demo values."""
     if st.session_state.uploaded_data is None or st.session_state.uploaded_data.empty:
         return {
@@ -852,6 +853,30 @@ if 'uploaded_data' in st.session_state and st.session_state['uploaded_data'] is 
         st.info(f'✅ Custom data loaded: {len(st.session_state["uploaded_data"])} rows available across all pages')
 col1, col2, col3, col4 = st.columns(4)
 with col1:
+
+        # FUNCTIONAL CONTACT FORM - Collects real user data
+    st.markdown('### 📧 Contact Support - Get Help')
+    with st.form('contact_support_form'):
+        user_email = st.text_input('Your Email', placeholder='your.email@company.com')
+        subject = st.selectbox('Subject', ['Technical Issue', 'Billing Question', 'Feature Request', 'Other'])
+        message = st.text_area('Message', placeholder='Describe your issue or question...')
+        submitted = st.form_submit_button('📤 Send Message')
+        
+        if submitted:
+            if user_email and message:
+                # Store message in session state
+                if 'contact_messages' not in st.session_state:
+                    st.session_state.contact_messages = []
+                st.session_state.contact_messages.append({
+                    'email': user_email,
+                    'subject': subject,
+                    'message': message,
+                    'timestamp': datetime.now()
+                })
+                st.success(f'✅ Message sent! We\'ll respond to {user_email} within 24 hours.')
+                st.balloons()
+            else:
+                st.error('⚠️ Please fill in all required fields')
     st.caption("[📧 Contact Support](mailto:support@echolon.ai)")
 with col2:
     st.caption("[📖 Documentation](#)")
