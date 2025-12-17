@@ -157,8 +157,7 @@ def calculate_kpis_from_data():
                         churn_benchmark_avg = 5.0  # Industry standard
                         churn_benchmark_top = 2.0  # Top quartile
 
-           return {
-            'revenue': revenue,
+        return {            'revenue': revenue,
             'revenue_formatted': revenue_formatted,
             'revenue_delta': "+8.3%",
             'customers': customers,
