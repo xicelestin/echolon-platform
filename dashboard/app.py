@@ -154,6 +154,7 @@ def calculate_kpis_from_data():
                         cac_benchmark_avg = cac * 1.05  # 5% above current as avg
                         cac_benchmark_top = cac * 0.85  # 15% below current as top performer
                         churn_benchmark_avg = 5.0  # Industry standard
+                        churn_benchmark_top = 2.0  # Top quartile
 
                     else:
                                     # Fallback to static benchmarks for small datasets
@@ -179,8 +180,8 @@ def calculate_kpis_from_data():
                                             customer_benchmark_top = 10000
                                             cac_benchmark_avg = BENCHMARKS["customer_acquisition_cost"]["industry_avg"]
                                             cac_benchmark_top = BENCHMARKS["customer_acquisition_cost"]["top_25_percent"]
-                                            churn_benchmark_avg = BENCHMARKS["churn_rate"]["industry_avg"]
-                                           churn_benchmark_top = BENCHMARKS["churn_rate"]["top_25_percent"]
+                                           churn_benchmark_avg = BENCHMARKS["churn_rate"]["industry_avg"]
+                                          churn_benchmark_top = BENCHMARKS["churn_rate"]["top_25_percent"]
        return {
             'revenue': revenue,
             'revenue_formatted': revenue_formatted,
