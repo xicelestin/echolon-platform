@@ -373,11 +373,13 @@ if page == "Home":
     
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        render_kpi_with_benchmark("💵", "Total Revenue", kpis['revenue_formatted'], kpis['revenue_delta'], kpis['revenue_benchmark_avg'], kpis['revenue_benchmark_top'], "Revenue vs industry benchmarks")    with c2:
-        render_kpi_with_benchmark("👥", "Active Customers", kpis['customers_formatted'], kpis['customers_delta'], kpis['customer_benchmark_avg'], kpis['customer_benchmark_top'], "Total active customers")    with c3:
-        render_kpi_with_benchmark("💰", "CAC", kpis['cac_formatted'], kpis['cac_delta'], kpis['cac_benchmark_avg'], kpis['cac_benchmark_top'], "Lower is better")    with c4:
-        render_kpi_with_benchmark("📉", "Churn Rate", kpis['churn_formatted'], kpis['churn_delta'], kpis['churn_benchmark_avg'], kpis['churn_benchmark_top'], "Lower is better")    
-    st.markdown("---")
+        render_kpi_with_benchmark("💵", "Total Revenue", kpis['revenue_formatted'], kpis['revenue_delta'], kpis['revenue_benchmark_avg'], kpis['revenue_benchmark_top'], "Revenue vs industry benchmarks")
+    with c2:
+        render_kpi_with_benchmark("👥", "Active Customers", kpis['customers_formatted'], kpis['customers_delta'], kpis['customer_benchmark_avg'], kpis['customer_benchmark_top'], "Total active customers")
+    with c3:
+        render_kpi_with_benchmark("💰", "CAC", kpis['cac_formatted'], kpis['cac_delta'], kpis['cac_benchmark_avg'], kpis['cac_benchmark_top'], "Lower is better")
+    with c4:
+        render_kpi_with_benchmark("📉", "Churn Rate", kpis['churn_formatted'], kpis['churn_delta'], kpis['churn_benchmark_avg'], kpis['churn_benchmark_top'], "Lower is better")    st.markdown("---")
     st.subheader("Monthly Revenue Trend")
     st.caption("Based on" + (" your uploaded dataset" if kpis['data_source'] == 'uploaded' else " demo dataset"))
     if kpis['data_source'] == 'uploaded' and st.session_state.uploaded_data is not None:
