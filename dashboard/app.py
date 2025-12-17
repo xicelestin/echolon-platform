@@ -146,15 +146,32 @@ def calculate_kpis_from_data():
         churn_formatted = f"{churn:.1f}%"
 
                 # Calculate dynamic benchmarks from uploaded data
-        if len(df) > 10:                                revenue_benchmark_avg = df[value_col].quantile(0.50)  # Median as baseline
+        if len(df) > 10:
+                        revenue_benchmark_avg = df[value_col].quantile(0.50)  # Median as baseline
+                        revenue_benchmark_top = df[value_col].quantile(0.75)  # 75th percentile
+                        customer_benchmark_avg = int(len(df) * 0.50)
+                        customer_benchmark_top = int(len(df) * 0.75)
+                        cac_benchmark_avg = cac * 1.05  # 5% above current as avg
+                        cac_benchmark_top = cac * 0.85  # 15% below current as top performer
+                        churn_benchmark_avg = 5.0  # Industry standard
+
+                    else:
+                                    # Fallback to static benchmarks for small datasets
+                                    revenue_benchmark_avg = BENCHMARKS["revenue"]["industry_avg"]
+                                    revenue_benchmark_top = BENCHMARKS["revenue"]["top_25_percent"]
+                                    customer_benchmark_avg = 5000
+                                    customer_benchmark_top = 10000
+                                    cac_benchmark_avg = BENCHMARKS["customer_acquisition_cost"]["industry_avg"]
+                                    cac_benchmark_top = BENCHMARKS["customer_acquisition_cost"]["top_25_percent"]
+                                    churn_benchmark_avg = BENCHMARKS["churn_rate"]["industry_avg"]
+                        
                                 revenue_benchmark_top = df[value_col].quantile(0.75)  # 75th percentile
                                 customer_benchmark_avg = int(len(df) * 0.50)
                                 customer_benchmark_top = int(len(df) * 0.75)
                                 cac_benchmark_avg = cac * 1.05  # 5% above current as avg
                                 cac_benchmark_top = cac * 0.85  # 15% below current as top performer
                                 churn_benchmark_avg = 5.0  # Industry standard
-                                churn_benchmark_top = 2.0  # Top quartile
-                            else:
+                                churn_benchmark_top = 2.0  # Top quartile                            else:
                                             # Fallback to static benchmarks for small datasets
                                             revenue_benchmark_avg = BENCHMARKS["revenue"]["industry_avg"]
                                             revenue_benchmark_top = BENCHMARKS["revenue"]["top_25_percent"]
@@ -163,8 +180,8 @@ def calculate_kpis_from_data():
                                             cac_benchmark_avg = BENCHMARKS["customer_acquisition_cost"]["industry_avg"]
                                             cac_benchmark_top = BENCHMARKS["customer_acquisition_cost"]["top_25_percent"]
                                             churn_benchmark_avg = BENCHMARKS["churn_rate"]["industry_avg"]
-                                            churn_benchmark_top = BENCHMARKS["churn_rate"]["top_25_percent"]
-        return {
+                                           churn_benchmark_top = BENCHMARKS["churn_rate"]["top_25_percent"]
+       return {
             'revenue': revenue,
             'revenue_formatted': revenue_formatted,
             'revenue_delta': "+8.3%",
