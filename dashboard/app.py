@@ -12,8 +12,8 @@ from performance_optimizer import PerformanceOptimizer, cached_data_processing
 from data_transformer import DataTransformer, get_transformation_options
 st.set_page_config(page_title="Echolon AI", page_icon="📊", layout="wide", initial_sidebar_state="expanded")
 
-# Force redeploy - 2025-12-16 FIX VERIFIED# CUSTOM CSS
-st.markdown("""
+# Force redeploy - 2025-12-17 FINAL FIX - CUSTOM CSSst.markdown("""
+
 <style>
 .sidebar-header h2 {margin: 0; font-size: 24px; font-weight: 700; color: #fff;}
 .sidebar-section {font-size: 11px; font-weight: 700; text-transform: uppercase; color: #888; padding: 16px 0 8px 0;}
