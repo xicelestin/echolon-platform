@@ -144,6 +144,27 @@ def calculate_kpis_from_data():
         cac_formatted = f"${cac:,.0f}"
         churn = (df[value_col].std() / df[value_col].mean() * 100) if df[value_col].mean() > 0 else DEMO_CHURN
         churn_formatted = f"{churn:.1f}%"
+
+                # Calculate dynamic benchmarks from uploaded data
+                if len(df) > 10:
+                                revenue_benchmark_avg = df[value_col].quantile(0.50)  # Median as baseline
+                                revenue_benchmark_top = df[value_col].quantile(0.75)  # 75th percentile
+                                customer_benchmark_avg = int(len(df) * 0.50)
+                                customer_benchmark_top = int(len(df) * 0.75)
+                                cac_benchmark_avg = cac * 1.05  # 5% above current as avg
+                                cac_benchmark_top = cac * 0.85  # 15% below current as top performer
+                                churn_benchmark_avg = 5.0  # Industry standard
+                                churn_benchmark_top = 2.0  # Top quartile
+                            else:
+                                            # Fallback to static benchmarks for small datasets
+                                            revenue_benchmark_avg = BENCHMARKS["revenue"]["industry_avg"]
+                                            revenue_benchmark_top = BENCHMARKS["revenue"]["top_25_percent"]
+                                            customer_benchmark_avg = 5000
+                                            customer_benchmark_top = 10000
+                                            cac_benchmark_avg = BENCHMARKS["customer_acquisition_cost"]["industry_avg"]
+                                            cac_benchmark_top = BENCHMARKS["customer_acquisition_cost"]["top_25_percent"]
+                                            churn_benchmark_avg = BENCHMARKS["churn_rate"]["industry_avg"]
+                                            churn_benchmark_top = BENCHMARKS["churn_rate"]["top_25_percent"]
         return {
             'revenue': revenue,
             'revenue_formatted': revenue_formatted,
@@ -157,6 +178,15 @@ def calculate_kpis_from_data():
             'churn': churn,
             'churn_formatted': churn_formatted,
             'churn_delta': "↓ 0.2%",
+                        # Dynamic benchmarks
+                        'revenue_benchmark_avg': revenue_benchmark_avg,
+                        'revenue_benchmark_top': revenue_benchmark_top,
+                        'customer_benchmark_avg': customer_benchmark_avg,
+                        'customer_benchmark_top': customer_benchmark_top,
+                        'cac_benchmark_avg': cac_benchmark_avg,
+                        'cac_benchmark_top': cac_benchmark_top,
+                        'churn_benchmark_avg': churn_benchmark_avg,
+                        'churn_benchmark_top': churn_benchmark_top,
             'data_source': 'uploaded'
         }
     except Exception as e:
@@ -352,14 +382,10 @@ if page == "Home":
     
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        render_kpi_with_benchmark("💵", "Total Revenue", kpis['revenue_formatted'], kpis['revenue_delta'], BENCHMARKS["revenue"]["industry_avg"], BENCHMARKS["revenue"]["top_25_percent"], "Revenue vs industry benchmarks")
-    with c2:
-        render_kpi_with_benchmark("👥", "Active Customers", kpis['customers_formatted'], kpis['customers_delta'], 5000, 10000, "Total active customers")
-    with c3:
-        render_kpi_with_benchmark("💰", "CAC", kpis['cac_formatted'], kpis['cac_delta'], BENCHMARKS["customer_acquisition_cost"]["industry_avg"], BENCHMARKS["customer_acquisition_cost"]["top_25_percent"], "Lower is better")
-    with c4:
-        render_kpi_with_benchmark("📉", "Churn Rate", kpis['churn_formatted'], kpis['churn_delta'], BENCHMARKS["churn_rate"]["industry_avg"], BENCHMARKS["churn_rate"]["top_25_percent"], "Lower is better")
-    
+        render_kpi_with_benchmark("💵", "Total Revenue", kpis['revenue_formatted'], kpis['revenue_delta'], kpis['revenue_benchmark_avg'], kpis['revenue_benchmark_top'], "Revenue vs industry benchmarks")    with c2:
+        render_kpi_with_benchmark("👥", "Active Customers", kpis['customers_formatted'], kpis['customers_delta'], kpis['customer_benchmark_avg'], kpis['customer_benchmark_top'], "Total active customers")    with c3:
+        render_kpi_with_benchmark("💰", "CAC", kpis['cac_formatted'], kpis['cac_delta'], kpis['cac_benchmark_avg'], kpis['cac_benchmark_top'], "Lower is better")    with c4:
+        render_kpi_with_benchmark("📉", "Churn Rate", kpis['churn_formatted'], kpis['churn_delta'], kpis['churn_benchmark_avg'], kpis['churn_benchmark_top'], "Lower is better")    
     st.markdown("---")
     st.subheader("Monthly Revenue Trend")
     st.caption("Based on" + (" your uploaded dataset" if kpis['data_source'] == 'uploaded' else " demo dataset"))
