@@ -146,8 +146,7 @@ def calculate_kpis_from_data():
         churn_formatted = f"{churn:.1f}%"
 
                 # Calculate dynamic benchmarks from uploaded data
-                if len(df) > 10:
-                                revenue_benchmark_avg = df[value_col].quantile(0.50)  # Median as baseline
+        if len(df) > 10:                                revenue_benchmark_avg = df[value_col].quantile(0.50)  # Median as baseline
                                 revenue_benchmark_top = df[value_col].quantile(0.75)  # 75th percentile
                                 customer_benchmark_avg = int(len(df) * 0.50)
                                 customer_benchmark_top = int(len(df) * 0.75)
