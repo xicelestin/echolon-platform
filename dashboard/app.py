@@ -723,9 +723,8 @@ elif page == "Upload":
                 st.session_state['data_source'] = 'uploaded'
                 st.session_state['last_updated'] = datetime.now()
             st.success(f"✅ Data uploaded successfully! Loaded {len(df)} rows and {len(df.columns)} columns.")      
-                    except Exception as e:
-                st.error(f"Error loading CSV: {str(e)}")
-    
+         except Exception as e:
+                    st.error(f"Error loading CSV: {str(e)}")
     st.title('Upload & Data Processing')
     st.markdown('Upload CSV files to analyze metrics across all dashboard pages')
     st.markdown("---")
