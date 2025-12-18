@@ -696,7 +696,7 @@ elif page == "Upload":
     # Callback function for CSV upload
     def on_csv_upload():
         if st.session_state.get('uploaded_csv_file'):
-                    # Validation: Check if file exists
+                            # Validation: Check if file exists
         file = st.session_state.get('uploaded_csv_file')
         if not file:
             return
