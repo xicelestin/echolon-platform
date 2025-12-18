@@ -719,10 +719,10 @@ elif page == "Upload":
                 if len(numeric_cols) == 0:
                     st.warning("⚠️ No numeric columns found. Data analysis features may be limited.")
                 
-            st.session_state['uploaded_data'] = df
-            st.session_state['data_source'] = 'uploaded'
-            st.session_state['last_updated'] = datetime.now()
-                    st.success(f"✅ Data uploaded successfully! Loaded {len(df)} rows and {len(df.columns)} columns.")
+                        st.session_state['uploaded_data'] = df
+                        st.session_state['data_source'] = 'uploaded'
+                        st.session_state['last_updated'] = datetime.now()
+                                st.success(f"✅ Data uploaded successfully! Loaded {len(df)} rows and {len(df.columns)} columns.")
             except Exception as e:
                 st.error(f"Error loading CSV: {str(e)}")
     
