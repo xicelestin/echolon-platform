@@ -697,9 +697,9 @@ elif page == "Upload":
     def on_csv_upload():
         if st.session_state.get('uploaded_csv_file'):
                             # Validation: Check if file exists
-        file = st.session_state.get('uploaded_csv_file')
-        if not file:
-            return
+                file = st.session_state.get('uploaded_csv_file')
+                if not file:
+                        return
         
         # Validation: Check file size (max 10MB)
         if file.size > 10 * 1024 * 1024:
