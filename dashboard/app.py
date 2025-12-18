@@ -722,7 +722,7 @@ elif page == "Upload":
                 st.session_state['uploaded_data'] = df
                 st.session_state['data_source'] = 'uploaded'
                 st.session_state['last_updated'] = datetime.now()
-                    uccess(f"✅ Data uploaded successfully! Loaded {len(df)} rows and {len(df.columns)} columns.")
+st.s                    uccess(f"✅ Data uploaded successfully! Loaded {len(df)} rows and {len(df.columns)} columns.")
             except Exception as e:
                 st.error(f"Error loading CSV: {str(e)}")
     
