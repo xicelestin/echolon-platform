@@ -379,7 +379,8 @@ if page == "Home":
     with c3:
         render_kpi_with_benchmark("💰", "CAC", kpis['cac_formatted'], kpis['cac_delta'], kpis['cac_benchmark_avg'], kpis['cac_benchmark_top'], "Lower is better")
     with c4:
-        render_kpi_with_benchmark("📉", "Churn Rate", kpis['churn_formatted'], kpis['churn_delta'], kpis['churn_benchmark_avg'], kpis['churn_benchmark_top'], "Lower is better")    st.markdown("---")
+        render_kpi_with_benchmark("📉", "Churn Rate", kpis['churn_formatted'], kpis['churn_delta'], kpis['churn_benchmark_avg'], kpis['churn_benchmark_top'], "Lower is better"))
+    st.markdown("---")
     st.subheader("Monthly Revenue Trend")
     st.caption("Based on" + (" your uploaded dataset" if kpis['data_source'] == 'uploaded' else " demo dataset"))
     if kpis['data_source'] == 'uploaded' and st.session_state.uploaded_data is not None:
