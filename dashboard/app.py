@@ -94,32 +94,11 @@ if 'last_updated' not in st.session_state:
 if 'baseline' not in st.session_state:
     st.session_state.baseline = {"revenue": 100000, "marketing": 20000, "churn": 0.05, "growth": 0.08, "inventory": 1000}
 
-# Demo data for fallback
-DEMO_REVENUE = 2400000
-DEMO_CUSTOMERS = 8432
-DEMO_CAC = 241
-DEMO_CHURN = 2.3
-DEMO_TREND = pd.DataFrame({'Month': ['May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], 'Revenue': [45000,48000,52000,51000,55000,58000,62000,60000]}).set_index('Month')
 
 def calculate_kpis_from_data():
-    """Calculate KPIs from uploaded data or return demo values."""
+        """Calculate KPIs from uploaded data - requires user to upload CSV."""
     if st.session_state.uploaded_data is None or st.session_state.uploaded_data.empty:
-        return {
-            'revenue': DEMO_REVENUE,
-            'revenue_formatted': f"${DEMO_REVENUE/1e6:.1f}M",
-            'revenue_delta': "+12.5%",
-            'customers': DEMO_CUSTOMERS,
-            'customers_formatted': f"{DEMO_CUSTOMERS:,}",
-            'customers_delta': "+8.2%",
-            'cac': DEMO_CAC,
-            'cac_formatted': f"${DEMO_CAC:,}",
-            'cac_delta': "↓ $48",
-            'churn': DEMO_CHURN,
-            'churn_formatted': f"{DEMO_CHURN:.1f}%",
-            'churn_delta': "↓ 0.3%",
-            'data_source': 'demo'
-        }
-    try:
+        return Nonetry:
         df = st.session_state.uploaded_data
                 
         # Detect value column name (flexible handling)
