@@ -7,10 +7,16 @@ from datetime import datetime
 import requests
 import os
 import time
+print('DEBUG: Starting custom module imports...')
 from business_owner_fixes import (show_personalized_onboarding, render_kpi_with_context, personalize_insights, show_tactical_recommendation, render_what_if_presets, get_health_badge, render_kpi_with_benchmark, generate_actionable_insights, display_actionable_insight, get_priority_score)
+print('DEBUG: business_owner_fixes imported successfully')
 from data_validation import DataValidator, validate_csv_file
+print('DEBUG: data_validation imported successfully')
 from performance_optimizer import PerformanceOptimizer, cached_data_processing
+print('DEBUG: performance_optimizer imported successfully')
 from data_transformer import DataTransformer, get_transformation_options
+print('DEBUG: data_transformer imported successfully')
+print('DEBUG: All imports completed successfully!')
 st.set_page_config(page_title="Echolon AI", page_icon="📊", layout="wide", initial_sidebar_state="expanded")
 
 # Force redeploy - 2025-12-17 FINAL FIX - CUSTOM CSS
