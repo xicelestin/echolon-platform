@@ -541,9 +541,12 @@ elif page == "What-If":
 # PAGE: UPLOAD
 
 # PAGE: PROFILE
-# PROFILE PAGE DISABLED - TODO: Fix indentation issues
+547
+545
+- TODO: Fix indentation issues
 if False:  # Disabled temporarily
 
+        pass  # Profile disabled - has indentation issues
     render_page_header("Business Profile", "Your company metrics and account settings")
 
 # Company Information Section
