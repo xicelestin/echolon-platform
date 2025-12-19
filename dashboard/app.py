@@ -696,38 +696,33 @@ elif page == "Upload":
     # Callback function for CSV upload
     def on_csv_upload():
         if st.session_state.get('uploaded_csv_file'):
-                            # Validation: Check if file exists
-                file = st.session_state.get('uploaded_csv_file')
-                if not file:
-                        return
-        
-        # Validation: Check file size (max 10MB)
-        if file.size > 10 * 1024 * 1024:
-            st.error("⚠️ File size exceeds 10MB limit. Please upload a smaller file.")
-            return
-        
-        try:
-        df = pd.read_csv(st.session_state.uploaded_csv_file)
-        
-        # Validation: Check if dataframe is empty
-        if df.empty:
-            st.error("⚠️ Uploaded CSV is empty. Please upload a file with data.")
-            return
-        
-        # Validation: Check for at least one numeric column
-        numeric_cols = df.select_dtypes(include=['number']).columns
-        if len(numeric_cols) == 0:
-            st.warning("⚠️ No numeric columns found. Data analysis features may be limited.")
-        
-        st.session_state['uploaded_data'] = df
-        st.session_state['data_source'] = 'uploaded'
-        st.session_state['last_updated'] = datetime.now()
-        st.success(f"✅ Data uploaded successfully! Loaded {len(df)} rows and {len(df.columns)} columns.")
-    except Exception as e:
-        st.error(f"Error loading CSV: {str(e)}")
-
-    st.title('Upload & Data Processing')                
-    # File uploader with callback
+            file = st.session_state.get('uploaded_csv_file')
+            if not file:
+                return
+            
+            if file.size > 10 * 1024 * 1024:
+                st.error("⚠️ File size exceeds 10MB limit. Please upload a smaller file.")
+                return
+            
+            try:
+                df = pd.read_csv(st.session_state.uploaded_csv_file)
+                
+                if df.empty:
+                    st.error("⚠️ Uploaded CSV is empty. Please upload a file with data.")
+                    return
+                
+                numeric_cols = df.select_dtypes(include=['number']).columns
+                if len(numeric_cols) == 0:
+                    st.warning("⚠️ No numeric columns found. Data analysis features may be limited.")
+                
+                st.session_state['uploaded_data'] = df
+                st.session_state['data_source'] = 'uploaded'
+                st.session_state['last_updated'] = datetime.now()
+                st.success(f"✅ Data uploaded successfully! Loaded {len(df)} rows and {len(df.columns)} columns.")
+            except Exception as e:
+                st.error(f"Error loading CSV: {str(e)}")
+    
+    st.title('Upload & Data Processing')# File uploader with callback
     st.file_uploader(
         'Choose CSV file',
         type='csv',
