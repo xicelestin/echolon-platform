@@ -319,6 +319,12 @@ if page == "Home":
         """)
     st.subheader("Key Performance Indicators")
     kpis = calculate_kpis_from_data()
+        
+    # If no data uploaded, show onboarding and exit
+    if kpis is None:
+        st.warning("📊 No data uploaded yet. Please upload your CSV file to see analytics.")
+        st.info("👉 Navigate to the **Upload** page in the sidebar to get started.")
+        return
 
         # Add export functionality
     col_export1, col_export2, col_export3 = st.columns([1, 1, 4])
@@ -377,12 +383,9 @@ if page == "Home":
                 df_sorted = df.sort_values('date')
                 st.line_chart(df_sorted.set_index('date')['value'], width="stretch", height=300)
             else:
-                st.line_chart(DEMO_TREND, width="stretch", height=300)
-        except:
-            st.line_chart(DEMO_TREND, width="stretch", height=300)
-    else:
-        st.line_chart(DEMO_TREND, width="stretch", height=300)
-    
+            st.info("📈 Chart will display when data has 'date' and 'value' columns")        except:
+            st.info("📈 Chart will display when data has 'date' and 'value' columns")    else:
+    st.info("📈 Chart will display when data has 'date' and 'value' columns")    
     st.markdown("---")
     c1, c2 = st.columns(2)
     with c1:
