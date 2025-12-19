@@ -100,5 +100,4 @@ def calculate_kpis_from_data():
     if st.session_state.uploaded_data is None or st.session_state.uploaded_data.empty:
         return {}
     
-    try:
-        df = st.session_state.uploaded_data
+    df = st.session_state.uploaded_data
