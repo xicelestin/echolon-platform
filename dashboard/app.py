@@ -195,6 +195,14 @@ def calculate_kpis_from_data():
             'churn': DEMO_CHURN,
             'churn_formatted': f"{DEMO_CHURN:.1f}%",
             'churn_delta': "↓ 0.3%",
+            'revenue_benchmark_avg': BENCHMARKS['revenue']['industry_avg'],
+            'revenue_benchmark_top': BENCHMARKS['revenue']['top_25_percent'],
+            'customer_benchmark_avg': 5000,
+            'customer_benchmark_top': 10000,
+            'cac_benchmark_avg': BENCHMARKS['customer_acquisition_cost']['industry_avg'],
+            'cac_benchmark_top': BENCHMARKS['customer_acquisition_cost']['top_25_percent'],
+            'churn_benchmark_avg': BENCHMARKS['churn_rate']['industry_avg'],
+            'churn_benchmark_top': BENCHMARKS['churn_rate']['top_25_percent'],
             'data_source': 'demo'
         }
         
