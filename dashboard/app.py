@@ -66,90 +66,91 @@ def calculate_kpis(df):
     
     return {
         'total_revenue': total_revenue,
-        'revenue_growth': revenue_growth,
-        'total_orders': int(total_orders),
-        'orders_growth': orders_growth,
-        'total_customers': int(total_customers),
-        'customers_growth': customers_growth,
+        'total_orders': total_orders,
+        'total_customers': total_customers,
         'avg_order_value': avg_order_value,
         'total_profit': total_profit,
-        'avg_profit_margin': avg_profit_margin
+        'avg_profit_margin': avg_profit_margin,
+        'revenue_growth': revenue_growth,
+        'orders_growth': orders_growth,
+        'customers_growth': customers_growth
     }
 
 # Sidebar Navigation
 with st.sidebar:
-    st.title("📊 Echolon AI")
+    st.image("https://via.placeholder.com/150x50/1f77b4/ffffff?text=Echolon+AI", use_container_width=True)
+    st.title("🎯 Echolon AI")
     st.markdown("### Business Intelligence Platform")
     st.markdown("---")
     
     # Navigation
-    st.markdown("#### 📢 Navigation")
-    pages = [
-        "🏠 Dashboard",
-        "📊 Analytics",
-        "🔮 Predictions",
-        "💡 Recommendations",
-        "📈 What-If Analysis",
-        "📦 Inventory",
-        "📎 Upload Data"
-    ]
+    st.markdown("## 📍 Navigation")
+    pages = {
+        "🏠 Dashboard": "Dashboard",
+        "📊 Analytics": "Analytics",
+        "🔮 Predictions": "Predictions",
+        "💡 Recommendations": "Recommendations",
+        "📝 What-If Analysis": "What-If Analysis",
+        "🎨 Inventory": "Inventory",
+        "📂 Upload Data": "Upload Data"
+    }
     
-    for page in pages:
-        if st.button(page, key=page, use_container_width=True):
-            st.session_state.current_page = page.split(' ', 1)[1]
+    for page_name, page_id in pages.items():
+        if st.sidebar.button(page_name, key=page_id, use_container_width=True):
+            st.session_state.current_page = page_id
     
     st.markdown("---")
     
-    # Data source indicator
-    if st.session_state.data_source == 'demo':
-        st.info("📢 Using Demo Data")
-    else:
-        st.success("✅ Using Your Data")
+    # Demo data toggle
+    st.markdown("## 📊 Using Demo Data")
+    if st.button("🔄 Refresh Data", use_container_width=True):
+        st.session_state.uploaded_data = None
+        st.rerun()
     
+    st.markdown("---")
     st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
-# Get data
-if st.session_state.uploaded_data is not None:
-    df = st.session_state.uploaded_data
+# Load data
+if st.session_state.uploaded_data is None:
+    data = generate_demo_data()
 else:
-    df = generate_demo_data()
+    data = st.session_state.uploaded_data
 
-kpis = calculate_kpis(df)
+kpis = calculate_kpis(data)
 
-# Main Content based on current page
-if st.session_state.current_page == 'Dashboard':
-    st.title("🚀 Echolon AI Dashboard")
-    st.markdown("### Real-time Business Intelligence & Analytics")
+# Main Content Area
+if st.session_state.current_page == "Dashboard":
+    st.title("📈 Real-time Business Intelligence & Analytics")
     
-    # KPI Metrics
+    # KPI Cards
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         st.metric(
-            "Total Revenue",
-            f"${kpis.get('total_revenue', 0):,.0f}",
-            f"{kpis.get('revenue_growth', 0):.1f}%"
+            label="Total Revenue",
+            value=f"${kpis['total_revenue']:,.0f}",
+            delta=f"{kpis['revenue_growth']:.1f}%"
         )
     
     with col2:
         st.metric(
-            "Total Orders",
-            f"{kpis.get('total_orders', 0):,}",
-            f"{kpis.get('orders_growth', 0):.1f}%"
+            label="Total Orders",
+            value=f"{kpis['total_orders']:,.0f}",
+            delta=f"{kpis['orders_growth']:.1f}%"
         )
     
     with col3:
         st.metric(
-            "Total Customers",
-            f"{kpis.get('total_customers', 0):,}",
-            f"{kpis.get('customers_growth', 0):.1f}%"
+            label="Total Customers",
+            value=f"{kpis['total_customers']:,.0f}",
+            delta=f"{kpis['customers_growth']:.1f}%"
         )
     
     with col4:
         st.metric(
-            "Avg Order Value",
-            f"${kpis.get('avg_order_value', 0):.2f}",
-            f"{kpis.get('avg_profit_margin', 0):.1f}% margin"
+            label="Avg Order Value",
+            value=f"${kpis['avg_order_value']:.2f}",
+            delta=f"{kpis['avg_profit_margin']:.1f}% margin"
         )
     
     st.markdown("---")
@@ -158,108 +159,107 @@ if st.session_state.current_page == 'Dashboard':
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader("📈 Revenue Trend")
-        if 'date' in df.columns:
-            fig = px.line(df, x='date', y='revenue', title='Daily Revenue')
-            fig.update_layout(height=300)
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.info("Upload data with 'date' and 'revenue' columns to see trends")
+        st.subheader("📊 Revenue Trend")
+        st.markdown("**Daily Revenue**")
+        
+        fig = px.line(data, x='date', y='revenue', title='Daily Revenue')
+        fig.update_layout(xaxis_title='Date', yaxis_title='Revenue ($)')
+        st.plotly_chart(fig, use_container_width=True)
     
     with col2:
         st.subheader("📊 Orders & Customers")
-        if 'date' in df.columns:
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(x=df['date'], y=df['orders'], name='Orders', mode='lines'))
-            fig.add_trace(go.Scatter(x=df['date'], y=df['customers'], name='Customers', mode='lines'))
-            fig.update_layout(height=300)
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.info("Upload data with 'date', 'orders', and 'customers' columns")
+        
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=data['date'], y=data['orders'], name='Orders', mode='lines'))
+        fig.add_trace(go.Scatter(x=data['date'], y=data['customers'], name='Customers', mode='lines'))
+        fig.update_layout(xaxis_title='Date', yaxis_title='Count')
+        st.plotly_chart(fig, use_container_width=True)
     
-    # Data preview
+    # Data Preview
     with st.expander("📊 View Data Preview"):
-        st.dataframe(df.head(50), use_container_width=True)
-
-elif st.session_state.current_page == 'Upload Data':
-    st.title("📎 Upload Your Business Data")
-    st.markdown("### Upload CSV file to analyze your business metrics")
+        st.dataframe(data.tail(20), use_container_width=True)
     
-    uploaded_file = st.file_uploader(
-        "Choose a CSV file",
-        type=['csv'],
-        help="Upload your business data in CSV format"
-    )
+    st.markdown("---")
+    st.markdown("© 2025 Echolon AI - Intelligent Business Analytics Platform")
+
+elif st.session_state.current_page == "Analytics":
+    st.title("📊 Advanced Analytics")
+    st.info("Advanced analytics features coming soon...")
+    
+    # Placeholder for analytics
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Revenue Distribution")
+        fig = px.histogram(data, x='revenue', nbins=50)
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        st.subheader("Orders Distribution")
+        fig = px.histogram(data, x='orders', nbins=50)
+        st.plotly_chart(fig, use_container_width=True)
+
+elif st.session_state.current_page == "Predictions":
+    st.title("🔮 AI-Powered Predictions")
+    st.info("Predictive analytics features coming soon...")
+    st.markdown("This section will include:")
+    st.markdown("- Revenue forecasting")
+    st.markdown("- Demand prediction")
+    st.markdown("- Customer churn prediction")
+    st.markdown("- Inventory optimization")
+
+elif st.session_state.current_page == "Recommendations":
+    st.title("💡 AI Recommendations")
+    st.info("AI recommendation engine coming soon...")
+    st.markdown("This section will include:")
+    st.markdown("- Personalized product recommendations")
+    st.markdown("- Marketing campaign suggestions")
+    st.markdown("- Pricing optimization")
+    st.markdown("- Resource allocation")
+
+elif st.session_state.current_page == "What-If Analysis":
+    st.title("📝 What-If Analysis")
+    st.info("What-if analysis tools coming soon...")
+    st.markdown("This section will include:")
+    st.markdown("- Scenario planning")
+    st.markdown("- Revenue impact analysis")
+    st.markdown("- Cost optimization")
+    st.markdown("- Investment ROI calculator")
+
+elif st.session_state.current_page == "Inventory":
+    st.title("🎨 Inventory Management")
+    st.info("Inventory management features coming soon...")
+    
+    if 'inventory_units' in data.columns:
+        st.subheader("Inventory Levels Over Time")
+        fig = px.line(data, x='date', y='inventory_units', title='Daily Inventory Units')
+        st.plotly_chart(fig, use_container_width=True)
+
+elif st.session_state.current_page == "Upload Data":
+    st.title("📂 Upload Your Data")
+    st.markdown("Upload your business data to get personalized insights.")
+    
+    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
     
     if uploaded_file is not None:
         try:
-            df_uploaded = pd.read_csv(uploaded_file)
-            st.success(f"✅ Successfully loaded {len(df_uploaded)} rows!")
+            df = pd.read_csv(uploaded_file)
+            st.success(f"Successfully loaded {len(df)} rows!")
+            st.dataframe(df.head())
             
-            st.subheader("Data Preview")
-            st.dataframe(df_uploaded.head(10), use_container_width=True)
-            
-            st.subheader("Column Information")
-            col_info = pd.DataFrame({
-                'Column': df_uploaded.columns,
-                'Type': df_uploaded.dtypes.values,
-                'Non-Null Count': df_uploaded.count().values,
-                'Null Count': df_uploaded.isnull().sum().values
-            })
-            st.dataframe(col_info, use_container_width=True)
-            
-            if st.button("✅ Use This Data", type="primary"):
-                st.session_state.uploaded_data = df_uploaded
+            if st.button("Use This Data"):
+                st.session_state.uploaded_data = df
                 st.session_state.data_source = 'uploaded'
-                st.success("Data loaded successfully! Navigate to Dashboard to see your insights.")
+                st.success("Data uploaded successfully! Navigate to Dashboard to see your insights.")
                 st.rerun()
-        
         except Exception as e:
-            st.error(f"❌ Error loading file: {str(e)}")
+            st.error(f"Error loading file: {e}")
     
     st.markdown("---")
-    st.info("💡 Expected columns: date, revenue, orders, customers, cost, profit, etc.")
-
-elif st.session_state.current_page == 'Analytics':
-    st.title("📊 Advanced Analytics")
-    st.markdown("### Deep dive into your business metrics")
-    
-    # Time period selector
-    col1, col2 = st.columns([1, 3])
-    with col1:
-        period = st.selectbox("Time Period", ["Last 7 Days", "Last 30 Days", "Last 90 Days", "All Time"])
-    
-    st.markdown("---")
-    
-    # Profit Analysis
-    if 'profit' in df.columns:
-        st.subheader("💰 Profit Analysis")
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.metric("Total Profit", f"${kpis.get('total_profit', 0):,.0f}")
-            st.metric("Avg Profit Margin", f"{kpis.get('avg_profit_margin', 0):.2f}%")
-        
-        with col2:
-            if 'date' in df.columns:
-                fig = px.area(df, x='date', y='profit', title='Profit Over Time')
-                st.plotly_chart(fig, use_container_width=True)
-    
-    # Coming soon sections
-    st.info("🚀 More analytics features coming soon: Cohort analysis, Customer lifetime value, Churn prediction, and more!")
-
-else:
-    st.title(f"🚧 {st.session_state.current_page}")
-    st.info(f"The {st.session_state.current_page} page is under development. Core functionality will be added progressively.")
-    st.markdown("### Features Coming Soon:")
-    if st.session_state.current_page == 'Predictions':
-        st.markdown("- Revenue forecasting\n- Demand prediction\n- Customer churn prediction\n- Inventory optimization")
-    elif st.session_state.current_page == 'Recommendations':
-        st.markdown("- AI-powered business insights\n- Action recommendations\n- Opportunity identification\n- Risk alerts")
-    elif st.session_state.current_page == 'What-If Analysis':
-        st.markdown("- Scenario modeling\n- Impact simulation\n- Strategy comparison\n- ROI calculator")
-    elif st.session_state.current_page == 'Inventory':
-        st.markdown("- Stock level monitoring\n- Reorder point calculation\n- Turnover analysis\n- Supplier performance")
-
-st.markdown("---")
-st.caption("© 2025 Echolon AI - Intelligent Business Analytics Platform")
+    st.markdown("**Expected CSV format:**")
+    st.markdown("- date: Date column (YYYY-MM-DD)")
+    st.markdown("- revenue: Revenue amount")
+    st.markdown("- orders: Number of orders")
+    st.markdown("- customers: Number of customers")
+    st.markdown("- cost: Cost amount (optional)")
+    st.markdown("- marketing_spend: Marketing spend (optional)")
+    st.markdown("- inventory_units: Inventory units (optional)")
