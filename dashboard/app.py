@@ -6,6 +6,19 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import io
 
+# Import page render functions
+try:
+    from pages_predictions import render_predictions_page
+    from pages_recommendations import render_recommendations_page
+    from pages_whatif import render_whatif_page
+    from pages_inventory_ops import render_inventory_page
+except ImportError as e:
+    # Fallback if page modules can't be imported
+    render_predictions_page = None
+    render_recommendations_page = None
+    render_whatif_page = None
+    render_inventory_page = None
+
 # Page config
 st.set_page_config(
     page_title="Echolon AI - Business Intelligence",
@@ -199,40 +212,32 @@ elif st.session_state.current_page == "Analytics":
         st.plotly_chart(fig, use_container_width=True)
 
 elif st.session_state.current_page == "Predictions":
-    st.title("🔮 AI-Powered Predictions")
-    st.info("Predictive analytics features coming soon...")
-    st.markdown("This section will include:")
-    st.markdown("- Revenue forecasting")
-    st.markdown("- Demand prediction")
-    st.markdown("- Customer churn prediction")
-    st.markdown("- Inventory optimization")
+        if render_predictions_page:
+        render_predictions_page()
+    else:
+        st.title("🔮 AI-Powered Predictions")
+        st.info("Predictive analytics features coming soon...")
 
 elif st.session_state.current_page == "Recommendations":
-    st.title("💡 AI Recommendations")
-    st.info("AI recommendation engine coming soon...")
-    st.markdown("This section will include:")
-    st.markdown("- Personalized product recommendations")
-    st.markdown("- Marketing campaign suggestions")
-    st.markdown("- Pricing optimization")
-    st.markdown("- Resource allocation")
+        if render_recommendations_page:
+        render_recommendations_page()
+    else:
+        st.title("💡 AI Recommendations")
+        st.info("AI recommendation engine coming soon...")
 
 elif st.session_state.current_page == "What-If Analysis":
-    st.title("📝 What-If Analysis")
-    st.info("What-if analysis tools coming soon...")
-    st.markdown("This section will include:")
-    st.markdown("- Scenario planning")
-    st.markdown("- Revenue impact analysis")
-    st.markdown("- Cost optimization")
-    st.markdown("- Investment ROI calculator")
+        if render_whatif_page:
+        render_whatif_page()
+    else:
+        st.title("📈 What-If Analysis")
+        st.info("What-If analysis tools coming soon...")
 
 elif st.session_state.current_page == "Inventory":
-    st.title("🎨 Inventory Management")
-    st.info("Inventory management features coming soon...")
-    
-    if 'inventory_units' in data.columns:
-        st.subheader("Inventory Levels Over Time")
-        fig = px.line(data, x='date', y='inventory_units', title='Daily Inventory Units')
-        st.plotly_chart(fig, use_container_width=True)
+        if render_inventory_page:
+        render_inventory_page()
+    else:
+        st.title("📦 Inventory Management")
+        st.info("Inventory management features coming soon...")
 
 elif st.session_state.current_page == "Upload Data":
     st.title("📂 Upload Your Data")
