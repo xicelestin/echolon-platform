@@ -223,21 +223,21 @@ elif st.session_state.current_page == "Predictions":
                     render_recommendations_page()
             else:
                     st.title("💡 AI Recommendations")
-                            st.info("AI recommendation engine coming soon...")
+                                        st.info("AI recommendation engine coming soon...")
 
 elif st.session_state.current_page == "What-If Analysis":
         if render_whatif_page:
         render_whatif_page()
     else:
         st.title("📈 What-If Analysis")
-                st.info("What-If analysis tools coming soon...")
+            st.info("What-If analysis tools coming soon...")
             
         elif st.session_state.current_page == "Inventory":
                             if render_inventory_page:
                                 render_inventory_page()
             else:
                     st.title("📦 Inventory Management")
-                    st.info("Inventory management features coming soon...")
+            st.info("Inventory management features coming soon...")
 
 elif st.session_state.current_page == "Upload Data":
     st.title("📂 Upload Your Data")
