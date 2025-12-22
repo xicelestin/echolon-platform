@@ -216,7 +216,7 @@ elif st.session_state.current_page == "Predictions":
                 st.title("🔮 AI-Powered Predictions")
                 st.info("Predictive analytics features coming soon...")
 
-    elif st.session_state.current_page == "Recommendations":
+elif st.session_state.current_page == "Recommendations":
         if render_recommendations_page:
                     render_recommendations_page()
             else:
