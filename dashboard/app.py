@@ -168,7 +168,7 @@ if st.session_state.current_page == "Dashboard":
         st.metric(
             "Total Revenue",
             f"${kpis.get('total_revenue', 0):,.0f}",
-            f"{kpis.get('revenue_growth', 0):.1f%"})
+            f"{kpis.get('revenue_growth', 0):.1f%"}
         )
     with col2:
         st.metric(
