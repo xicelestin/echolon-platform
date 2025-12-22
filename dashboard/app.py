@@ -68,7 +68,6 @@ def calculate_kpis(df):
     if len(df) >= 60:
         recent = df.tail(30)
         previous = df.iloc[-60:-30]
-        
         revenue_growth = ((recent['revenue'].sum() / previous['revenue'].sum()) - 1) * 100
         orders_growth = ((recent['orders'].sum() / previous['orders'].sum()) - 1) * 100
         customers_growth = ((recent['customers'].sum() / previous['customers'].sum()) - 1) * 100
@@ -174,14 +173,12 @@ if st.session_state.current_page == "Dashboard":
     with col1:
         st.subheader("📊 Revenue Trend")
         st.markdown("**Daily Revenue**")
-        
         fig = px.line(data, x='date', y='revenue', title='Daily Revenue')
         fig.update_layout(xaxis_title='Date', yaxis_title='Revenue ($)')
         st.plotly_chart(fig, use_container_width=True)
     
     with col2:
         st.subheader("📊 Orders & Customers")
-        
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=data['date'], y=data['orders'], name='Orders', mode='lines'))
         fig.add_trace(go.Scatter(x=data['date'], y=data['customers'], name='Customers', mode='lines'))
@@ -191,7 +188,6 @@ if st.session_state.current_page == "Dashboard":
     # Data Preview
     with st.expander("📊 View Data Preview"):
         st.dataframe(data.tail(20), use_container_width=True)
-    
 
 elif st.session_state.current_page == "Analytics":
     st.title("📊 Advanced Analytics")
@@ -199,6 +195,7 @@ elif st.session_state.current_page == "Analytics":
     
     # Placeholder for analytics
     col1, col2 = st.columns(2)
+    
     with col1:
         st.subheader("Revenue Distribution")
         fig = px.histogram(data, x='revenue', nbins=50)
@@ -210,32 +207,32 @@ elif st.session_state.current_page == "Analytics":
         st.plotly_chart(fig, use_container_width=True)
 
 elif st.session_state.current_page == "Predictions":
-        if render_predictions_page:
-                    render_predictions_page()
-        else:
-                st.title("🔮 AI-Powered Predictions")
-                st.info("Predictive analytics features coming soon...")
+    if render_predictions_page:
+        render_predictions_page()
+    else:
+        st.title("🔮 AI-Powered Predictions")
+        st.info("Predictive analytics features coming soon...")
 
 elif st.session_state.current_page == "Recommendations":
-        if render_recommendations_page:
-                    render_recommendations_page()
-                else:
-                    st.title("💡 AI Recommendations")
-                                        st.info("AI recommendation engine coming soon...")
+    if render_recommendations_page:
+        render_recommendations_page()
+    else:
+        st.title("💡 AI Recommendations")
+        st.info("AI recommendation engine coming soon...")
 
 elif st.session_state.current_page == "What-If Analysis":
-        if render_whatif_page:
+    if render_whatif_page:
         render_whatif_page()
-        else:
+    else:
         st.title("📈 What-If Analysis")
-            st.info("What-If analysis tools coming soon...")
-            
-    elif st.session_state.current_page == "Inventory":
-                            if render_inventory_page:
-                                render_inventory_page()
-            else:
-                    st.title("📦 Inventory Management")
-            st.info("Inventory management features coming soon...")
+        st.info("What-If analysis tools coming soon...")
+
+elif st.session_state.current_page == "Inventory":
+    if render_inventory_page:
+        render_inventory_page()
+    else:
+        st.title("📦 Inventory Management")
+        st.info("Inventory management features coming soon...")
 
 elif st.session_state.current_page == "Upload Data":
     st.title("📂 Upload Your Data")
