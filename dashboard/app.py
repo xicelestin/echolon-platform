@@ -304,20 +304,20 @@ if st.session_state.current_page == "Dashboard":
         fig = px.line(filtered_data, x='date', y='revenue', title='Daily Revenue')
         fig.update_layout(xaxis_title='Date', yaxis_title='Revenue ($)')
         st.plotly_chart(fig, use_container_width=True)
-
-    with col2:        fig = go.Figure()
+        
+    with col2:
+        st.subheader("📊 Orders & Customers")
+        fig = go.Figure()
         fig.add_trace(go.Scatter(x=filtered_data['date'], y=filtered_data['orders'], name='Orders', mode='lines'))
         fig.add_trace(go.Scatter(x=filtered_data['date'], y=filtered_data['customers'], name='Customers', mode='lines'))
         fig.update_layout(xaxis_title='Date', yaxis_title='Count')
-        st.plotly_chart(fig, use_container_width=True)    # Data Preview
+        st.plotly_chart(fig, use_container_width=True)
+
+    # Data Preview
     with st.expander("📊 View Data Preview"):
         st.dataframe(filtered_data.tail(20), use_container_width=True)
-elif st.session_state.current_page == "Analytics":
-    st.title("📊 Advanced Analytics")
-    
+
     # Metrics overview
-    col1, col2, col3, col4 = st.columns(4)
-    
     with col1:
         avg_daily_revenue = data['revenue'].mean()
         st.metric("Avg Daily Revenue", f"${avg_daily_revenue:,.2f}")
