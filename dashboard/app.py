@@ -88,6 +88,93 @@ def calculate_kpis(df):
         'customers_growth': customers_growth
     }
 
+# Reusable KPI Rendering Function
+def render_kpi_strip(kpis_dict, benchmark_config=None, num_columns=4):
+    """
+    Renders a reusable KPI strip that accepts a data slice and benchmark config.
+    
+    Args:
+        kpis_dict: Dictionary containing KPI values from calculate_kpis()
+        benchmark_config: Optional dict with benchmark values for comparison
+        num_columns: Number of columns to display (default: 4)
+    
+    Returns:
+        None (renders Streamlit UI components)
+    """
+    if not kpis_dict:
+        st.warning("No KPI data available")
+        return
+    
+    # Default KPI configuration
+    kpi_config = [
+        {
+            'label': 'Total Revenue',
+            'key': 'total_revenue',
+            'format': 'currency',
+            'delta_key': 'revenue_growth'
+        },
+        {
+            'label': 'Total Orders',
+            'key': 'total_orders',
+            'format': 'number',
+            'delta_key': 'orders_growth'
+        },
+        {
+            'label': 'Total Customers',
+            'key': 'total_customers',
+            'format': 'number',
+            'delta_key': 'customers_growth'
+        },
+        {
+            'label': 'Avg Order Value',
+            'key': 'avg_order_value',
+            'format': 'currency_decimal',
+            'delta_suffix': ' margin',
+            'delta_key': 'avg_profit_margin'
+        }
+    ]
+    
+    # Apply benchmark config if provided
+    if benchmark_config:
+        kpi_config = benchmark_config
+    
+    # Create columns
+    cols = st.columns(num_columns)
+    
+    # Render each KPI
+    for idx, kpi in enumerate(kpi_config[:num_columns]):
+        with cols[idx]:
+            # Get value
+            value = kpis_dict.get(kpi['key'], 0)
+            
+            # Format value based on type
+            if kpi['format'] == 'currency':
+                formatted_value = f"${value:,.0f}"
+            elif kpi['format'] == 'currency_decimal':
+                formatted_value = f"${value:.2f}"
+            elif kpi['format'] == 'number':
+                formatted_value = f"{value:,.0f}"
+            elif kpi['format'] == 'percentage':
+                formatted_value = f"{value:.1f}%"
+            else:
+                formatted_value = str(value)
+            
+            # Get delta value if available
+            delta = None
+            if 'delta_key' in kpi:
+                delta_value = kpis_dict.get(kpi['delta_key'], 0)
+                delta_suffix = kpi.get('delta_suffix', '')
+                delta = f"{delta_value:.1f}%{delta_suffix}"
+            
+            # Render metric
+            st.metric(
+                label=kpi['label'],
+                value=formatted_value,
+                delta=delta
+            )
+
+
+
 # Forecasting function
 def forecast_metric(df, metric, days_ahead=30):
     if len(df) < 30:
@@ -167,35 +254,8 @@ if st.session_state.current_page == "Dashboard":
     st.title("📈 Real-time Business Intelligence & Analytics")
     
     # KPI Cards
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric(
-            label="Total Revenue",
-            value=f"${kpis['total_revenue']:,.0f}",
-            delta=f"{kpis['revenue_growth']:.1f}%"
-        )
-    
-    with col2:
-        st.metric(
-            label="Total Orders",
-            value=f"{kpis['total_orders']:,.0f}",
-            delta=f"{kpis['orders_growth']:.1f}%"
-        )
-    
-    with col3:
-        st.metric(
-            label="Total Customers",
-            value=f"{kpis['total_customers']:,.0f}",
-            delta=f"{kpis['customers_growth']:.1f}%"
-        )
-    
-    with col4:
-        st.metric(
-            label="Avg Order Value",
-            value=f"${kpis['avg_order_value']:.2f}",
-            delta=f"{kpis['avg_profit_margin']:.1f}% margin"
-        )
+# Render KPI strip using reusable function
+    render_kpi_strip(kpis)
     
     st.markdown("---")
     
