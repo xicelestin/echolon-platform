@@ -234,20 +234,78 @@ elif st.session_state.current_page == "Upload Data":
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
     
     if uploaded_file is not None:
-        try:
-            df = pd.read_csv(uploaded_file)
-            st.success(f"Successfully loaded {len(df)} rows!")
-            st.dataframe(df.head())
+try:
+                # Read CSV file
+                df = pd.read_csv(uploaded_file)
+                
+                # Validate required columns
+                required_columns = ['date', 'revenue', 'orders', 'customers']
+                missing_columns = [col for col in required_columns if col not in df.columns.str.lower()]
+                
+                if missing_columns:
+                    st.error(f"❌ Missing required columns: {', '.join(missing_columns)}")
+                    st.info("Your CSV must include: date, revenue, orders, customers")
+                else:
+                    # Normalize column names to lowercase
+                    df.columns = df.columns.str.lower()
+                    
+                    # Validate data types and content
+                    validation_errors = []
+                    
+                    # Check date column
+                    try:
+                        df['date'] = pd.to_datetime(df['date'])
+                    except:
+                        validation_errors.append("📅 Date column must be in a valid date format (YYYY-MM-DD recommended)")
+                    
+                    # Check numeric columns
+                    for col in ['revenue', 'orders', 'customers']:
+                        if col in df.columns:
+                            try:
+                                df[col] = pd.to_numeric(df[col], errors='raise')
+                                if (df[col] < 0).any():
+                                    validation_errors.append(f"⚠️ {col.capitalize()} contains negative values")
+                            except:
+                                validation_errors.append(f"🔢 {col.capitalize()} column must contain only numbers")
+                    
+                    # Check for empty data
+                    if len(df) == 0:
+                        validation_errors.append("📋 CSV file is empty")
+                    
+                    # Display validation results
+                    if validation_errors:
+                        st.error("**Data Validation Failed:**")
+                        for error in validation_errors:
+                            st.markdown(f"- {error}")
+                    else:
+                        # Data is valid - show preview and quality score
+                        st.success(f"✅ Successfully loaded {len(df)} rows!")
+                        
+                        # Calculate data quality score
+                        total_cells = len(df) * len(df.columns)
+                        missing_cells = df.isnull().sum().sum()
+                        quality_score = int((1 - missing_cells/total_cells) * 100)
+                        
+                        col1, col2, col3 = st.columns(3)
+                        with col1:
+                            st.metric("Total Rows", len(df))
+                        with col2:
+                            st.metric("Data Quality", f"{quality_score}%")
+                        with col3:
+                            date_range = f"{df['date'].min().strftime('%Y-%m-%d')} to {df['date'].max().strftime('%Y-%m-%d')}"
+                            st.metric("Date Range", date_range)
+                        
+                        st.dataframe(df.head(10))
+                        
+                        if st.button("✅ Use This Data"):
+                            st.session_state.uploaded_data = df
+                            st.session_state.data_source = 'uploaded'
+                            st.success("Data uploaded successfully! Navigate to Dashboard to see your insights.")
+                            st.rerun()
             
-            if st.button("Use This Data"):
-                st.session_state.uploaded_data = df
-                st.session_state.data_source = 'uploaded'
-                st.success("Data uploaded successfully! Navigate to Dashboard to see your insights.")
-                st.rerun()
-        except Exception as e:
-            st.error(f"Error loading file: {e}")
-    
-    st.markdown("---")
+            except Exception as e:
+                st.error(f"❌ Error loading file: {str(e)}")
+                st.info("Please ensure your CSV is properly formatted")    st.markdown("---")
     st.markdown("**Expected CSV format:**")
     st.markdown("- date: Date column (YYYY-MM-DD)")
     st.markdown("- revenue: Revenue amount")
@@ -256,3 +314,25 @@ elif st.session_state.current_page == "Upload Data":
     st.markdown("- cost: Cost amount (optional)")
     st.markdown("- marketing_spend: Marketing spend (optional)")
     st.markdown("- inventory_units: Inventory units (optional)")
+
+    
+    # Clear Data & Reset Button
+    st.markdown("---")
+    st.markdown("### 🔄 Data Management")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.session_state.get('data_source') == 'uploaded':
+            st.info("✅ Currently using uploaded data")
+        else:
+            st.info("📊 Currently using demo data")
+    
+    with col2:
+        if st.button("🔄 Clear Data & Reset to Demo", type="secondary"):
+            # Clear uploaded data
+            if 'uploaded_data' in st.session_state:
+                del st.session_state.uploaded_data
+            st.session_state.data_source = 'demo'
+            st.success("✅ Reset to demo data! Refresh the page to see changes.")
+            st.rerun()
