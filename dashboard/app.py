@@ -234,7 +234,7 @@ elif st.session_state.current_page == "Upload Data":
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
     
     if uploaded_file is not None:
-try:
+            try:
                 # Read CSV file
                 df = pd.read_csv(uploaded_file)
                 
