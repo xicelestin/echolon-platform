@@ -6,14 +6,7 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import io
 
-# Import page render functions
-try:
-    from pages_predictions import render_predictions_page
-    from pages_recommendations import render_recommendations_page
-    from pages_whatif import render_whatif_page
-    from pages_inventory_ops import render_inventory_page
-except ImportError as e:
-    # Fallback if page modules can't be imported
+# Page render functions not available - set to Nonetry:
     render_predictions_page = None
     render_recommendations_page = None
     render_whatif_page = None
