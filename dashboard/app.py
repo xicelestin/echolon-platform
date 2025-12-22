@@ -192,8 +192,6 @@ if st.session_state.current_page == "Dashboard":
     with st.expander("📊 View Data Preview"):
         st.dataframe(data.tail(20), use_container_width=True)
     
-st.markdown("---")
-st.markdown("© 2025 Echolon AI - Intelligent Business Analytics Platform")
 
 elif st.session_state.current_page == "Analytics":
     st.title("📊 Advanced Analytics")
