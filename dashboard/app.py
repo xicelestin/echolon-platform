@@ -218,7 +218,7 @@ elif st.session_state.current_page == "Predictions":
                 st.title("🔮 AI-Powered Predictions")
                 st.info("Predictive analytics features coming soon...")
 
-    elif st.session_state.current_page == "Recommendations":
+elif st.session_state.current_page == "Recommendations":
         if render_recommendations_page:
                     render_recommendations_page()
             else:
@@ -232,7 +232,7 @@ elif st.session_state.current_page == "What-If Analysis":
         st.title("📈 What-If Analysis")
             st.info("What-If analysis tools coming soon...")
             
-        elif st.session_state.current_page == "Inventory":
+    elif st.session_state.current_page == "Inventory":
                             if render_inventory_page:
                                 render_inventory_page()
             else:
