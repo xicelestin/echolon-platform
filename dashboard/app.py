@@ -256,6 +256,42 @@ if st.session_state.current_page == "Dashboard":
     # KPI Cards
 # Render KPI strip using reusable function
     render_kpi_strip(kpis)
+        
+    # Date range filter
+    col1, col2, col3 = st.columns([2, 2, 1])
+    
+    with col1:
+        start_date = st.date_input(
+            "Start Date",
+            value=data['date'].min(),
+            min_value=data['date'].min(),
+            max_value=data['date'].max()
+        )
+    
+    with col2:
+        end_date = st.date_input(
+            "End Date",
+            value=data['date'].max(),
+            min_value=data['date'].min(),
+            max_value=data['date'].max()
+        )
+    
+    with col3:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("🔄 Reset Dates", use_container_width=True):
+            st.rerun()
+    
+    # Filter data by date range
+    filtered_data = data[
+        (data['date'] >= pd.to_datetime(start_date)) & 
+        (data['date'] <= pd.to_datetime(end_date))
+    ]
+    
+    # Recalculate KPIs with filtered data
+    kpis = calculate_kpis(filtered_data)
+    
+    st.markdown("---")
+
     
     st.markdown("---")
     
@@ -269,8 +305,7 @@ if st.session_state.current_page == "Dashboard":
         fig.update_layout(xaxis_title='Date', yaxis_title='Revenue ($)')
         st.plotly_chart(fig, use_container_width=True)
     
-    with col2:
-        st.subheader("📊 Orders & Customers")
+fig = px.line(filtered_data, x='date', y='revenue', title='Daily Revenue')        st.subheader("📊 Orders & Customers")
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=data['date'], y=data['orders'], name='Orders', mode='lines'))
         fig.add_trace(go.Scatter(x=data['date'], y=data['customers'], name='Customers', mode='lines'))
