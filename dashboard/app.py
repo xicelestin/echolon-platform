@@ -301,13 +301,11 @@ if st.session_state.current_page == "Dashboard":
     with col1:
         st.subheader("📊 Revenue Trend")
         st.markdown("**Daily Revenue**")
-                fig = px.line(filtered_data, x='date', y='revenue', title='Daily Revenue')
+        fig = px.line(filtered_data, x='date', y='revenue', title='Daily Revenue')
         fig.update_layout(xaxis_title='Date', yaxis_title='Revenue ($)')
         st.plotly_chart(fig, use_container_width=True)
-    
-    with col2:
-        st.subheader("📊 Orders & Customers")
-        fig = go.Figure()
+
+    with col2:        fig = go.Figure()
         fig.add_trace(go.Scatter(x=filtered_data['date'], y=filtered_data['orders'], name='Orders', mode='lines'))
         fig.add_trace(go.Scatter(x=filtered_data['date'], y=filtered_data['customers'], name='Customers', mode='lines'))
         fig.update_layout(xaxis_title='Date', yaxis_title='Count')
