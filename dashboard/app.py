@@ -307,7 +307,7 @@ elif st.session_state.current_page == "Upload Data":
                 st.error(f"❌ Error loading file: {str(e)}")
                 st.info("Please ensure your CSV is properly formatted")
                 st.markdown("**Expected CSV format:**")
-                                st.markdown("- date: Date column (YYYY-MM-DD)")
+                            st.markdown("- date: Date column (YYYY-MM-DD)")
     st.markdown("- revenue: Revenue amount")
     st.markdown("- orders: Number of orders")
     st.markdown("- customers: Number of customers")
