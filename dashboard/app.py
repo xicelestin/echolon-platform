@@ -24,7 +24,7 @@ st.set_page_config(
 if 'uploaded_data' not in st.session_state:
     st.session_state.uploaded_data = None
 if 'data_source' not in st.session_state:
-    st.session_state.data_source = 'demo'
+    st.session_state.data_source = None
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'Dashboard'
 
