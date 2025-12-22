@@ -7,10 +7,10 @@ from datetime import datetime, timedelta
 import io
 
 # Page render functions not available - set to Nonetry:
-    render_predictions_page = None
-    render_recommendations_page = None
-    render_whatif_page = None
-    render_inventory_page = None
+render_predictions_page = None
+render_recommendations_page = None
+render_whatif_page = None
+render_inventory_page = None
 
 # Page config
 st.set_page_config(
