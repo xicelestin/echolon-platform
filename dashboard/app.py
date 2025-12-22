@@ -1,4 +1,4 @@
-import streamlit as st
+limport streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -212,28 +212,28 @@ elif st.session_state.current_page == "Analytics":
 elif st.session_state.current_page == "Predictions":
         if render_predictions_page:
                     render_predictions_page()
-else:
+    else:
                 st.title("🔮 AI-Powered Predictions")
                 st.info("Predictive analytics features coming soon...")
 
     elif st.session_state.current_page == "Recommendations":
         if render_recommendations_page:
                     render_recommendations_page()
-        else:
+            else:
                     st.title("💡 AI Recommendations")
                                         st.info("AI recommendation engine coming soon...")
 
 elif st.session_state.current_page == "What-If Analysis":
         if render_whatif_page:
         render_whatif_page()
-    else:
+        else:
         st.title("📈 What-If Analysis")
             st.info("What-If analysis tools coming soon...")
             
     elif st.session_state.current_page == "Inventory":
                             if render_inventory_page:
                                 render_inventory_page()
-        else:
+            else:
                     st.title("📦 Inventory Management")
             st.info("Inventory management features coming soon...")
 
