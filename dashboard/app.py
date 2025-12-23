@@ -279,7 +279,8 @@ elif st.session_state.current_page == "Analytics":
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         avg_daily_rev = data['revenue'].mean() if 'revenue' in data.columns else 0
-        st.metric("Avg Daily Revenue", format_currency(avg_daily_rev))    with col2:
+        st.metric("Avg Daily Revenue", format_currency(avg_daily_rev))    
+    with col2:
         total_profit = kpis.get('total_profit', 0)
         st.metric("Total Profit", format_currency(total_profit, decimals=0))    with col3:
         profit_margin = kpis.get('avg_profit_margin', 0)
