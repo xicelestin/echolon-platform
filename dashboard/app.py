@@ -5,6 +5,31 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import io
+
+# ==================== FORMATTING UTILITIES ====================
+def format_currency(value, decimals=0):
+    """Format numbers as currency with proper abbreviation"""
+    if value >= 1_000_000:
+        return f"${value/1_000_000:.{decimals}f}M"
+    elif value >= 1_000:
+        return f"${value/1_000:.{decimals}f}K"
+    else:
+        return f"${value:,.{decimals}f}"
+
+def format_number(value, decimals=0):
+    """Format large numbers with commas"""
+    if isinstance(value, (int, float)):
+        return f"{value:,.{decimals}f}"
+    return str(value)
+
+def format_percentage(value, decimals=1):
+    """Format percentages consistently"""
+    return f"{value:.{decimals}f}%"
+
+def format_multiplier(value, decimals=2):
+    """Format multipliers like ROAS"""
+    return f"{value:.{decimals}f}x"
+
 # Trigger deploy
 
 # Page Configuration
