@@ -288,10 +288,9 @@ elif st.session_state.current_page == "Analytics":
         st.metric("Profit Margin", format_percentage(profit_margin))
     if 'roas' in data.columns:
         avg_roas = data['roas'].mean()
-            st.metric("Avg ROAS", format_percentage(avg_roas))
+        st.metric("Avg ROAS", format_percentage(avg_roas))
     else:
-            st.metric("Avg ROAS", "N/A")
-    
+        st.metric("Avg ROAS", "N/A")    
     st.markdown("---")
     
     # Sales Analytics
