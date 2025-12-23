@@ -256,8 +256,7 @@ if st.session_state.current_page == "Dashboard":
     with col1:
         st.subheader("📈 Revenue Trend")
         if 'revenue' in data.columns and 'date' in data.columns:
-            fig = px.line(data.tailate', y='revenue', title='Last 90 Days Revenue')
-            fig.update_layout(xaxis_title='Date', yaxis_title='Revenue ($)')
+            fig = px.line(data_filtered, x='date', y='revenue', title='Last 90 Days Revenue')            fig.update_layout(xaxis_title='Date', yaxis_title='Revenue ($)')
             st.plotly_chart(fig, use_container_width=True)
     
     with col2data_filtered
