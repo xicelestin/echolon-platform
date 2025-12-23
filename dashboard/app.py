@@ -193,8 +193,7 @@ if st.session_state.current_page == "Dashboard":
     with col1:
         st.metric(
             "Total Revenue",
-            f"${kpis.get('total_revenue', 0):,.0f}",
-            f"{kpis.get('revenue_growth', 0):.1f}%"
+                format_currency(kpis.get('total_revenue', 0), decimals=1),            f"{kpis.get('revenue_growth', 0):.1f}%"
         )
     with col2:
         st.metric(
