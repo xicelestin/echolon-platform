@@ -262,7 +262,7 @@ if st.session_state.current_page == "Dashboard":
             fig.update_layout(xaxis_title='Date', yaxis_title='Revenue ($)')
             st.plotly_chart(fig, use_container_width=True)
     
-    with col2data_filtered
+    with col2:
         st.subheader("⚠️ Alerts & Notifications")
 
             
