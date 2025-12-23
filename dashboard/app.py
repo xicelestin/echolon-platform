@@ -277,7 +277,7 @@ if st.session_state.current_page == "Dashboard":
 
      # PHASE 3.5: Executive Insights Layer
   st.markdown("---")
- st.subheader("💡 Executive Insights - Key Takeaways")
+st.subheader("🎓 Executive Insights - Key Takeaways")
  
  # Auto-generate key insights
  insights = []
