@@ -29,7 +29,7 @@ def generate_demo_data():
     np.random.seed(42)
     
     trend = np.linspace(40000, 60000, len(dates))
-    seasonality = 5000 * np.sin(np.linspace(0, 4*np.pi, len(dates)))
+    seasonality = 5000 * np.sin(np.linspace(0, 4*np.pi, len(dates))
     noise = np.random.normal(0, 3000, len(dates))
     
     data = pd.DataFrame({
@@ -207,9 +207,9 @@ if st.session_state.current_page == "Dashboard":
         alerts = []
         
         if kpis.get('revenue_growth', 0) < -10:
-            alerts.append("🚨 **High Alert**: Revenue down {:.1f}%".format(abs(kpis.get('revenue_growth', 0))))
+            alerts.append("🚨 **High Alert**: Revenue down {:.1f}%".format(abs(kpis.get('revenue_growth', 0)))
         elif kpis.get('revenue_growth', 0) > 20:
-            alerts.append("⬆️ **Opportunity**: Revenue up {:.1f}%!".format(kpis.get('revenue_growth', 0)))
+            alerts.append("⬆️ **Opportunity**: Revenue up {:.1f}%!".format(kpis.get('revenue_growth', 0))
         
         if 'inventory_units' in data.columns:
             low_stock_days = (data['inventory_units'] < 600).sum()
@@ -346,10 +346,10 @@ elif st.session_state.current_page == "Predictions":
     if forecast_df is not None:
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=data['date'], y=data['revenue'], name='Historical', mode='lines', line=dict(color='blue')))
-        fig.add_trace(go.Scatter(x=forecast_df['date'], y=forecast_df['revenue'], name='Forecast', mode='lines', line=dict(color='red', dash='dash')))
+        fig.add_trace(go.Scatter(x=forecast_df['date'], y=forecast_df['revenue'], name='Forecast', mode='lines', line=dict(color='red', dash='dash'))
         fig.update_layout(title=f'Revenue Forecast - Next {forecast_days} Days', xaxis_title='Date', yaxis_title='Revenue ($)')
         st.plotly_chart(fig, use_container_width=True)
-        
+    
         # Forecast Metrics
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -370,7 +370,7 @@ elif st.session_state.current_page == "Predictions":
         st.progress(confidence/100)
         st.write(f"**Confidence Level:** {confidence:.1f}%")
         
-        if confidence > 80:
+        if confidence > 80
             st.success("✅ High confidence in predictions")
         elif confidence > 60:
             st.info("ℹ️ Moderate confidence - monitor trends")
@@ -684,7 +684,7 @@ elif st.session_state.current_page == "Upload Data":
                         st.metric("Data Quality", f"{quality}%")
                     
                     st.dataframe(df.head(10), use_container_width=True)
-                    
+                
                     if st.button("✅ Use This Data", type="primary", use_container_width=True):
                         st.session_state.uploaded_data = df
                         st.success("✅ Data uploaded! All pages now use your data.")
