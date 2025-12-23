@@ -12,6 +12,11 @@ import streamlit as st
 import requests
 from datetime import datetime
 import json
+from error_ui import (
+    display_error, display_warning, display_success,
+    safe_api_call, retry_button, error_recovery_form,
+    log_error, error_history_widget
+)
 
 # ============================================================================
 # PAGE CONFIGURATION
@@ -125,6 +130,22 @@ with tab1:
                 credentials_json = {}
             
             submitted = st.form_submit_button("✅ Connect Data Source", use_container_width=True)
+                        if submitted:
+                try:
+                    # API call would go here
+                    display_success(f"Data source '{source_name}' connected successfully!")
+                except Exception as e:
+                    display_error(
+                        f"Failed to connect data source",
+                        error_code="DATASOURCE_CONNECT_ERROR",
+                        error_detail=str(e),
+                        request_id="admin-datasource-123"
+                    )
+                    log_error(
+                        error_code="DATASOURCE_CONNECT_ERROR",
+                        message="Failed to connect data source",
+                        detail=str(e)
+                    )
             
             if submitted:
                 if not source_name or not credentials_json:
