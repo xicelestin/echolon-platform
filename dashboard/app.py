@@ -181,6 +181,30 @@ kpis = calculate_kpis(data)
 if st.session_state.current_page == "Dashboard":
     st.title("🏠 Dashboard - CEO View")
     st.markdown("### High-level overview of your business at a glance")
+        
+    # Time Period Selector
+    col_filter1, col_filter2, col_filter3 = st.columns([2, 1, 1])
+    with col_filter1:
+        time_period = st.selectbox(
+            "📅 Time Period",
+            ["Last 7 Days", "Last 30 Days", "Last 90 Days", "All Time"],
+            index=2  # Default to Last 90 Days
+        )
+    
+    # Filter data based on selection
+    if time_period == "Last 7 Days":
+        data_filtered = data.tail(7)
+    elif time_period == "Last 30 Days":
+        data_filtered = data.tail(30)
+    elif time_period == "Last 90 Days":
+        data_filtered = data.tail(90)
+    else:
+        data_filtered = data
+    
+    # Recalculate KPIs for filtered period
+    kpis = calculate_kpis(data_filtered)
+    
+    st.markdown("---")
     
     # KPI Cards
     col1, col2, col3, col4 = st.columns(4)
@@ -222,8 +246,8 @@ if st.session_state.current_page == "Dashboard":
         st.metric("Customer Acquisition Cost", format_currency(cac, decimals=0))
     
     with col7:
-        # Conversion Rate
-        conv_rate = data['conversion_rate'].mean() if 'conversion_rate' in data.columns else 0
+        # Conversion data_filtered
+        conv_rate = data['conversion_rate'].mean() if 'conversion_rate' in data_filtered.columns else 0
         st.metric("Avg Conversion Rate", format_percentage(conv_rate))
         st.markdown("---")    
     # Recent Activity & Trends
@@ -232,11 +256,11 @@ if st.session_state.current_page == "Dashboard":
     with col1:
         st.subheader("📈 Revenue Trend")
         if 'revenue' in data.columns and 'date' in data.columns:
-            fig = px.line(data.tail(90), x='date', y='revenue', title='Last 90 Days Revenue')
+            fig = px.line(data.tailate', y='revenue', title='Last 90 Days Revenue')
             fig.update_layout(xaxis_title='Date', yaxis_title='Revenue ($)')
             st.plotly_chart(fig, use_container_width=True)
     
-    with col2:
+    with col2data_filtered
         st.subheader("⚠️ Alerts & Notifications")
 
             
