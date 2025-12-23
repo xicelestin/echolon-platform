@@ -198,21 +198,15 @@ if st.session_state.current_page == "Dashboard":
     with col2:
         st.metric(
             "Total Orders",
-            f"{kpis.get('total_orders', 0):,.0f}",
-            f"{kpis.get('orders_growth', 0):.1f}%"
-        )
+                f"{format_percentage(kpis.get('orders_growth', 0))}"        )
     with col3:
         st.metric(
             "Total Customers",
-            f"{kpis.get('total_customers', 0):,.0f}",
-            f"{kpis.get('customers_growth', 0):.1f}%"
-        )
+            f"{format_percentage(kpis.get('customers_growth', 0))}"        )
     with col4:
         st.metric(
             "Avg Order Value",
-            f"${kpis.get('avg_order_value', 0):.2f}",
-            f"{kpis.get('avg_profit_margin', 0):.1f}% margin"
-        )
+            f"{format_percentage(kpis.get('avg_profit_margin', 0))} margin"        )
     
     st.markdown("---")
     
@@ -285,18 +279,14 @@ elif st.session_state.current_page == "Analytics":
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         avg_daily_rev = data['revenue'].mean() if 'revenue' in data.columns else 0
-        st.metric("Avg Daily Revenue", f"${avg_daily_rev:,.2f}")
-    with col2:
+        st.metric("Avg Daily Revenue", format_currency(avg_daily_rev))    with col2:
         total_profit = kpis.get('total_profit', 0)
-        st.metric("Total Profit", f"${total_profit:,.0f}")
-    with col3:
+        st.metric("Total Profit", format_currency(total_profit, decimals=0))    with col3:
         profit_margin = kpis.get('avg_profit_margin', 0)
-        st.metric("Profit Margin", f"{profit_margin:.2f}%")
-    with col4:
+        st.metric("Profit Margin", format_percentage(profit_margin))    with col4:
         if 'roas' in data.columns:
             avg_roas = data['roas'].mean()
-            st.metric("Avg ROAS", f"{avg_roas:.2f}x")
-        else:
+            st.metric("Avg ROAS", format_percentage(avg_roas))        else:
             st.metric("Avg ROAS", "N/A")
     
     st.markdown("---")
@@ -527,23 +517,17 @@ elif st.session_state.current_page == "What-If Analysis":
     with col1:
         st.metric(
             "Total Revenue",
-            f"${scenario_revenue:,.0f}",
-            f"${scenario_revenue - base_revenue:,.0f}"
-        )
+            format_currency(scenario_revenue - base_revenue, decimals=0)        )
     
     with col2:
         st.metric(
             "Total Profit",
-            f"${scenario_profit:,.0f}",
-            f"${scenario_profit - base_profit:,.0f}"
-        )
+            format_currency(scenario_profit - base_profit, decimals=0)        )
     
     with col3:
         st.metric(
             "Profit Margin",
-            f"{scenario_margin:.1f}%",
-            f"{scenario_margin - base_margin:.1f}%"
-        )
+            format_percentage(scenario_margin - base_margin)        )
     
     # Visualization
     st.markdown("---")
@@ -581,14 +565,10 @@ elif st.session_state.current_page == "Inventory":
         inventory_vol = data['inventory_units'].std()
         
         with col1:
-            st.metric("Avg Inventory Level", f"{avg_inventory:,.0f} units")
-        with col2:
-            st.metric("Peak Inventory", f"{max_inventory:,.0f} units")
-        with col3:
-            st.metric("Lowest Inventory", f"{min_inventory:,.0f} units")
-        with col4:
-            st.metric("Volatility", f"{inventory_vol:,.0f} units")
-        
+            st.metric("Avg Inventory Level", f"{format_number(avg_inventory)} units")        with col2:
+            st.metric("Peak Inventory", f"{format_number(max_inventory)} units")        with col3:
+            st.metric("Lowest Inventory", f"{format_number(min_inventory)} units")        with col4:
+            st.metric("Volatility", f"{format_number(inventory_vol)} units")        
         st.markdown("---")
         
         # Inventory Trend
