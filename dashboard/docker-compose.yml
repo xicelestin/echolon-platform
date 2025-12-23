@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    environment:
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - API_BACKEND_URL=http://api:8000
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - api
+    networks:
+      - echolon-network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      - FASTAPI_ENV=production
+      - DATABASE_URL=postgresql://echolon:echolon@db:5432/echolon
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - db
+      - redis
+    networks:
+      - echolon-network
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=echolon
+      - POSTGRES_PASSWORD=echolon
+      - POSTGRES_DB=echolon
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - echolon-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - echolon-network
+
+networks:
+  echolon-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
