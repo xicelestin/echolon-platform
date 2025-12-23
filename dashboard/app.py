@@ -27,7 +27,7 @@ if 'recent_predictions' not in st.session_state:
 def generate_demo_data():
     """Generate comprehensive demo dataset for all features"""
     dates = pd.date_range(start='2024-01-01', end='2024-12-31', freq='D')
-    np.random.seed(42)
+    # np.random.seed(42)
     
     trend = np.linspace(40000, 60000, len(dates))
     seasonality = 5000 * np.sin(np.linspace(0, 4*np.pi, len(dates)))
