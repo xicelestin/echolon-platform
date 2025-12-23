@@ -206,9 +206,8 @@ if st.session_state.current_page == "Dashboard":
             f"{format_percentage(kpis.get('customers_growth', 0))}")
         st.metric(
             "Avg Order Value",
-            f"{format_percentage(kpis.get('avg_profit_margin', 0))}"    )
-    st.markdown("---")
-    
+                f"{format_currency(kpis.get('avg_profit_margin', 0), decimals=0)}"        )
+        st.markdown("---")    
     # Recent Activity & Trends
     col1, col2 = st.columns(2)
     
@@ -631,6 +630,18 @@ elif st.session_state.current_page == "Inventory":
 elif st.session_state.current_page == "Upload Data":
     st.title("📂 Upload Your Data")
     st.markdown("### Upload CSV to get personalized insights across all pages")
+        
+    st.info("""
+    📊 **Upload your business data to unlock personalized insights!**
+    
+    Your CSV should include these columns:
+    - `date` - Transaction date
+    - `revenue` - Revenue amount
+    - `orders` - Number of orders
+    - `customers` - Number of customers
+    
+    💡 After uploading, all dashboards will automatically update with your data!
+    """)
     
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
     
@@ -693,8 +704,7 @@ elif st.session_state.current_page == "Upload Data":
                 
                     if st.button("✅ Use This Data", type="primary", use_container_width=True):
                         st.session_state.uploaded_data = df
-                        st.success("✅ Data uploaded! All pages now use your data.")
-                        st.balloons()
+                        st.success("🎉 Data uploaded successfully! All dashboards are now using your data. Navigate to Dashboard, Analytics, or any other page to see your personalized insights.")                        st.balloons()
             st.rerun()        
         except Exception as e:
             st.error(f"❌ Error loading file: {str(e)}")
