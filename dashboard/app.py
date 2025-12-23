@@ -30,7 +30,7 @@ def generate_demo_data():
     np.random.seed(42)
     
     trend = np.linspace(40000, 60000, len(dates))
-    seasonality = 5000 * np.sin(np.linspace(0, 4*np.pi, len(dates))
+    seasonality = 5000 * np.sin(np.linspace(0, 4*np.pi, len(dates)))
     noise = np.random.normal(0, 3000, len(dates))
     
     data = pd.DataFrame({
