@@ -371,7 +371,7 @@ elif st.session_state.current_page == "Predictions":
         st.progress(confidence/100)
         st.write(f"**Confidence Level:** {confidence:.1f}%")
         
-        if confidence > 80
+        if confidence > 80:
             st.success("✅ High confidence in predictions")
         elif confidence > 60:
             st.info("ℹ️ Moderate confidence - monitor trends")
