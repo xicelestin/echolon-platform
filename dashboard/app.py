@@ -696,11 +696,10 @@ elif st.session_state.current_page == "Upload Data":
                     
                     st.dataframe(df.head(10), use_container_width=True)
                 
-                    if st.button("✅ Use This Data", type="primary", use_container_width=True):
-                        st.session_state.uploaded_data = df
-                        st.success("Data uploaded successfully! All dashboards are now using your data.")                                                           st.balloons()
-                        st.rerun()
-    
+                if st.button("Use This Data", type="primary", use_container_width=True):
+                    st.session_state.uploaded_data = df
+                    st.success("Data uploaded successfully!")
+                    st.rerun()    
     # Data Management
     
     col1, col2 = st.columns(2)
