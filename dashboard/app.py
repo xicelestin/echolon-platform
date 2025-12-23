@@ -5,12 +5,13 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import io
+from ml_integration import get_ml_insights, initialize_ml_models, forecast_revenue_ml, detect_anomalies_ml, predict_churn_ml
 
 
 # ==================== AI/ML MODELS (Phase 4) ====================
 # Note: ML models are available in ml_models/ directory
 # Future implementation will integrate these for AI-powered insights
-ML_MODELS_AVAILABLE = False  # Set to True when models are ready for production
+ML_MODELS_AVAILABLE = True  # Set to True when models are ready for production
 
 # ==================== FORMATTING UTILITIES ====================
 def format_currency(value, decimals=0):
@@ -182,6 +183,9 @@ if st.session_state.uploaded_data is not None:
     data = st.session_state.uploaded_data
 else:
     data = generate_demo_data()
+    
+# Initialize ML models
+initialize_ml_models(data)
 
 # Calculate KPIs (shared across all pages)
 kpis = calculate_kpis(data)
@@ -460,6 +464,9 @@ elif st.session_state.current_page == "Predictions":
 elif st.session_state.current_page == "Recommendations":
     st.title("💡 AI Business Recommendations")
     st.markdown("### Actionable insights derived from your data")
+    
+ # Get ML-powered insights
+ ml_insights = get_ml_insights(data)
     
     # Generate Smart Recommendations
     recommendations = []
