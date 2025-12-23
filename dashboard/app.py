@@ -238,6 +238,22 @@ if st.session_state.current_page == "Dashboard":
     
     with col2:
         st.subheader("⚠️ Alerts & Notifications")
+
+            
+    # Row 3: Profitability Metrics
+    col8, col9, col10 = st.columns(3)
+    
+    with col8:
+        total_profit = kpis.get('total_profit', 0)
+        st.metric("Total Profit", format_currency(total_profit, decimals=1))
+    
+    with col9:
+        profit_margin = kpis.get('avg_profit_margin', 0)
+        st.metric("Profit Margin", format_percentage(profit_margin))
+    
+    with col10:
+        avg_roas = data['roas'].mean() if 'roas' in data.columns else 0
+        st.metric("Avg ROAS", format_multiplier(avg_roas))
         # Smart alerts based on data
         alerts = []
         
