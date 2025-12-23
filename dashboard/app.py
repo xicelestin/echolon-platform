@@ -700,8 +700,9 @@ elif st.session_state.current_page == "Upload Data":
                     st.session_state.uploaded_data = df
                     st.success("Data uploaded successfully!")
                     st.rerun()    
-                        except Exception as e:
-        st.error(f"Upload error: {str(e)}")
+    except Exception as e:
+        st.error(f"Upload error: {str(e)}")  
+    
     # Data Management
     
     col1, col2 = st.columns(2)
