@@ -296,7 +296,7 @@ elif st.session_state.current_page == "Analytics":
             fig.update_layout(title='Revenue with Moving Averages', xaxis_title='Date', yaxis_title='Revenue ($)')
             st.plotly_chart(fig, use_container_width=True)
     
-    with tab2:
+    with t2:
         col1, col2 = st.columns(2)
         with col1:
             if 'revenue' in data.columns:
