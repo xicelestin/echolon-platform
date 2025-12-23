@@ -285,8 +285,8 @@ elif st.session_state.current_page == "Analytics":
         st.metric("Total Profit", format_currency(total_profit, decimals=0))
     with col3:
         profit_margin = kpis.get('avg_profit_margin', 0)
-        st.metric("Profit Margin", format_percentage(profit_margin))        if 'roas' in data.columns:
-            avg_roas = data['roas'].mean()
+        st.metric("Profit Margin", format_percentage(profit_margin))            avg_roas = data['roas'].mean()
+    if 'roas' in data.columns:
             st.metric("Avg ROAS", format_percentage(avg_roas))        else:
             st.metric("Avg ROAS", "N/A")
     
