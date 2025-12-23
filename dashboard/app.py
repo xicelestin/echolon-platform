@@ -212,7 +212,7 @@ if st.session_state.current_page == "Dashboard":
         elif kpis.get('revenue_growth', 0) > 20:
             alerts.append("⬆️ **Opportunity**: Revenue up {:.1f}%!".format(kpis.get('revenue_growth', 0)))
         
-        if 'inventory_units' in data.columns:)
+        if 'inventory_units' in data.columns:
             low_stock_days = (data['inventory_units'] < 600).sum()
             if low_stock_days > 5:
                 alerts.append(f"📦 **Low Stock**: {low_stock_days} days with low inventory")
