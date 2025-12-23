@@ -702,8 +702,6 @@ elif st.session_state.current_page == "Upload Data":
                         st.rerun()
     
     # Data Management
-    st.markdown("---")
-    st.subheader("🔄 Data Management")
     
     col1, col2 = st.columns(2)
     with col1:
