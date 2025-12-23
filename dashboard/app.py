@@ -704,11 +704,8 @@ elif st.session_state.current_page == "Upload Data":
                 
                     if st.button("✅ Use This Data", type="primary", use_container_width=True):
                         st.session_state.uploaded_data = df
-                        st.success("Data uploaded successfully! All dashboards are now using your data.")        
-                        except Exception as e:
-                                                    st.balloons()
+                        st.success("Data uploaded successfully! All dashboards are now using your data.")                                                           st.balloons()
                         st.rerun()
-            st.error(f"❌ Error loading file: {str(e)}")
     
     # Data Management
     st.markdown("---")
