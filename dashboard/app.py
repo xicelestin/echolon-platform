@@ -347,7 +347,7 @@ elif st.session_state.current_page == "Predictions":
     if forecast_df is not None:
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=data['date'], y=data['revenue'], name='Historical', mode='lines', line=dict(color='blue')))
-        fig.add_trace(go.Scatter(x=forecast_df['date'], y=forecast_df['revenue'], name='Forecast', mode='lines', line=dict(color='red', dash='dash'))
+        fig.add_trace(go.Scatter(x=forecast_df['date'], y=forecast_df['revenue'], name='Forecast', mode='lines', line=dict(color='red', dash='dash')))
         fig.update_layout(title=f'Revenue Forecast - Next {forecast_days} Days', xaxis_title='Date', yaxis_title='Revenue ($)')
         st.plotly_chart(fig, use_container_width=True)
     
