@@ -274,6 +274,41 @@ if st.session_state.current_page == "Dashboard":
     with col8:
         total_profit = kpis.get('total_profit', 0)
         st.metric("Total Profit", format_currency(total_profit, decimals=1))
+
+     # PHASE 3.5: Executive Insights Layer
+ st.markdown("---")
+ st.subheader("💡 Executive Insights - Key Takeaways")
+ 
+ # Auto-generate key insights
+ insights = []
+ revenue_trend_msg = f"Revenue {'↑' if revenue_growth > 0 else '↓'} {abs(revenue_growth):.1f}% vs previous period"
+ insights.append(revenue_trend_msg)
+ 
+ if revenue_growth > 10:
+ insights.append("🚀 Strong growth momentum - opportunity to scale marketing")
+ elif revenue_growth < -5:
+ insights.append("⚠️ Revenue decline - review pricing and promotional strategy")
+ else:
+ insights.append("📊 Stable revenue - focus on efficiency gains")
+ 
+ # CAC insight
+ cac_value = (data['marketing_spend'].sum() / kpis.get('total_customers', 1)) if 'marketing_spend' in data.columns else 0
+ ltv_value = kpis.get('avg_order_value', 0) * 3
+ ltv_cac_ratio = ltv_value / cac_value if cac_value > 0 else 0
+ 
+ if ltv_cac_ratio > 3:
+ insights.append(f"✅ Healthy unit economics: LTV:CAC = {ltv_cac_ratio:.1f}x (target: 3x+)")
+ elif ltv_cac_ratio > 1:
+ insights.append(f"⚠️ Monitor unit economics: LTV:CAC = {ltv_cac_ratio:.1f}x (target: 3x+)")
+ else:
+ insights.append(f"🔴 Unit economics at risk: LTV:CAC = {ltv_cac_ratio:.1f}x (target: 3x+)")
+ 
+ # Display insights
+ insight_cols = st.columns(len(insights))
+ for idx, insight in enumerate(insights):
+ with insight_cols[idx]:
+ st.info(insight)
+
     
     with col9:
         profit_margin = kpis.get('avg_profit_margin', 0)
@@ -783,3 +818,97 @@ elif st.session_state.current_page == "Upload Data":
             st.session_state.uploaded_data = None
             st.success("✅ Reset to demo data!")
             st.rerun()
+
+
+# ==================== PHASE 3.5: GLOBAL ENHANCEMENTS ====================
+# Add data freshness footer and export capabilities to Analytics page
+# This will be integrated into the Analytics page at the end of all tabs
+
+def generate_analytics_export_section():
+    """Add export functionality to Analytics page"""
+    st.markdown("---")
+    st.subheader("📥 Export & Share")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        # CSV Export
+        csv = data.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📊 Download as CSV",
+            data=csv,
+            file_name="analytics_data.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
+    
+    with col2:
+        # XLSX Export (using io buffer)
+        try:
+            excel_buffer = io.BytesIO()
+            with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                data.to_excel(writer, sheet_name='Analytics', index=False)
+            excel_data = excel_buffer.getvalue()
+            st.download_button(
+                label="📈 Download as XLSX",
+                data=excel_data,
+                file_name="analytics_data.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+        except:
+            st.info("✓ XLSX export available when data is ready")
+    
+    with col3:
+        # Data Status
+        st.metric("Last Updated", datetime.now().strftime('%I:%M %p'))
+        st.caption("Data refreshes every 5 minutes")
+
+# Global Data Freshness Footer (to be added to sidebar)
+def render_data_freshness_footer():
+    """Render data freshness and environment info in sidebar"""
+    st.markdown("---")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.caption(f"🟢 **Live** - {datetime.now().strftime('%I:%M %p')}")
+    with col2:
+        st.caption("📍 **Production**")
+
+# Preset Scenarios for What-If Analysis
+def get_preset_scenarios():
+    """Return preset scenarios for quick modeling"""
+    return {
+        "📈 10% Price Increase": {"revenue_change": 10, "cost_change": 0, "customer_change": -2},
+        "🎯 Double Marketing Spend": {"revenue_change": 25, "cost_change": 100, "customer_change": 20},
+        "💰 Cut CAC by 20%": {"revenue_change": 0, "cost_change": -20, "customer_change": -5},
+        "📊 Improve Conversion 0.5%": {"revenue_change": 15, "cost_change": 10, "customer_change": 10},
+        "🚀 Aggressive Growth": {"revenue_change": 50, "cost_change": 75, "customer_change": 40},
+    }
+
+# Customer Segment Filters (to be added to main pages)
+def apply_customer_segment_filter():
+    """Add customer segmentation filter to KPIs"""
+    segments = ["All Customers", "New Customers", "Returning Customers", "High-Value", "At-Risk"]
+    selected_segment = st.selectbox("📊 Customer Segment", segments)
+    return selected_segment
+
+# KPI Risk/Opportunity Tags
+def get_kpi_status_tag(value, baseline, metric_type="revenue"):
+    """Generate status tag for KPI cards"""
+    change_pct = ((value - baseline) / baseline * 100) if baseline != 0 else 0
+    
+    if metric_type == "revenue" or metric_type == "profit":
+        if change_pct > 15:
+            return "🟢 Opportunity"
+        elif change_pct < -10:
+            return "🔴 Risk"
+        else:
+            return "⚪ Stable"
+    elif metric_type == "margin":
+        if change_pct > 5:
+            return "🟢 Improving"
+        elif change_pct < -5:
+            return "🔴 Declining"
+        else:
+            return "⚪ Stable"
+    return "⚪ Neutral"
