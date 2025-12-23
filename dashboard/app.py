@@ -690,9 +690,8 @@ elif st.session_state.current_page == "Upload Data":
                         st.session_state.uploaded_data = df
                         st.success("✅ Data uploaded! All pages now use your data.")
                         st.balloons()
-                                            st.session_state.current_page = 'Dashboard'
-                        st.rerun()
-        
+            st.session_state.current_page = 'Dashboard'
+            st.rerun()        
         except Exception as e:
             st.error(f"❌ Error loading file: {str(e)}")
     
