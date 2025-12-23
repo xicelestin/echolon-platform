@@ -208,7 +208,7 @@ if st.session_state.current_page == "Dashboard":
         alerts = []
         
         if kpis.get('revenue_growth', 0) < -10:
-            alerts.append("🚨 **High Alert**: Revenue down {:.1f}%".format(abs(kpis.get('revenue_growth', 0)))
+            alerts.append("🚨 **High Alert**: Revenue down {:.1f}%".format(abs(kpis.get('revenue_growth', 0))))
         elif kpis.get('revenue_growth', 0) > 20:
             alerts.append("⬆️ **Opportunity**: Revenue up {:.1f}%!".format(kpis.get('revenue_growth', 0)))
         
