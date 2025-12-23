@@ -275,7 +275,7 @@ if st.session_state.current_page == "Dashboard":
         st.metric("Total Profit", format_currency(total_profit, decimals=1))
 
      # PHASE 3.5: Executive Insights Layer
-  st.markdown("---")
+st.markdown("---")
 st.subheader("🎓 Executive Insights - Key Takeaways")
  
  # Auto-generate key insights
