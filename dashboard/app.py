@@ -225,14 +225,6 @@ if st.session_state.current_page == "Dashboard":
         # Conversion Rate
         conv_rate = data['conversion_rate'].mean() if 'conversion_rate' in data.columns else 0
         st.metric("Avg Conversion Rate", format_percentage(conv_rate))
-            f"{format_percentage(kpis.get('orders_growth', 0))}")
-        st.metric(
-            "Total Customers",
-            f"{format_number(kpis.get('total_customers', 0))}",
-            f"{format_percentage(kpis.get('customers_growth', 0))}")
-        st.metric(
-            "Avg Order Value",
-                f"{format_currency(kpis.get('avg_order_value', 0), decimals=0)}"        )
         st.markdown("---")    
     # Recent Activity & Trends
     col1, col2 = st.columns(2)
