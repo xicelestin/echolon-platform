@@ -193,6 +193,25 @@ if st.session_state.current_page == "Dashboard":
         st.metric(
             "Total Orders",
             f"{format_number(kpis.get('total_orders', 0))}",
+
+                
+    # Row 2: Business Metrics
+    col5, col6, col7 = st.columns(3)
+    
+    with col5:
+        # Customer Lifetime Value (CLV)
+        clv = kpis.get('avg_order_value', 0) * 3  # Simplified: AOV * avg purchases
+        st.metric("Customer Lifetime Value", format_currency(clv, decimals=0))
+    
+    with col6:
+        # Customer Acquisition Cost (CAC)
+        cac = (data['marketing_spend'].sum() / kpis.get('total_customers', 1)) if 'marketing_spend' in data.columns else 0
+        st.metric("Customer Acquisition Cost", format_currency(cac, decimals=0))
+    
+    with col7:
+        # Conversion Rate
+        conv_rate = data['conversion_rate'].mean() if 'conversion_rate' in data.columns else 0
+        st.metric("Avg Conversion Rate", format_percentage(conv_rate))
             f"{format_percentage(kpis.get('orders_growth', 0))}")
         st.metric(
             "Total Customers",
@@ -506,18 +525,17 @@ elif st.session_state.current_page == "What-If Analysis":
     
     with col1:
         st.metric(
-            "Total Revenue",
+            "Total Revenue Change",
             format_currency(scenario_revenue - base_revenue, decimals=0)        )
     
     with col2:
         st.metric(
-            "Total Profit",
+            "Total Profit Change",
             format_currency(scenario_profit - base_profit, decimals=0)        )
     
     with col3:
         st.metric(
-            "Profit Margin",
-            format_percentage(scenario_margin - base_margin)        )
+        "Margin Change",            format_percentage(scenario_margin - base_margin)        )
     
     # Visualization
     st.markdown("---")
