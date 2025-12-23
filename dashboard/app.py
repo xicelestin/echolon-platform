@@ -108,16 +108,10 @@ def calculate_kpis(df):
         'orders_growth': orders_growth,
         'customers_growth': customers_growth,
         'total_profit': df['profit'].sum() if 'profit' in df.columns else 0,
-        'avg_order_value': df['profit_margin'].mean() if 'profit_margin' in df.columns else 0
-    }
-
+        'avg_profit_margin': df['profit_margin'].mean() if 'profit_margin' in df.columns else 0
+            }
 def forecast_revenue(df, days_ahead=30):
-    """Forecast revenue using linear regression - works with any data"""
-    if df is None or len(df) < 30 or 'revenue' not in df.columns:
-        return None
-    
     from sklearn.linear_model import LinearRegression
-    
     df_copy = df[['date', 'revenue']].copy()
     df_copy['days'] = (df_copy['date'] - df_copy['date'].min()).dt.days
     
