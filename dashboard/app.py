@@ -30,8 +30,7 @@ def format_multiplier(value, decimals=2):
     """Format multipliers like ROAS"""
     return f"{value:.{decimals}f}x"
 
-# Trigger deploy v2
-
+# Trigger deploy v3
 # Page Configuration
 st.set_page_config(
     page_title="Echolon AI - Business Intelligence",
