@@ -3,7 +3,6 @@
 Orchestrates the multi-page dashboard with authentication,
 error handling, and data visualization.
 """
-
 import streamlit as st
 from streamlit_option_menu import option_menu
 import logging
@@ -27,15 +26,15 @@ st.set_page_config(
 # Custom CSS for better styling
 st.markdown("""
 <style>
-    .main {
-        padding-top: 0rem;
-    }
-    .metric-card {
-        border-radius: 10px;
-        padding: 20px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-    }
+.main {
+    padding-top: 0rem;
+}
+.metric-card {
+    border-radius: 10px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -106,27 +105,35 @@ def render_navigation():
 
 def render_main_content(page_name):
     """Render the main content based on selected page."""
-    
     if page_name == "Dashboard":
         render_dashboard()
     elif page_name == "Analytics":
-        render_analytics()
+        st.header("📊 Analytics")
+        st.info("Analytics page coming soon", icon="ℹ️")
     elif page_name == "Predictions":
-        render_predictions()
+        st.header("🔮 Predictions")
+        st.info("Predictions page coming soon", icon="ℹ️")
     elif page_name == "Recommendations":
-        render_recommendations()
+        st.header("💡 Recommendations")
+        st.info("Recommendations page coming soon", icon="ℹ️")
     elif page_name == "What-If Analysis":
-        render_whatif_analysis()
+        st.header("❓ What-If Analysis")
+        st.info("What-If Analysis page coming soon", icon="ℹ️")
     elif page_name == "Inventory":
-        render_inventory()
+        st.header("📦 Inventory")
+        st.info("Inventory page coming soon", icon="ℹ️")
     elif page_name == "Upload Data":
-        render_upload_data()
+        st.header("📤 Upload Data")
+        st.info("Upload Data page coming soon", icon="ℹ️")
     elif page_name == "Customer Insights":
-        render_customer_insights()
+        st.header("👥 Customer Insights")
+        st.info("Customer Insights page coming soon", icon="ℹ️")
     elif page_name == "Inventory & Demand":
-        render_inventory_demand()
+        st.header("📊 Inventory & Demand")
+        st.info("Inventory & Demand page coming soon", icon="ℹ️")
     elif page_name == "Anomalies & Alerts":
-        render_anomalies_alerts()
+        st.header("⚠️ Anomalies & Alerts")
+        st.info("Anomalies & Alerts page coming soon", icon="ℹ️")
 
 def render_dashboard():
     """Render the main dashboard."""
@@ -167,51 +174,6 @@ def render_dashboard():
         st.metric("Predicted Avg Daily Revenue", "$58,734.37")
     with col3:
         st.metric("Expected Change", "+2.3%")
-
-def render_analytics():
-    """Render analytics page placeholder."""
-    st.header("📊 Analytics")
-    st.info("Analytics page coming soon", icon="ℹ️")
-
-def render_predictions():
-    """Render predictions page placeholder."""
-    st.header("🔮 Predictions")
-    st.info("Predictions page coming soon", icon="ℹ️")
-
-def render_recommendations():
-    """Render recommendations page placeholder."""
-    st.header("💡 Recommendations")
-    st.info("Recommendations page coming soon", icon="ℹ️")
-
-def render_whatif_analysis():
-    """Render what-if analysis page placeholder."""
-    st.header("❓ What-If Analysis")
-    st.info("What-If Analysis page coming soon", icon="ℹ️")
-
-def render_inventory():
-    """Render inventory page placeholder."""
-    st.header("📦 Inventory")
-    st.info("Inventory page coming soon", icon="ℹ️")
-
-def render_upload_data():
-    """Render upload data page placeholder."""
-    st.header("📤 Upload Data")
-    st.info("Upload Data page coming soon", icon="ℹ️")
-
-def render_customer_insights():
-    """Render customer insights page placeholder."""
-    st.header("👥 Customer Insights")
-    st.info("Customer Insights page coming soon", icon="ℹ️")
-
-def render_inventory_demand():
-    """Render inventory and demand page placeholder."""
-    st.header("📊 Inventory & Demand")
-    st.info("Inventory & Demand page coming soon", icon="ℹ️")
-
-def render_anomalies_alerts():
-    """Render anomalies and alerts page placeholder."""
-    st.header("⚠️ Anomalies & Alerts")
-    st.info("Anomalies & Alerts page coming soon", icon="ℹ️")
 
 def main():
     """Main application entry point."""
