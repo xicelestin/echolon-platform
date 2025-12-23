@@ -6,17 +6,11 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import io
 
-# ==================== AI/ML MODELS INTEGRATION ====================
-try:
-    from ml_models.revenue_forecaster import RevenueForecaster
-    from ml_models.anomaly_detection import AnomalyDetector
-    from ml_models.churn_prediction import ChurnPredictor
-    from ml_models.demand_forecasting import DemandForecaster
-    ML_MODELS_AVAILABLE = True
-except ImportError:
-    ML_MODELS_AVAILABLE = False
-    st.warning("⚠️ ML Models not available - using rule-based insights only")
 
+# ==================== AI/ML MODELS (Phase 4) ====================
+# Note: ML models are available in ml_models/ directory
+# Future implementation will integrate these for AI-powered insights
+ML_MODELS_AVAILABLE = False  # Set to True when models are ready for production
 
 # ==================== FORMATTING UTILITIES ====================
 def format_currency(value, decimals=0):
