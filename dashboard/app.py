@@ -193,6 +193,7 @@ if st.session_state.current_page == "Dashboard":
         st.metric(
             "Total Orders",
             f"{format_number(kpis.get('total_orders', 0))}",
+        )
             
     with col3:
         st.metric(
