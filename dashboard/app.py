@@ -276,12 +276,11 @@ elif st.session_state.current_page == "Analytics":
         total_profit = kpis.get('total_profit', 0)
         st.metric("Total Profit", format_currency(total_profit, decimals=0))
     with col3:
-        profit_margin = kpis.get('avg_order_value', 0)
+        profit_margin = kpis.get('avg_profit_margin', 0)
         st.metric("Profit Margin", format_percentage(profit_margin))
     if 'roas' in data.columns:
         avg_roas = data['roas'].mean()
         st.metric("Avg ROAS", format_multiplier(avg_roas))
-        st.metric("Avg ROAS", "N/A")    
     st.markdown("---")
     st.subheader("💰 Sales Analytics")
     
