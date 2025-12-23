@@ -1,0 +1,130 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend Service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: fastapi-builder
+    container_name: echolon-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=${DATABASE_URL:-postgresql://user:password@postgres:5432/echolon}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - API_KEY=${API_KEY:-secret-key}
+    volumes:
+      - ./backend:/app/backend
+      - ./logs:/app/logs
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - echolon-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    labels:
+      - "com.example.description=Echolon FastAPI Backend"
+
+  # Streamlit Dashboard Service
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: streamlit-builder
+    container_name: echolon-dashboard
+    ports:
+      - "8501:8501"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./dashboard:/app/dashboard
+      - ./logs:/app/logs
+    depends_on:
+      - backend
+    networks:
+      - echolon-network
+    restart: unless-stopped
+    labels:
+      - "com.example.description=Echolon Streamlit Dashboard"
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: echolon-postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-echolon}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-echolon_password}
+      - POSTGRES_DB=${POSTGRES_DB:-echolon}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - echolon-network
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-echolon}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    labels:
+      - "com.example.description=Echolon PostgreSQL Database"
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: echolon-redis
+    volumes:
+      - redis_data:/data
+    networks:
+      - echolon-network
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    labels:
+      - "com.example.description=Echolon Redis Cache"
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: echolon-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend
+      - dashboard
+    networks:
+      - echolon-network
+    restart: unless-stopped
+    labels:
+      - "com.example.description=Echolon Nginx Proxy"
+
+networks:
+  echolon-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
