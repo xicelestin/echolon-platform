@@ -567,9 +567,12 @@ elif st.session_state.current_page == "Inventory":
         inventory_vol = data['inventory_units'].std()
         
         with col1:
-            st.metric("Avg Inventory Level", f"{format_number(avg_inventory)} units")        with col2:
-            st.metric("Peak Inventory", f"{format_number(max_inventory)} units")        with col3:
-            st.metric("Lowest Inventory", f"{format_number(min_inventory)} units")        with col4:
+            st.metric("Avg Inventory Level", f"{format_number(avg_inventory)} units")
+        with col2:
+            st.metric("Peak Inventory", f"{format_number(max_inventory)} units")
+        with col3:
+            st.metric("Lowest Inventory", f"{format_number(min_inventory)} units")
+        with col4:
             st.metric("Volatility", f"{format_number(inventory_vol)} units")        
         st.markdown("---")
         
