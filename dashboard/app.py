@@ -108,7 +108,7 @@ def calculate_kpis(df):
         'orders_growth': orders_growth,
         'customers_growth': customers_growth,
         'total_profit': df['profit'].sum() if 'profit' in df.columns else 0,
-        'avg_profit_margin': df['profit_margin'].mean() if 'profit_margin' in df.columns else 0
+        'avg_order_value': df['profit_margin'].mean() if 'profit_margin' in df.columns else 0
     }
 
 def forecast_revenue(df, days_ahead=30):
@@ -206,7 +206,7 @@ if st.session_state.current_page == "Dashboard":
             f"{format_percentage(kpis.get('customers_growth', 0))}")
         st.metric(
             "Avg Order Value",
-                f"{format_currency(kpis.get('avg_profit_margin', 0), decimals=0)}"        )
+                f"{format_currency(kpis.get('avg_order_value', 0), decimals=0)}"        )
         st.markdown("---")    
     # Recent Activity & Trends
     col1, col2 = st.columns(2)
@@ -233,7 +233,7 @@ if st.session_state.current_page == "Dashboard":
             if low_stock_days > 5:
                 alerts.append(f"📦 **Low Stock**: {low_stock_days} days with low inventory")
         
-        if kpis.get('avg_profit_margin', 0) < 15:
+        if kpis.get('avg_order_value', 0) < 15:
             alerts.append("💸 **Margin Alert**: Profit margin below 15%")
         
         if alerts:
@@ -282,7 +282,7 @@ elif st.session_state.current_page == "Analytics":
         total_profit = kpis.get('total_profit', 0)
         st.metric("Total Profit", format_currency(total_profit, decimals=0))
     with col3:
-        profit_margin = kpis.get('avg_profit_margin', 0)
+        profit_margin = kpis.get('avg_order_value', 0)
         st.metric("Profit Margin", format_percentage(profit_margin))
     if 'roas' in data.columns:
         avg_roas = data['roas'].mean()
@@ -433,7 +433,7 @@ elif st.session_state.current_page == "Recommendations":
             })
     
     # Profit margin recommendations
-    avg_margin = kpis.get('avg_profit_margin', 0)
+    avg_margin = kpis.get('avg_order_value', 0)
     if avg_margin < 20:
         recommendations.append({
             'priority': 'High',
