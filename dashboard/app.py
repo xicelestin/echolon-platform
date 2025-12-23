@@ -292,7 +292,7 @@ elif st.session_state.current_page == "Analytics":
             fig = go.Figure()
             fig.add_trace(go.Scatter(x=data_copy['date'], y=data_copy['revenue'], name='Actual', opacity=0.3))
             fig.add_trace(go.Scatter(x=data_copy['date'], y=data_copy['MA7'], name='7-Day MA'))
-            fig.add_trace(go.Scatter(x=data_copy['date'], y=data_copy['MA30'], name='30-Day MA'}]))
+            fig.add_trace(go.Scatter(x=data_copy['date'], y=data_copy['MA30'], name='30-Day MA'))
             fig.update_layout(title='Revenue with Moving Averages', xaxis_title='Date', yaxis_title='Revenue ($)')
             st.plotly_chart(fig, use_container_width=True)
     
