@@ -198,16 +198,15 @@ if st.session_state.current_page == "Dashboard":
     with col2:
         st.metric(
             "Total Orders",
-                f"{format_percentage(kpis.get('orders_growth', 0))}"        )
-    with col3:
+            f"{format_number(kpis.get('total_orders', 0))}",
+            f"{format_percentage(kpis.get('orders_growth', 0))}"
         st.metric(
             "Total Customers",
-            f"{format_percentage(kpis.get('customers_growth', 0))}"        )
-    with col4:
+            f"{format_number(kpis.get('total_customers', 0))}",
+            f"{format_percentage(kpis.get('customers_growth', 0))}"
         st.metric(
             "Avg Order Value",
-            f"{format_percentage(kpis.get('avg_profit_margin', 0))} margin"        )
-    
+            f"{format_percentage(kpis.get('avg_profit_margin', 0))}"    
     st.markdown("---")
     
     # Recent Activity & Trends
@@ -288,12 +287,9 @@ elif st.session_state.current_page == "Analytics":
         st.metric("Profit Margin", format_percentage(profit_margin))
     if 'roas' in data.columns:
         avg_roas = data['roas'].mean()
-        st.metric("Avg ROAS", format_percentage(avg_roas))
-    else:
+        st.metric("Avg ROAS", format_multiplier(avg_roas))
         st.metric("Avg ROAS", "N/A")    
     st.markdown("---")
-    
-    # Sales Analytics
     st.subheader("💰 Sales Analytics")
     
     tab1, tab2, tab3 = st.tabs(["Revenue Trends", "Distribution Analysis", "Correlation Matrix"])
