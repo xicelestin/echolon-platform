@@ -1,0 +1,113 @@
+# Google Cloud Build configuration for Echolon API Backend
+# Automatically builds and deploys to Cloud Run
+
+steps:
+  # Build the FastAPI backend Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/echolon-api:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/echolon-api:latest'
+      - '-f'
+      - 'dashboard/Dockerfile.api'
+      - './dashboard'
+    id: 'build-api'
+
+  # Build the Streamlit dashboard Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/echolon-dashboard:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/echolon-dashboard:latest'
+      - '-f'
+      - 'dashboard/Dockerfile'
+      - './dashboard'
+    id: 'build-dashboard'
+
+  # Push API image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/echolon-api:$COMMIT_SHA'
+    id: 'push-api'
+    waitFor: ['build-api']
+
+  # Push Dashboard image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/echolon-dashboard:$COMMIT_SHA'
+    id: 'push-dashboard'
+    waitFor: ['build-dashboard']
+
+  # Deploy API to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'echolon-api'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/echolon-api:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars'
+      - 'FASTAPI_ENV=production'
+      - '--memory'
+      - '2Gi'
+      - '--cpu'
+      - '2'
+      - '--max-instances'
+      - '10'
+    id: 'deploy-api'
+    waitFor: ['push-api']
+
+  # Deploy Dashboard to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'echolon-dashboard'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/echolon-dashboard:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars'
+      - 'API_BACKEND_URL=${_API_URL}'
+      - '--memory'
+      - '1Gi'
+      - '--cpu'
+      - '1'
+      - '--max-instances'
+      - '5'
+    id: 'deploy-dashboard'
+    waitFor: ['push-dashboard', 'deploy-api']
+
+# Store images in Container Registry
+images:
+  - 'gcr.io/$PROJECT_ID/echolon-api:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/echolon-api:latest'
+  - 'gcr.io/$PROJECT_ID/echolon-dashboard:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/echolon-dashboard:latest'
+
+# Build timeout
+timeout: '1800s'
+
+# Substitutions for environment variables
+substitutions:
+  _API_URL: 'https://echolon-api-XXXXX.run.app'
+
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
