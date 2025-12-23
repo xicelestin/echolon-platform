@@ -147,7 +147,10 @@ with st.sidebar:
         "💡 Recommendations": "Recommendations",
         "📝 What-If Analysis": "What-If Analysis",
         "🎨 Inventory": "Inventory",
-        "📂 Upload Data": "Upload Data"
+        "📂 Upload Data": "Upload Data",
+    "👥 Customer Insights": "Customer Insights",
+    "📊 Inventory & Demand": "Inventory & Demand",
+    "⚠️ Anomalies & Alerts": "Anomalies & Alerts"
     }
     
     for page_name, page_id in pages.items():
