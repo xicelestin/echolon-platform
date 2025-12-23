@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import endpoints
 from app.db.database import engine, Base
 from app.models.models import User, BusinessData, Metrics, Predictions
+from error_handling import setup_error_handling
 # Create database tables
 # Create database tables
 # Base.metadata.create_all(bind=engine)
@@ -22,6 +23,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Setup error handling middleware and exception handlers
+setup_error_handling(app)
 
 # Include routers
 app.include_router(endpoints.router, prefix="/api/v1", tags=["main"])
