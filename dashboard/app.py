@@ -193,6 +193,18 @@ if st.session_state.current_page == "Dashboard":
         st.metric(
             "Total Orders",
             f"{format_number(kpis.get('total_orders', 0))}",
+            
+    with col3:
+        st.metric(
+            "Total Customers",
+            f"{format_number(kpis.get('total_customers', 0))}",
+            f"{format_percentage(kpis.get('customers_growth', 0))}")
+    
+    with col4:
+        st.metric(
+            "Avg Order Value",
+            f"{format_currency(kpis.get('avg_order_value', 0), decimals=0)}"
+        )
 
                 
     # Row 2: Business Metrics
