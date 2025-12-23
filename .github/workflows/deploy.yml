@@ -1,0 +1,212 @@
+name: CI/CD Pipeline - Build & Deploy Echolon Platform
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_REGION: us-central1
+  CLOUD_RUN_SERVICE: echolon-platform
+
+jobs:
+  # Code Quality & Testing
+  test:
+    runs-on: ubuntu-latest
+    name: Run Tests & Linting
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Lint with pylint
+        run: pylint backend/**/*.py dashboard/**/*.py --disable=missing-docstring
+        continue-on-error: true
+
+      - name: Format check with black
+        run: black --check backend/ dashboard/
+        continue-on-error: true
+
+      - name: Type check with mypy
+        run: mypy backend/ --ignore-missing-imports
+        continue-on-error: true
+
+      - name: Run unit tests
+        run: pytest backend/tests/ -v --cov=backend --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+
+  # Docker Build & Push
+  build:
+    runs-on: ubuntu-latest
+    name: Build & Push Docker Image
+    needs: test
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Deploy to GCP Cloud Run
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Cloud Run
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Configure Docker authentication
+        run: |
+          gcloud auth configure-docker ${{ env.REGISTRY }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.CLOUD_RUN_SERVICE }} \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --platform managed \
+            --region ${{ env.GCP_REGION }} \
+            --allow-unauthenticated \
+            --set-env-vars DATABASE_URL=${{ secrets.PROD_DATABASE_URL }},API_KEY=${{ secrets.PROD_API_KEY }} \
+            --memory 4Gi \
+            --cpu 2 \
+            --timeout 3600
+
+      - name: Get service URL
+        run: |
+          gcloud run services describe ${{ env.CLOUD_RUN_SERVICE }} \
+            --region ${{ env.GCP_REGION }} \
+            --format='value(status.url)'
+
+  # Post-Deployment Tests
+  smoke-test:
+    runs-on: ubuntu-latest
+    name: Smoke Tests
+    needs: deploy
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        run: pip install requests pytest
+
+      - name: Wait for service to be ready
+        run: sleep 30
+
+      - name: Test API health endpoint
+        run: |
+          python -c "
+          import requests
+          import time
+          for i in range(5):
+              try:
+                  response = requests.get('https://${{ env.CLOUD_RUN_SERVICE }}-${{ secrets.GCP_PROJECT_ID }}.run.app/health')
+                  if response.status_code == 200:
+                      print('Health check passed')
+                      exit(0)
+              except:
+                  time.sleep(10)
+          exit(1)
+          "
+
+      - name: Test API endpoints
+        run: |
+          python -c "
+          import requests
+          base_url = 'https://${{ env.CLOUD_RUN_SERVICE }}-${{ secrets.GCP_PROJECT_ID }}.run.app'
+          endpoints = ['/health', '/api/v1/status']
+          for endpoint in endpoints:
+              response = requests.get(base_url + endpoint)
+              assert response.status_code == 200, f'Endpoint {endpoint} failed'
+          print('All smoke tests passed')
+          "
+
+  # Notifications
+  notify:
+    runs-on: ubuntu-latest
+    name: Send Notifications
+    needs: [test, build, deploy, smoke-test]
+    if: always()
+    steps:
+      - name: Determine job status
+        id: status
+        run: |
+          if [[ "${{ needs.test.result }}" == "success" && "${{ needs.build.result }}" == "success" && "${{ needs.deploy.result }}" == "success" ]]; then
+            echo "status=✅ DEPLOYMENT SUCCESSFUL" >> $GITHUB_OUTPUT
+          else
+            echo "status=❌ DEPLOYMENT FAILED" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ steps.status.outputs.status }}
+          text: 'Echolon Platform CI/CD Pipeline'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()
