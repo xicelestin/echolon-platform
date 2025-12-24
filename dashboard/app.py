@@ -7,6 +7,10 @@ from datetime import datetime, timedelta
 import io
 from ml_integration import get_ml_insights, initialize_ml_models, forecast_revenue_ml, detect_anomalies_ml, predict_churn_ml
 
+from pages_financial_insights import render_financial_page
+from pages_inventory_optimization import render_inventory_optimization_page
+from pages_margin_analysis import render_margin_analysis_page
+
 
 # ==================== AI/ML MODELS (Phase 4) ====================
 # Note: ML models are available in ml_models/ directory
@@ -158,6 +162,9 @@ with st.sidebar:
     "👥 Customer Insights": "Customer Insights",
     "📊 Inventory & Demand": "Inventory & Demand",
     "⚠️ Anomalies & Alerts": "Anomalies & Alerts"
+         "💰 Financial Insights": "Financial Insights",
+ "📊 Inventory Optimization": "Inventory Optimization",
+ "📈 Margin Analysis": "Margin Analysis",
     }
     
     for page_name, page_id in pages.items():
@@ -1303,3 +1310,15 @@ elif st.session_state.current_page == "Anomalies & Alerts":
         revenue_threshold = st.slider("Revenue Drop Alert %", 5, 20, 10)
         inventory_threshold = st.slider("Low Inventory Alert %", 20, 50, 30)
         margin_threshold = st.slider("Low Margin Alert %", 10, 25, 15)
+
+# ==================== PAGE: FINANCIAL INSIGHTS ====================
+elif st.session_state.current_page == "Financial Insights":
+    render_financial_page(data, kpis, format_currency, format_percentage, format_number)
+
+# ==================== PAGE: INVENTORY OPTIMIZATION ====================
+elif st.session_state.current_page == "Inventory Optimization":
+    render_inventory_optimization_page(data, kpis, format_currency, format_percentage, format_number)
+
+# ==================== PAGE: MARGIN ANALYSIS ====================
+elif st.session_state.current_page == "Margin Analysis":
+    render_margin_analysis_page(data, kpis, format_currency, format_percentage, format_number)
