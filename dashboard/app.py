@@ -512,7 +512,10 @@ elif st.session_state.current_page == "Recommendations":
                 'title': 'Optimize Stock Levels',
                 'action': f'Detected {low_days} days with low inventory. Implement automated reordering at {avg_inventory*0.6:.0f} units.',
                 'impact': 'Medium',
-                'effort': 'Low'
+                'effort': 'Low',
+            'annual_loss': avg_inventory * 12000,  # Estimated holding cost
+            'immediate_impact': avg_inventory * 2000,  # Cash tied up
+            'estimated_savings': avg_inventory * 6000,  # Annual savings from optimization
             })
     
     # Profit margin recommendations
@@ -524,7 +527,10 @@ elif st.session_state.current_page == "Recommendations":
             'title': 'Improve Profit Margins',
             'action': f'Current margin is {avg_margin:.1f}%. Review supplier costs and consider 5-10% price increase on top products.',
             'impact': 'High',
-            'effort': 'Medium'
+            'effort': 'Medium',
+            'annual_loss': total_profit * 0.20,  # Profit loss from poor margins
+            'immediate_impact': total_profit * 0.15,  # Direct impact to this period
+            'estimated_savings': (total_profit * 0.20) * 0.50,  # 50% improvement potential
         })
     
     # Marketing efficiency
@@ -554,6 +560,16 @@ elif st.session_state.current_page == "Recommendations":
                 with col3:
                     st.markdown(f"**Effort:** {rec['effort']}")
                 st.markdown(f"**Action:** {rec['action']}")
+            
+            # Financial Impact Display
+            if 'annual_loss' in rec:
+                st.markdown(f"""\n**Financial Impact:**\n
+💸 **You're losing:** {format_currency(rec['annual_loss'], 0)}/year\n
+📊 **At immediate stake:** {format_currency(rec.get('immediate_impact', 0), 0)} in working capital\n
+✅ **Expected savings:** {format_currency(rec.get('estimated_savings', 0), 0)} annually\n""")
+            
+            # Additional details
+            st.markdown(f"**Status:** {rec['impact']} Impact | **Effort:** {rec['effort']} Effort")
     else:
         st.success("✅ Your business metrics are performing well!")
 
