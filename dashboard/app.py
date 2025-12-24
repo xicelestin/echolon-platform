@@ -162,9 +162,9 @@ with st.sidebar:
     "👥 Customer Insights": "Customer Insights",
     "📊 Inventory & Demand": "Inventory & Demand",
     "⚠️ Anomalies & Alerts": "Anomalies & Alerts"
-         "💰 Financial Insights": "Financial Insights",
- "📊 Inventory Optimization": "Inventory Optimization",
- "📈 Margin Analysis": "Margin Analysis",
+         "Financial Insights": "Financial Insights",
+   "Inventory Optimization": "Inventory Optimization",
+         "Margin Analysis": "Margin Analysis",
     }
     
     for page_name, page_id in pages.items():
@@ -1316,7 +1316,7 @@ elif st.session_state.current_page == "Financial Insights":
     render_financial_page(data, kpis, format_currency, format_percentage, format_number)
 
 # ==================== PAGE: INVENTORY OPTIMIZATION ====================
-elif st.session_state.current_page == "Inventory Optimization":
+elif st.session_state.current_page == "Financial In"Inventory Optimization"sights":
     render_inventory_optimization_page(data, kpis, format_currency, format_percentage, format_number)
 
 # ==================== PAGE: MARGIN ANALYSIS ====================
