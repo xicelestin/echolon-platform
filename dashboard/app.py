@@ -162,9 +162,9 @@ with st.sidebar:
     "👥 Customer Insights": "Customer Insights",
     "📊 Inventory & Demand": "Inventory & Demand",
     "⚠️ Anomalies & Alerts": "Anomalies & Alerts",
-         "Financial Insights": "Financial Insights",
-   "Inventory Optimization": "Inventory Optimization",
-         "Margin Analysis": "Margin Analysis",
+         "💰 Financial Insights": "Financial Insights",
+   "📋 Inventory Optimization": "Inventory Optimization",
+         "📊 Margin Analysis": "Margin Analysis",
     }
     
     for page_name, page_id in pages.items():
