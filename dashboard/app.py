@@ -10,6 +10,7 @@ from ml_integration import get_ml_insights, initialize_ml_models, forecast_reven
 from pages_financial_insights import render_financial_page
 from pages_inventory_optimization import render_inventory_optimization_page
 from pages_margin_analysis import render_margin_analysis_page
+from pages_smart_alerts import render_smart_alerts_page
 
 
 # ==================== AI/ML MODELS (Phase 4) ====================
@@ -165,6 +166,7 @@ with st.sidebar:
          "💰 Financial Insights": "Financial Insights",
    "📋 Inventory Optimization": "Inventory Optimization",
          "📊 Margin Analysis": "Margin Analysis",
+            "🔔 Smart Alerts": "Smart Alerts",
     }
     
     for page_name, page_id in pages.items():
@@ -1321,3 +1323,7 @@ elif st.session_state.current_page == "Inventory Optimization":    render_invent
 # ==================== PAGE: MARGIN ANALYSIS ====================
 elif st.session_state.current_page == "Margin Analysis":
     render_margin_analysis_page(data, kpis, format_currency, format_percentage, format_number)
+
+# ==================== PAGE: SMART ALERTS ====================
+elif st.session_state.current_page == "Smart Alerts":
+    render_smart_alerts_page(data, kpis, format_currency, format_percentage, format_number)
