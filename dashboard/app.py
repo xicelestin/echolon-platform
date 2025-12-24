@@ -796,3 +796,510 @@ elif st.session_state.current_page == "Upload Data":
             st.session_state.uploaded_data = None
             st.success("✅ Reset to demo data!")
             st.rerun()
+
+# ==================== PAGE: CUSTOMER INSIGHTS ====================
+elif st.session_state.current_page == "Customer Insights":
+    st.title("👥 Customer Insights")
+    st.markdown("### Deep dive into customer behavior and patterns")
+    
+    # Customer Overview KPIs
+    col1, col2, col3, col4 = st.columns(4)
+    
+    total_customers = kpis.get('total_customers', 0)
+    new_customers_total = data['new_customers'].sum() if 'new_customers' in data.columns else 0
+    repeat_rate = ((total_customers - new_customers_total) / total_customers * 100) if total_customers > 0 else 0
+    
+    with col1:
+        st.metric("Total Customers", format_number(total_customers))
+    with col2:
+        st.metric("New Customers", format_number(new_customers_total))
+    with col3:
+        st.metric("Repeat Rate", format_percentage(repeat_rate))
+    with col4:
+        clv = kpis.get('avg_order_value', 0) * 3
+        st.metric("Customer Lifetime Value", format_currency(clv, decimals=0))
+    
+    st.markdown("---")
+    
+    # Customer Acquisition Trends
+    st.subheader("📈 Customer Acquisition Trends")
+    if 'new_customers' in data.columns and 'date' in data.columns:
+        fig = px.area(data, x='date', y='new_customers', title='New Customer Acquisitions Over Time')
+        fig.update_layout(xaxis_title='Date', yaxis_title='New Customers')
+        st.plotly_chart(fig, use_container_width=True)
+    
+    st.markdown("---")
+    
+    # Customer Segmentation
+    st.subheader("🎯 Customer Segmentation Analysis")
+    
+    tab1, tab2 = st.tabs(["Value Segments", "Behavior Analysis"])
+    
+    with tab1:
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Customer value distribution
+            if 'revenue' in data.columns and 'customers' in data.columns:
+                data_copy = data.copy()
+                data_copy['revenue_per_customer'] = data_copy['revenue'] / data_copy['customers']
+                
+                # Create segments
+                segments = pd.cut(data_copy['revenue_per_customer'], 
+                                bins=[0, 500, 1000, 2000, float('inf')],
+                                labels=['Low Value', 'Medium Value', 'High Value', 'Premium'])
+                segment_counts = segments.value_counts()
+                
+                fig = px.pie(values=segment_counts.values, names=segment_counts.index, 
+                           title='Customer Value Distribution')
+                st.plotly_chart(fig, use_container_width=True)
+        
+        with col2:
+            st.markdown("**Segment Insights:**")
+            st.info("""
+            📊 **Value Segments:**
+            - **Low Value**: < $500/customer
+            - **Medium Value**: $500-$1,000
+            - **High Value**: $1,000-$2,000
+            - **Premium**: > $2,000
+            
+            💡 **Recommendation**: Focus retention efforts on High Value and Premium segments.
+            """)
+    
+    with tab2:
+        if 'conversion_rate' in data.columns:
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                avg_conversion = data['conversion_rate'].mean()
+                st.metric("Average Conversion Rate", format_percentage(avg_conversion))
+                
+                fig = px.line(data.tail(90), x='date', y='conversion_rate', 
+                            title='Conversion Rate Trend (Last 90 Days)')
+                st.plotly_chart(fig, use_container_width=True)
+            
+            with col2:
+                # Conversion rate distribution
+                fig = px.histogram(data, x='conversion_rate', nbins=30, 
+                                 title='Conversion Rate Distribution')
+                st.plotly_chart(fig, use_container_width=True)
+    
+    st.markdown("---")
+    
+    # Churn Risk Analysis
+    st.subheader("⚠️ Churn Risk Analysis")
+    
+    if 'customers' in data.columns:
+        # Calculate customer retention
+        data_copy = data.copy().sort_values('date')
+        data_copy['customer_change'] = data_copy['customers'].diff()
+        churned = data_copy[data_copy['customer_change'] < 0]['customer_change'].sum()
+        churn_rate = abs(churned) / total_customers * 100 if total_customers > 0 else 0
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("Estimated Churn Rate", format_percentage(churn_rate))
+        with col2:
+            retention_rate = 100 - churn_rate
+            st.metric("Retention Rate", format_percentage(retention_rate))
+        with col3:
+            at_risk = int(total_customers * churn_rate / 100)
+            st.metric("Customers at Risk", format_number(at_risk))
+        
+        st.markdown("""           **Retention Strategies:**
+        1. 🎯 Launch targeted re-engagement campaigns for at-risk customers
+        2. 💎 Create loyalty program with exclusive benefits
+        3. 📧 Implement personalized email nurture sequences
+        4. 🎁 Offer special incentives for repeat purchases
+        """)
+
+
+# ==================== PAGE: INVENTORY & DEMAND ====================
+elif st.session_state.current_page == "Inventory & Demand":
+    st.title("📊 Inventory & Demand Forecasting")
+    st.markdown("### Optimize stock levels and predict future demand")
+    
+    if 'inventory_units' not in data.columns:
+        st.warning("⚠️ Inventory data not available. Upload data with 'inventory_units' column.")
+    else:
+        # Inventory Health Dashboard
+        st.subheader("📊 Inventory Health Dashboard")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        avg_inventory = data['inventory_units'].mean()
+        current_inventory = data['inventory_units'].iloc[-1]
+        inventory_trend = ((current_inventory - data['inventory_units'].iloc[-30]) / 
+                          data['inventory_units'].iloc[-30] * 100) if len(data) >= 30 else 0
+        
+        with col1:
+            st.metric("Current Inventory", f"{format_number(current_inventory)} units", 
+                     f"{inventory_trend:+.1f}%")
+        with col2:
+            st.metric("Average Stock Level", f"{format_number(avg_inventory)} units")
+        with col3:
+            stockout_days = (data['inventory_units'] < avg_inventory * 0.2).sum()
+            st.metric("Stockout Risk Days", format_number(stockout_days))
+        with col4:
+            overstock_days = (data['inventory_units'] > avg_inventory * 1.5).sum()
+            st.metric("Overstock Days", format_number(overstock_days))
+        
+        st.markdown("---")
+        
+        # Inventory Levels Over Time
+        st.subheader("📊 Stock Level Monitoring")
+        
+        # Calculate reorder and safety stock levels
+        reorder_point = avg_inventory * 0.6
+        safety_stock = avg_inventory * 0.3
+        max_stock = avg_inventory * 1.4
+        
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=data['date'], y=data['inventory_units'], 
+                               mode='lines', name='Current Stock', line=dict(color='blue')))
+        fig.add_hline(y=reorder_point, line_dash="dash", line_color="orange", 
+                     annotation_text="Reorder Point")
+        fig.add_hline(y=safety_stock, line_dash="dash", line_color="red", 
+                     annotation_text="Safety Stock")
+        fig.add_hline(y=max_stock, line_dash="dash", line_color="green", 
+                     annotation_text="Max Stock")
+        fig.update_layout(title='Inventory Levels with Control Points', 
+                         xaxis_title='Date', yaxis_title='Units')
+        st.plotly_chart(fig, use_container_width=True)
+        
+        st.markdown("---")
+        
+        # Demand Forecasting
+        st.subheader("🔮 Demand Forecasting")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if 'orders' in data.columns:
+                # Calculate demand velocity
+                data_copy = data.copy()
+                data_copy['demand_velocity'] = data_copy['orders'].rolling(window=7).mean()
+                
+                fig = px.line(data_copy.tail(90), x='date', y='demand_velocity', 
+                            title='7-Day Rolling Demand (Last 90 Days)')
+                fig.update_layout(xaxis_title='Date', yaxis_title='Average Daily Orders')
+                st.plotly_chart(fig, use_container_width=True)
+                
+                # Demand stats
+                avg_daily_demand = data['orders'].mean()
+                peak_demand = data['orders'].max()
+                demand_volatility = data['orders'].std()
+                
+                st.markdown("**Demand Statistics:**")
+                st.write(f"- Average Daily Demand: **{avg_daily_demand:.0f} orders**")
+                st.write(f"- Peak Demand: **{peak_demand:.0f} orders**")
+                st.write(f"- Demand Volatility: **{demand_volatility:.0f} orders (std dev)**")
+        
+        with col2:
+            if 'inventory_units' in data.columns and 'orders' in data.columns:
+                # Days of inventory remaining
+                data_copy = data.copy()
+                data_copy['days_of_inventory'] = data_copy['inventory_units'] / data_copy['orders']
+                
+                avg_days = data_copy['days_of_inventory'].mean()
+                current_days = data_copy['days_of_inventory'].iloc[-1]
+                
+                st.metric("Current Days of Inventory", f"{current_days:.1f} days")
+                st.metric("Average Days of Inventory", f"{avg_days:.1f} days")
+                
+                # Inventory coverage chart
+                fig = px.line(data_copy.tail(90), x='date', y='days_of_inventory', 
+                            title='Inventory Coverage (Days) - Last 90 Days')
+                fig.add_hline(y=30, line_dash="dash", line_color="green", 
+                            annotation_text="Target: 30 Days")
+                st.plotly_chart(fig, use_container_width=True)
+        
+        st.markdown("---")
+        
+        # Reorder Recommendations
+        st.subheader("🔄 Smart Reorder Recommendations")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("Recommended Reorder Point", f"{reorder_point:.0f} units")
+            st.caption("Trigger replenishment when stock falls below this level")
+        
+        with col2:
+            # Calculate optimal order quantity (simplified EOQ)
+            if 'orders' in data.columns:
+                avg_demand = data['orders'].mean()
+                optimal_order_qty = avg_demand * 14  # 2 weeks supply
+                st.metric("Optimal Order Quantity", f"{optimal_order_qty:.0f} units")
+                st.caption("Recommended order size for cost efficiency")
+        
+        with col3:
+            st.metric("Safety Stock Level", f"{safety_stock:.0f} units")
+            st.caption("Minimum buffer to prevent stockouts")
+        
+        # Reorder alerts
+        st.markdown("**Automated Reorder Alerts:**")
+        
+        if current_inventory < reorder_point:
+            st.error(f"🚨 **URGENT**: Inventory below reorder point! Current: {current_inventory:.0f} units, Reorder Point: {reorder_point:.0f} units")
+        elif current_inventory < reorder_point * 1.2:
+            st.warning(f"⚠️ **WARNING**: Approaching reorder point. Current: {current_inventory:.0f} units")
+        else:
+            st.success("✅ Inventory levels healthy")
+        
+        # Demand seasonality detection
+        st.markdown("---")
+        st.subheader("📅 Seasonality & Trends")
+        
+        if 'orders' in data.columns and len(data) >= 90:
+            data_copy = data.copy()
+            data_copy['day_of_week'] = pd.to_datetime(data_copy['date']).dt.dayofweek
+            weekday_demand = data_copy.groupby('day_of_week')['orders'].mean()
+            
+            weekday_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            
+            fig = px.bar(x=weekday_names, y=weekday_demand.values, 
+                        title='Average Demand by Day of Week')
+            fig.update_layout(xaxis_title='Day of Week', yaxis_title='Average Orders')
+            st.plotly_chart(fig, use_container_width=True)
+            
+            peak_day = weekday_names[weekday_demand.idxmax()]
+            low_day = weekday_names[weekday_demand.idxmin()]
+            
+            st.info(f"📊 **Insight**: Peak demand occurs on **{peak_day}**, lowest on **{low_day}**. Adjust inventory levels accordingly.")
+
+# ==================== PAGE: ANOMALIES & ALERTS ====================
+elif st.session_state.current_page == "Anomalies & Alerts":
+    st.title("⚠️ Anomalies & Alerts System")
+    st.markdown("### Real-time monitoring and anomaly detection")
+    
+    # Alert Summary Dashboard
+    st.subheader("🚨 Alert Dashboard")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    # Count different severity alerts
+    critical_alerts = 0
+    warning_alerts = 0
+    info_alerts = 0
+    
+    with col1:
+        st.metric("Critical Alerts", critical_alerts)
+    with col2:
+        st.metric("Warnings", warning_alerts)
+    with col3:
+        st.metric("Info Alerts", info_alerts)
+    with col4:
+        st.metric("Total Alerts", critical_alerts + warning_alerts + info_alerts)
+    
+    st.markdown("---")
+    
+    # Revenue Anomalies
+    st.subheader("💰 Revenue Anomaly Detection")
+    
+    if 'revenue' in data.columns:
+        data_copy = data.copy()
+        
+        # Calculate moving average and std dev
+        data_copy['revenue_ma'] = data_copy['revenue'].rolling(window=30).mean()
+        data_copy['revenue_std'] = data_copy['revenue'].rolling(window=30).std()
+        data_copy['upper_bound'] = data_copy['revenue_ma'] + (2 * data_copy['revenue_std'])
+        data_copy['lower_bound'] = data_copy['revenue_ma'] - (2 * data_copy['revenue_std'])
+        
+        # Detect anomalies
+        data_copy['is_anomaly'] = ((data_copy['revenue'] > data_copy['upper_bound']) | 
+                                   (data_copy['revenue'] < data_copy['lower_bound']))
+        
+        # Plot revenue with anomalies
+        fig = go.Figure()
+        
+        # Normal data points
+        normal_data = data_copy[~data_copy['is_anomaly']]
+        fig.add_trace(go.Scatter(x=normal_data['date'], y=normal_data['revenue'], 
+                               mode='lines', name='Revenue', line=dict(color='blue')))
+        
+        # Anomalous data points
+        anomaly_data = data_copy[data_copy['is_anomaly']]
+        fig.add_trace(go.Scatter(x=anomaly_data['date'], y=anomaly_data['revenue'], 
+                               mode='markers', name='Anomalies', 
+                               marker=dict(color='red', size=10, symbol='x')))
+        
+        # Confidence bounds
+        fig.add_trace(go.Scatter(x=data_copy['date'], y=data_copy['upper_bound'], 
+                               mode='lines', name='Upper Bound', 
+                               line=dict(color='gray', dash='dash')))
+        fig.add_trace(go.Scatter(x=data_copy['date'], y=data_copy['lower_bound'], 
+                               mode='lines', name='Lower Bound', 
+                               line=dict(color='gray', dash='dash')))
+        
+        fig.update_layout(title='Revenue Anomaly Detection (2σ method)', 
+                         xaxis_title='Date', yaxis_title='Revenue ($)')
+        st.plotly_chart(fig, use_container_width=True)
+        
+        # Anomaly summary
+        anomaly_count = data_copy['is_anomaly'].sum()
+        anomaly_rate = (anomaly_count / len(data_copy) * 100) if len(data_copy) > 0 else 0
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("Anomalies Detected", format_number(anomaly_count))
+            st.metric("Anomaly Rate", format_percentage(anomaly_rate))
+        
+        with col2:
+            if anomaly_count > 0:
+                recent_anomalies = data_copy[data_copy['is_anomaly']].tail(5)
+                st.markdown("**Recent Anomalies:**")
+                for idx, row in recent_anomalies.iterrows():
+                    date_str = row['date'].strftime('%Y-%m-%d')
+                    revenue_val = format_currency(row['revenue'], decimals=0)
+                    st.write(f"- {date_str}: {revenue_val}")
+    
+    st.markdown("---")
+    
+    # Performance Alerts
+    st.subheader("📉 Performance Alerts")
+    
+    # Generate dynamic alerts based on data
+    alerts_list = []
+    
+    # Revenue alerts
+    revenue_growth = kpis.get('revenue_growth', 0)
+    if revenue_growth < -10:
+        alerts_list.append({
+            'severity': 'Critical',
+            'category': 'Revenue',
+            'message': f'Revenue declined by {abs(revenue_growth):.1f}% in the last period',
+            'action': 'Launch promotional campaign or review pricing strategy',
+            'icon': '🚨'
+        })
+        critical_alerts += 1
+    elif revenue_growth < -5:
+        alerts_list.append({
+            'severity': 'Warning',
+            'category': 'Revenue',
+            'message': f'Revenue down {abs(revenue_growth):.1f}%',
+            'action': 'Monitor trend and prepare contingency plans',
+            'icon': '⚠️'
+        })
+        warning_alerts += 1
+    
+    # Inventory alerts
+    if 'inventory_units' in data.columns:
+        current_inventory = data['inventory_units'].iloc[-1]
+        avg_inventory = data['inventory_units'].mean()
+        
+        if current_inventory < avg_inventory * 0.3:
+            alerts_list.append({
+                'severity': 'Critical',
+                'category': 'Inventory',
+                'message': f'Critically low inventory: {current_inventory:.0f} units',
+                'action': 'Place emergency reorder immediately',
+                'icon': '🚨'
+            })
+            critical_alerts += 1
+        elif current_inventory < avg_inventory * 0.6:
+            alerts_list.append({
+                'severity': 'Warning',
+                'category': 'Inventory',
+                'message': f'Low inventory approaching reorder point: {current_inventory:.0f} units',
+                'action': 'Schedule reorder within 2-3 days',
+                'icon': '⚠️'
+            })
+            warning_alerts += 1
+    
+    # Profit margin alerts
+    avg_margin = kpis.get('avg_profit_margin', 0)
+    if avg_margin < 15:
+        alerts_list.append({
+            'severity': 'Warning',
+            'category': 'Profitability',
+            'message': f'Low profit margin: {avg_margin:.1f}%',
+            'action': 'Review costs and pricing strategy',
+            'icon': '⚠️'
+        })
+        warning_alerts += 1
+    
+    # Marketing efficiency alerts
+    if 'roas' in data.columns:
+        avg_roas = data['roas'].mean()
+        if avg_roas < 2.0:
+            alerts_list.append({
+                'severity': 'Warning',
+                'category': 'Marketing',
+                'message': f'Low ROAS: {avg_roas:.2f}x (target: >2.5x)',
+                'action': 'Optimize ad spend and pause underperforming campaigns',
+                'icon': '⚠️'
+            })
+            warning_alerts += 1
+    
+    # Customer behavior alerts
+    if 'customers' in data.columns:
+        recent_customers = data['customers'].tail(7).mean()
+        prev_customers = data['customers'].iloc[-14:-7].mean() if len(data) >= 14 else recent_customers
+        customer_change = ((recent_customers - prev_customers) / prev_customers * 100) if prev_customers > 0 else 0
+        
+        if customer_change < -15:
+            alerts_list.append({
+                'severity': 'Critical',
+                'category': 'Customer Retention',
+                'message': f'Significant customer drop: {abs(customer_change):.1f}%',
+                'action': 'Launch retention campaign and investigate cause',
+                'icon': '🚨'
+            })
+            critical_alerts += 1
+    
+    # Display alerts
+    if alerts_list:
+        for alert in alerts_list:
+            if alert['severity'] == 'Critical':
+                with st.container():
+                    st.error(f"{alert['icon']} **{alert['severity']} - {alert['category']}**")
+                    st.markdown(f"**Issue:** {alert['message']}")
+                    st.markdown(f"**Recommended Action:** {alert['action']}")
+                    st.markdown("---")
+            elif alert['severity'] == 'Warning':
+                with st.container():
+                    st.warning(f"{alert['icon']} **{alert['severity']} - {alert['category']}**")
+                    st.markdown(f"**Issue:** {alert['message']}")
+                    st.markdown(f"**Recommended Action:** {alert['action']}")
+                    st.markdown("---")
+    else:
+        st.success("✅ No active alerts. All metrics are within normal ranges.")
+    
+    st.markdown("---")
+    
+    # Alert History
+    st.subheader("📜 Alert History")
+    
+    # Create a mock alert history table
+    alert_history = pd.DataFrame({
+        'Date': pd.date_range(end=datetime.now(), periods=10, freq='D'),
+        'Severity': ['Critical', 'Warning', 'Info', 'Warning', 'Critical', 
+                    'Info', 'Warning', 'Info', 'Critical', 'Warning'],
+        'Category': ['Revenue', 'Inventory', 'Marketing', 'Revenue', 'Inventory',
+                    'Profitability', 'Marketing', 'Revenue', 'Inventory', 'Revenue'],
+        'Status': ['Resolved', 'Resolved', 'Resolved', 'Resolved', 'Resolved',
+                  'Resolved', 'Resolved', 'Resolved', 'Resolved', 'Resolved']
+    })
+    
+    st.dataframe(alert_history, use_container_width=True)
+    
+    st.markdown("---")
+    
+    # Alert Settings
+    st.subheader("⚙️ Alert Configuration")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("**Notification Settings:**")
+        email_alerts = st.checkbox("Email Notifications", value=True)
+        slack_alerts = st.checkbox("Slack Notifications", value=False)
+        sms_alerts = st.checkbox("SMS Alerts (Critical only)", value=False)
+    
+    with col2:
+        st.markdown("**Alert Thresholds:**")
+        revenue_threshold = st.slider("Revenue Drop Alert %", 5, 20, 10)
+        inventory_threshold = st.slider("Low Inventory Alert %", 20, 50, 30)
+        margin_threshold = st.slider("Low Margin Alert %", 10, 25, 15)
