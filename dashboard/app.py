@@ -1316,8 +1316,7 @@ elif st.session_state.current_page == "Financial Insights":
     render_financial_page(data, kpis, format_currency, format_percentage, format_number)
 
 # ==================== PAGE: INVENTORY OPTIMIZATION ====================
-elif st.session_state.current_page == "Financial In"Inventory Optimization"sights":
-    render_inventory_optimization_page(data, kpis, format_currency, format_percentage, format_number)
+elif st.session_state.current_page == "Inventory Optimization":    render_inventory_optimization_page(data, kpis, format_currency, format_percentage, format_number)
 
 # ==================== PAGE: MARGIN ANALYSIS ====================
 elif st.session_state.current_page == "Margin Analysis":
