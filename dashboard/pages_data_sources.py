@@ -163,6 +163,12 @@ def generate_csv_template():
 # ==================== MAIN PAGE ====================
 def render_data_sources_page():
     """Main render function for data sources page"""
+
+        # Initialize session state
+    if 'connected_sources' not in st.session_state:
+        st.session_state.connected_sources = {}
+    if 'upload_history' not in st.session_state:
+        st.session_state.upload_history = []
     
     st.title("🔌 Connect Your Data Sources")
     st.markdown("""Connect multiple data sources to get comprehensive insights across your entire business.
