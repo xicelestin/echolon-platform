@@ -14,6 +14,7 @@ from pages_smart_alerts import render_smart_alerts_page
 from pages_cohort_analysis import render_cohort_analysis_page
 from pages_customer_ltv import render_customer_ltv_page
 from pages_revenue_attribution import render_revenue_attribution_page
+from pages_competitive_benchmark import render_competitive_benchmark_page
 
 
 # ==================== AI/ML MODELS (Phase 4) ====================
@@ -173,6 +174,7 @@ with st.sidebar:
                 "📊 Cohort Analysis": "Cohort Analysis",
                 "💰 Customer LTV": "Customer LTV",
                 "📈 Revenue Attribution": "Revenue Attribution",
+                "🏆 Competitive Benchmark": "Competitive Benchmark",
     }
     
     for page_name, page_id in pages.items():
@@ -1361,3 +1363,7 @@ elif st.session_state.current_page == "Customer LTV":
 # ==================== PAGE: REVENUE ATTRIBUTION ====================
 elif st.session_state.current_page == "Revenue Attribution":
     render_revenue_attribution_page(data, kpis, format_currency, format_percentage, format_number)
+
+# ==================== PAGE: COMPETITIVE BENCHMARK ====================
+elif st.session_state.current_page == "Competitive Benchmark":
+    render_competitive_benchmark_page(data, kpis, format_currency, format_percentage, format_number)
