@@ -116,6 +116,159 @@ class DataConnector:
         except:
             return self._mock_anomalies()
     
+    # ==================== SHOPIFY INTEGRATION ====================
+    def connect_shopify(self, shop_url: str, access_token: str) -> Dict[str, Any]:
+        """Connect to Shopify and fetch real order data using REST API."""
+        try:
+            base_url = f"https://{shop_url}/admin/api/2024-01"
+            headers = {'X-Shopify-Access-Token': access_token}
+            
+            resp = requests.get(f"{base_url}/orders.json", headers=headers, timeout=self.timeout)
+            resp.raise_for_status()
+            
+            orders = resp.json().get('orders', [])
+            order_data = []
+            
+            for order in orders:
+                order_data.append({
+                    'order_id': order['id'],
+                    'order_name': order.get('name', ''),
+                    'date': order['created_at'],
+                    'revenue': float(order['total_price']),
+                    'items_count': sum(li['quantity'] for li in order.get('line_items', [])),
+                    'customer_email': order.get('customer', {}).get('email', 'Unknown') if order.get('customer') else 'Unknown',
+                    'status': order.get('financial_status', 'unknown')
+                })
+            
+            return {
+                'status': 'success',
+                'data': pd.DataFrame(order_data),
+                'total_orders': len(order_data),
+                'message': f'Successfully fetched {len(order_data)} orders from Shopify'
+            }
+        except requests.exceptions.RequestException as e:
+            return {'status': 'error', 'message': f'Shopify API error: {str(e)}'}
+        except Exception as e:
+            return {'status': 'error', 'message': f'Error processing Shopify data: {str(e)}'}
+    
+    def get_shopify_products(self, shop_url: str, access_token: str) -> pd.DataFrame:
+        """Fetch Shopify product inventory using REST API."""
+        try:
+            base_url = f"https://{shop_url}/admin/api/2024-01"
+            headers = {'X-Shopify-Access-Token': access_token}
+            
+            resp = requests.get(f"{base_url}/products.json", headers=headers, timeout=self.timeout)
+            resp.raise_for_status()
+            
+            products = resp.json().get('products', [])
+            product_data = []
+            
+            for product in products:
+                for variant in product.get('variants', []):
+                    product_data.append({
+                        'product_id': product['id'],
+                        'product_title': product.get('title', ''),
+                        'variant_id': variant['id'],
+                        'sku': variant.get('sku', ''),
+                        'inventory_quantity': variant.get('inventory_quantity', 0),
+                        'price': float(variant.get('price', 0))
+                    })
+            
+            return pd.DataFrame(product_data)
+        except Exception as e:
+            st.error(f"Shopify API error: {e}")
+            return pd.DataFrame()
+    
+    def get_shopify_customers(self, shop_url: str, access_token: str) -> pd.DataFrame:
+        """Fetch Shopify customers using REST API."""
+        try:
+            base_url = f"https://{shop_url}/admin/api/2024-01"
+            headers = {'X-Shopify-Access-Token': access_token}
+            
+            resp = requests.get(f"{base_url}/customers.json", headers=headers, timeout=self.timeout)
+            resp.raise_for_status()
+            
+            customers = resp.json().get('customers', [])
+            customer_data = []
+            
+            for customer in customers:
+                customer_data.append({
+                    'customer_id': customer['id'],
+                    'email': customer.get('email', ''),
+                    'first_name': customer.get('first_name', ''),
+                    'last_name': customer.get('last_name', ''),
+                    'total_spent': float(customer.get('total_spent', 0)),
+                    'orders_count': customer.get('orders_count', 0),
+                    'created_at': customer.get('created_at', '')
+                })
+            
+            return pd.DataFrame(customer_data)
+        except Exception as e:
+            st.error(f"Shopify Customers API error: {e}")
+            return pd.DataFrame()
+    
+    # ==================== GOOGLE SHEETS INTEGRATION ====================
+    def connect_google_sheets(self, spreadsheet_id: str, credentials_json: str) -> Dict[str, Any]:
+        """Connect to Google Sheets and fetch data."""
+        try:
+            import gspread
+            from google.oauth2.service_account import Credentials
+            
+            scopes = [
+                'https://www.googleapis.com/auth/spreadsheets.readonly',
+                'https://www.googleapis.com/auth/drive.readonly'
+            ]
+            
+            creds = Credentials.from_service_account_info(
+                json.loads(credentials_json),
+                scopes=scopes
+            )
+            
+            client = gspread.authorize(creds)
+            spreadsheet = client.open_by_key(spreadsheet_id)
+            worksheet = spreadsheet.get_worksheet(0)
+            
+            data = worksheet.get_all_records()
+            df = pd.DataFrame(data)
+            
+            return {
+                'status': 'success',
+                'data': df,
+                'rows': len(df),
+                'columns': list(df.columns),
+                'message': f'Successfully fetched {len(df)} rows from Google Sheets'
+            }
+        except Exception as e:
+            return {'status': 'error', 'message': f'Google Sheets API error: {str(e)}'}
+    
+    def get_sheets_data_by_range(self, spreadsheet_id: str, credentials_json: str, range_name: str) -> pd.DataFrame:
+        """Fetch data from specific range in Google Sheets."""
+        try:
+            import gspread
+            from google.oauth2.service_account import Credentials
+            
+            scopes = [
+                'https://www.googleapis.com/auth/spreadsheets.readonly',
+                'https://www.googleapis.com/auth/drive.readonly'
+            ]
+            
+            creds = Credentials.from_service_account_info(
+                json.loads(credentials_json),
+                scopes=scopes
+            )
+            
+            client = gspread.authorize(creds)
+            spreadsheet = client.open_by_key(spreadsheet_id)
+            
+            worksheet_name = range_name.split('!')[0] if '!' in range_name else range_name
+            worksheet = spreadsheet.worksheet(worksheet_name)
+            
+            data = worksheet.get_all_records()
+            return pd.DataFrame(data)
+        except Exception as e:
+            st.error(f"Google Sheets API error: {e}")
+            return pd.DataFrame()
+    
     # MOCK DATA GENERATORS
     def _mock_revenue_data(self, start_date: str, end_date: str) -> pd.DataFrame:
         dates = pd.date_range(start_date, end_date, freq='D')
@@ -165,150 +318,4 @@ class DataConnector:
                     'cohort': cohort,
                     'period': period,
                     'week': i,
-                    'retention': max(0.5, 1.0 - (i * 0.08 + np.random.uniform(-0.05, 0.05))),
-                    'users': int(np.random.randint(800, 1200))
-                })
-        return {'cohorts': data}
-    
-    def _mock_benchmarks(self) -> Dict[str, float]:
-        return {
-            'avg_ltv': 5800, 'avg_cac': 145, 'avg_ltv_cac_ratio': 40,
-            'avg_churn': 0.058, 'avg_mrr_growth': 0.089, 'avg_conversion': 0.038,
-            'your_ltv': 7200, 'your_cac': 120, 'your_churn': 0.042, 'your_mrr_growth': 0.124
-        }
-    
-    def _mock_attribution_data(self) -> Dict[str, Any]:
-        return {
-            'channels': ['organic', 'paid_search', 'social', 'referral', 'direct'],
-            'first_touch': [0.15, 0.28, 0.22, 0.18, 0.17],
-            'last_touch': [0.08, 0.35, 0.25, 0.15, 0.17],
-            'linear': [0.12, 0.32, 0.24, 0.17, 0.15],
-            'revenue_influenced': [45000, 125000, 87000, 54000, 38000]
-        }
-    
-    def _mock_anomalies(self) -> List[Dict]:
-        return [
-            {'date': '2025-01-15', 'metric': 'revenue', 'value': 32000, 'expected': 50000, 'severity': 'high', 'reason': 'System outage detected'},
-            {'date': '2025-01-20', 'metric': 'churn', 'value': 0.12, 'expected': 0.045, 'severity': 'high', 'reason': 'Unusual spike'}
-        ]
-
-@st.cache_resource
-def get_connector() -> DataConnector:
-
-    # SHOPIFY INTEGRATION
-    def connect_shopify(self, shop_url: str, access_token: str) -> Dict[str, Any]:
-        """Connect to Shopify and fetch order data."""
-        try:
-            import shopify
-            shopify.ShopifyResource.set_site(f"https://{shop_url}/admin/api/2024-01")
-            shopify.ShopifyResource.headers = {'X-Shopify-Access-Token': access_token}
-            
-            # Fetch orders
-            orders = shopify.Order.find(limit=250, status='any')
-            
-            order_data = []
-            for order in orders:
-                order_data.append({
-                    'order_id': order.id,
-                    'date': order.created_at,
-                    'value': float(order.total_price),
-                    'customer_id': order.customer.id if order.customer else None,
-                    'status': order.financial_status
-                })
-            
-            return {
-                'status': 'success',
-                'data': pd.DataFrame(order_data),
-                'total_orders': len(order_data)
-            }
-        except Exception as e:
-            return {'status': 'error', 'message': str(e)}
-    
-    def get_shopify_products(self, shop_url: str, access_token: str) -> pd.DataFrame:
-        """Fetch Shopify product inventory."""
-        try:
-            import shopify
-            shopify.ShopifyResource.set_site(f"https://{shop_url}/admin/api/2024-01")
-            shopify.ShopifyResource.headers = {'X-Shopify-Access-Token': access_token}
-            
-            products = shopify.Product.find(limit=250)
-            
-            product_data = []
-            for product in products:
-                for variant in product.variants:
-                    product_data.append({
-                        'product_id': product.id,
-                        'product_title': product.title,
-                        'variant_id': variant.id,
-                        'sku': variant.sku,
-                        'inventory_quantity': variant.inventory_quantity,
-                        'price': float(variant.price)
-                    })
-            
-            return pd.DataFrame(product_data)
-        except Exception as e:
-            st.error(f"Shopify API error: {e}")
-            return pd.DataFrame()
-    
-    # GOOGLE SHEETS INTEGRATION
-    def connect_google_sheets(self, spreadsheet_id: str, credentials_json: str) -> Dict[str, Any]:
-        """Connect to Google Sheets and fetch data."""
-        try:
-            import gspread
-            from google.oauth2.service_account import Credentials
-            
-            # Setup credentials
-            scopes = [
-                'https://www.googleapis.com/auth/spreadsheets.readonly',
-                'https://www.googleapis.com/auth/drive.readonly'
-            ]
-            
-            creds = Credentials.from_service_account_info(
-                json.loads(credentials_json),
-                scopes=scopes
-            )
-            
-            client = gspread.authorize(creds)
-            spreadsheet = client.open_by_key(spreadsheet_id)
-            worksheet = spreadsheet.get_worksheet(0)  # First sheet
-            
-            # Get all data
-            data = worksheet.get_all_records()
-            df = pd.DataFrame(data)
-            
-            return {
-                'status': 'success',
-                'data': df,
-                'rows': len(df),
-                'columns': list(df.columns)
-            }
-        except Exception as e:
-            return {'status': 'error', 'message': str(e)}
-    
-    def get_sheets_data_by_range(self, spreadsheet_id: str, credentials_json: str, range_name: str) -> pd.DataFrame:
-        """Fetch data from specific range in Google Sheets."""
-        try:
-            import gspread
-            from google.oauth2.service_account import Credentials
-            
-            scopes = [
-                'https://www.googleapis.com/auth/spreadsheets.readonly',
-                'https://www.googleapis.com/auth/drive.readonly'
-            ]
-            
-            creds = Credentials.from_service_account_info(
-                json.loads(credentials_json),
-                scopes=scopes
-            )
-            
-            client = gspread.authorize(creds)
-            spreadsheet = client.open_by_key(spreadsheet_id)
-            worksheet = spreadsheet.worksheet(range_name.split('!')[0] if '!' in range_name else range_name)
-            
-            data = worksheet.get_all_records()
-            return pd.DataFrame(data)
-        except Exception as e:
-            st.error(f"Google Sheets API error: {e}")
-            return pd.DataFrame()
-
-    return DataConnector()
+                    'retention': max(0.5, 1.0 - (i * 0.08
