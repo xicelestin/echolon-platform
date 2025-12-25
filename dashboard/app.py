@@ -1349,3 +1349,15 @@ elif st.session_state.current_page == "Margin Analysis":
 # ==================== PAGE: SMART ALERTS ====================
 elif st.session_state.current_page == "Smart Alerts":
     render_smart_alerts_page(data, kpis, format_currency, format_percentage, format_number)
+
+# ==================== PAGE: COHORT ANALYSIS ====================
+elif st.session_state.current_page == "Cohort Analysis":
+    render_cohort_analysis_page(data, kpis, format_currency, format_percentage, format_number)
+
+# ==================== PAGE: CUSTOMER LTV ====================
+elif st.session_state.current_page == "Customer LTV":
+    render_customer_ltv_page(data, kpis, format_currency, format_percentage, format_number)
+
+# ==================== PAGE: REVENUE ATTRIBUTION ====================
+elif st.session_state.current_page == "Revenue Attribution":
+    render_revenue_attribution_page(data, kpis, format_currency, format_percentage, format_number)
