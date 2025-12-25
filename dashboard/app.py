@@ -11,6 +11,9 @@ from pages_financial_insights import render_financial_page
 from pages_inventory_optimization import render_inventory_optimization_page
 from pages_margin_analysis import render_margin_analysis_page
 from pages_smart_alerts import render_smart_alerts_page
+from pages_cohort_analysis import render_cohort_analysis_page
+from pages_customer_ltv import render_customer_ltv_page
+from pages_revenue_attribution import render_revenue_attribution_page
 
 
 # ==================== AI/ML MODELS (Phase 4) ====================
@@ -167,6 +170,9 @@ with st.sidebar:
    "📋 Inventory Optimization": "Inventory Optimization",
          "📊 Margin Analysis": "Margin Analysis",
             "🔔 Smart Alerts": "Smart Alerts",
+                "📊 Cohort Analysis": "Cohort Analysis",
+                "💰 Customer LTV": "Customer LTV",
+                "📈 Revenue Attribution": "Revenue Attribution",
     }
     
     for page_name, page_id in pages.items():
