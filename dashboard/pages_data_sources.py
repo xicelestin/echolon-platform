@@ -242,3 +242,27 @@ def disconnect_source(source_key):
         st.success(f"Disconnected from {source_name}")
         st.rerun()
 
+
+def sync_data_source(source_key):
+    """Sync data from a connected source"""
+    source_info = st.session_state.connected_sources.get(source_key)
+    if source_info:
+        with st.spinner(f"Syncing {source_info['name']}..."):
+            st.session_state.connected_sources[source_key]['last_sync'] = datetime.now().strftime("%Y-%m-%d %H:%M")
+            st.success(f"✅ Successfully synced {source_info['name']}")
+            st.rerun()
+
+def render_data_sources_page():
+    """Render the Data Sources page"""
+    st.title("🔌 Data Sources")
+    st.markdown("Connect your business data sources to power Echolon AI")
+    
+    # Render each data source
+    for source_key, source_info in DATA_SOURCES.items():
+        render_source_card(source_key, source_info)
+    
+    # Upload history
+    if st.session_state.upload_history:
+        st.markdown("### Upload History")
+        history_df = pd.DataFrame(st.session_state.upload_history)
+        st.dataframe(history_df, use_container_width=True)
