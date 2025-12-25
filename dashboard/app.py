@@ -100,7 +100,6 @@ def calculate_kpis(df):
     """Calculate KPIs from any dataframe - works with demo or uploaded data"""
     if df is None or df.empty:
         return {}
-        @st.cache_data(ttl=300)  # Cache for 5 minutes
     
     total_revenue = df['revenue'].sum() if 'revenue' in df.columns else 0
     total_orders = df['orders'].sum() if 'orders' in df.columns else 0
