@@ -7,7 +7,113 @@ from datetime import datetime, timedelta
 import io
 from ml_integration import get_ml_insights, initialize_ml_models, forecast_revenue_ml, detect_anomalies_ml, predict_churn_ml
 
+from pages_financial_insights import render_financial_pageimport streamlit as st
+import pandas as pd
+import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
+from datetime import datetime, timedelta
+import io
+from ml_integration import get_ml_insights, initialize_ml_models, forecast_revenue_ml, detect_anomalies_ml, predict_churn_ml
+
 from pages_financial_insights import render_financial_page
+from pages_inventory_optimization import render_inventory_optimization_page
+from pages_margin_analysis import render_margin_analysis_page
+from pages_smart_alerts import render_smart_alerts_page
+from pages_cohort_analysis import render_cohort_analysis_page
+from pages_customer_ltv import render_customer_ltv_page
+from pages_revenue_attribution import render_revenue_attribution_page
+from pages_competitive_benchmark import render_competitive_benchmark_page
+
+# Add after all imports, before any other Streamlit code
+from auth import require_authentication, render_user_info
+
+if not require_authentication():
+    st.stop()
+
+# ==================== AI/ML MODELS (Phase 4) ====================
+# Note: ML models are available in ml_models/ directory
+# Future implementation will integrate these for AI-powered insights
+ML_MODELS_AVAILABLE = True  # Set to True when models are ready for production
+
+# ==================== FORMATTING UTILITIES ====================
+def format_currency(value, decimals=0):
+    """Format numbers as currency with proper abbreviation"""
+    if value >= 1_000_000:
+        return f"${value/1_000_000:.{decimals}f}M"
+    elif value >= 1_000:
+        return f"${value/1_000:.{decimals}f}K"
+    else:
+        return f"${value:,.{decimals}f}"
+
+def format_number(value, decimals=0):
+    """Format large numbers with commas"""
+    if isinstance(value, (int, float)):
+        return f"{value:,.{decimals}f}"
+    return str(value)
+
+def format_percentage(value, decimals=1):
+    """Format percentages consistently"""
+    return f"{value:.{decimals}f}%"
+
+def format_multiplier(value, decimals=2):
+    """Format multipliers like ROAS"""
+    return f"{value:.{decimals}f}x"
+
+# Trigger deploy
+
+# Page Configuration
+st.set_page_config(
+    page_title="Echolon AI - Business Intelligence",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# ==================== SESSION STATE ====================
+if 'uploaded_data' not in st.session_state:
+    st.session_state.uploaded_data = None
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = 'Dashboard'
+if 'recent_predictions' not in st.session_state:
+    st.session_state.recent_predictions = []
+
+# ==================== DEMO DATA GENERATOR ====================
+@st.cache_data(ttl=3600)  # Cache for 1 hour
+def generate_demo_data():
+    """Generate comprehensive demo dataset for all features"""
+    dates = pd.date_range(start='2024-01-01', end='2024-12-31', freq='D')
+    # np.random.seed(42)
+    
+    trend = np.linspace(40000, 60000, len(dates))
+    seasonality = 5000 * np.sin(np.linspace(0, 4*np.pi, len(dates)))
+    noise = np.random.normal(0, 3000, len(dates))
+    
+    data = pd.DataFrame({
+        'date': dates,
+        'revenue': trend + seasonality + noise,
+        'orders': np.random.poisson(100, len(dates)) + (trend/1000).astype(int),
+        'customers': np.random.poisson(50, len(dates)) + (trend/2000).astype(int),
+        'cost': (trend + seasonality + noise) * 0.6,
+        'marketing_spend': np.random.normal(5000, 1000, len(dates)),
+        'inventory_units': np.random.randint(500, 2000, len(dates)),
+        'new_customers': np.random.randint(10, 50, len(dates)),
+        'conversion_rate': np.random.uniform(1.5, 4.5, len(dates))
+    })
+    
+    # Derived metrics
+    data['profit'] = data['revenue'] - data['cost']
+    data['profit_margin'] = (data['profit'] / data['revenue'] * 100).round(2)
+    data['roas'] = (data['revenue'] / data['marketing_spend']).round(2)
+    data['avg_order_value'] = (data['revenue'] / data['orders']).round(2)
+    
+    return data
+
+# ==================== HELPER FUNCTIONS ====================
+def calculate_kpis(df):
+    """Calculate KPIs from any dataframe - works with demo or uploaded data"""
+    if df is None or df.empty:
+        return {}
 from pages_inventory_optimization import render_inventory_optimization_page
 from pages_margin_analysis import render_margin_analysis_page
 from pages_smart_alerts import render_smart_alerts_page
