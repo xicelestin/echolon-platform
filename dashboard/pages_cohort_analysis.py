@@ -272,3 +272,8 @@ if 'demo_data' in st.session_state:
 
 else:
     st.info("📄 Please upload data on the Upload Data page to view cohort analysis.")
+
+
+# Temporary stub function for app.py import - needs proper refactoring
+def render_cohort_analysis_page(data, kpis, format_currency, format_percentage, format_number):
+    st.warning("⚠️ Cohort Analysis page is being refactored. The page structure needs to be updated to work with the new navigation system.")
