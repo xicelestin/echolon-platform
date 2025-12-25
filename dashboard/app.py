@@ -7,15 +7,6 @@ from datetime import datetime, timedelta
 import io
 from ml_integration import get_ml_insights, initialize_ml_models, forecast_revenue_ml, detect_anomalies_ml, predict_churn_ml
 
-from pages_financial_insights import render_financial_pageimport streamlit as st
-import pandas as pd
-import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
-from datetime import datetime, timedelta
-import io
-from ml_integration import get_ml_insights, initialize_ml_models, forecast_revenue_ml, detect_anomalies_ml, predict_churn_ml
-
 from pages_financial_insights import render_financial_page
 from pages_inventory_optimization import render_inventory_optimization_page
 from pages_margin_analysis import render_margin_analysis_page
