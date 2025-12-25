@@ -835,6 +835,5 @@ elif st.session_state.current_page == "Upload Data":
     st.title("📂 Upload Your Data")
     st.markdown("### Upload CSV to get personalized insights across all pages")
         
-elif st.session_state.current_page == "Data Sources":    📊 **Upload your business data to unlock personalized insights!**
-    
+elif st.session_state.current_page == "Data Sources":    
         render_data_sources_page()
