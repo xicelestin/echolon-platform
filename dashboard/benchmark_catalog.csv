@@ -1,0 +1,16 @@
+metric,industry_avg,top_quartile,best_in_class,unit,description
+Profit Margin,35.0,45.0,55.0,%,Net profit as percentage of revenue
+ROAS,4.0,6.0,8.0,x,Return on advertising spend
+Customer Retention,75.0,85.0,90.0,%,Percentage of customers retained year-over-year
+Conversion Rate,3.5,5.0,7.0,%,Percentage of visitors who make a purchase
+LTV/CAC Ratio,3.0,5.0,7.0,x,Lifetime value to customer acquisition cost ratio
+Gross Margin,50.0,60.0,70.0,%,Gross profit as percentage of revenue
+Customer Satisfaction,75.0,85.0,95.0,%,Net Promoter Score or CSAT equivalent
+Average Order Value,75.0,125.0,200.0,$,Average transaction size
+Cart Abandonment Rate,70.0,60.0,45.0,%,Percentage of carts not completed (lower is better)
+Email Open Rate,15.0,25.0,35.0,%,Marketing email open rate
+Click-Through Rate,2.0,4.0,6.0,%,Marketing email/ad click-through rate
+Churn Rate,25.0,15.0,10.0,%,Percentage of customers lost annually (lower is better)
+Monthly Recurring Revenue Growth,5.0,10.0,20.0,%,MRR growth rate for SaaS businesses
+Customer Acquisition Cost,50.0,35.0,20.0,$,Cost to acquire one new customer (lower is better)
+Payback Period,18.0,12.0,6.0,months,Time to recover customer acquisition cost (lower is better)
