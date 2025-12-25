@@ -65,6 +65,7 @@ if 'recent_predictions' not in st.session_state:
     st.session_state.recent_predictions = []
 
 # ==================== DEMO DATA GENERATOR ====================
+@st.cache_data(ttl=3600)  # Cache for 1 hour
 def generate_demo_data():
     """Generate comprehensive demo dataset for all features"""
     dates = pd.date_range(start='2024-01-01', end='2024-12-31', freq='D')
@@ -99,6 +100,7 @@ def calculate_kpis(df):
     """Calculate KPIs from any dataframe - works with demo or uploaded data"""
     if df is None or df.empty:
         return {}
+        @st.cache_data(ttl=300)  # Cache for 5 minutes
     
     total_revenue = df['revenue'].sum() if 'revenue' in df.columns else 0
     total_orders = df['orders'].sum() if 'orders' in df.columns else 0
