@@ -24,6 +24,12 @@ def hash_password(password: str) -> str:
 def check_password(username: str, password: str) -> bool:
     """Verify username and password against stored credentials."""
     
+    # Demo credentials (for development/pilot customers)
+    # Remove this section in production
+    if username == "demo" and password == "demo123":
+        st.warning("⚠️ Using demo credentials. Configure secrets for production.")
+        return True
+    
     # Try to get credentials from Streamlit secrets
     try:
         users = st.secrets.get("users", {})
@@ -34,15 +40,10 @@ def check_password(username: str, password: str) -> bool:
             return hmac.compare_digest(stored_password_hash, input_password_hash)
         
         return False
-    
+        
     except Exception as e:
-        # Fallback: If secrets not configured, allow demo access
-        # For development only - remove in production
-        if username == "demo" and password == "demo123":
-            st.warning("⚠️ Using demo credentials. Configure secrets for production.")
-            return True
+        # If secrets not configured, deny access
         return False
-
 
 def render_login_page():
     """Render professional login page"""
