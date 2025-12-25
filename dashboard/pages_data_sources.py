@@ -254,6 +254,12 @@ def sync_data_source(source_key):
 
 def render_data_sources_page():
     """Render the Data Sources page"""
+        
+    # Initialize session state
+    if 'connected_sources' not in st.session_state:
+        st.session_state.connected_sources = {}
+    if 'upload_history' not in st.session_state:
+        st.session_state.upload_history = []
     st.title("🔌 Data Sources")
     st.markdown("Connect your business data sources to power Echolon AI")
     
