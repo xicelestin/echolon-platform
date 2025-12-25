@@ -16,6 +16,9 @@ from pages_customer_ltv import render_customer_ltv_page
 from pages_revenue_attribution import render_revenue_attribution_page
 from pages_competitive_benchmark import render_competitive_benchmark_page
 from pages_data_sources import render_data_sources_page
+from pages_customer_insights import render_customer_insights_page
+from pages_inventory_demand import render_inventory_demand_page
+from pages_anomalies_alerts import render_anomalies_alerts_page
 
 # Add after all imports, before any other Streamlit code
 from auth import require_authentication, render_user_info
@@ -834,6 +837,18 @@ elif st.session_state.current_page == "Inventory":
 elif st.session_state.current_page == "Upload Data":
     st.title("📂 Upload Your Data")
     st.markdown("### Upload CSV to get personalized insights across all pages")
+
+# ==================== PAGE: CUSTOMER INSIGHTS ====================
+elif st.session_state.current_page == "Customer Insights":
+    render_customer_insights_page(data, kpis, format_currency, format_percentage, format_number)
+
+# ==================== PAGE: INVENTORY & DEMAND ====================
+elif st.session_state.current_page == "Inventory & Demand":
+    render_inventory_demand_page(data, kpis, format_currency, format_percentage, format_number)
+
+# ==================== PAGE: ANOMALIES & ALERTS ====================
+elif st.session_state.current_page == "Anomalies & Alerts":
+    render_anomalies_alerts_page(data, kpis, format_currency, format_percentage, format_number)
         
 elif st.session_state.current_page == "Data Sources":    
         render_data_sources_page()
