@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Multi-source data integration page for Echolon AI.
 Supports Shopify, QuickBooks, Google Sheets, Stripe, and CSV uploads.
 """
