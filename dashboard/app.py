@@ -849,6 +849,34 @@ elif st.session_state.current_page == "Inventory & Demand":
 # ==================== PAGE: ANOMALIES & ALERTS ====================
 elif st.session_state.current_page == "Anomalies & Alerts":
     render_anomalies_alerts_page(data, kpis, format_currency, format_percentage, format_number)
+
+    # ==================== PAGE: INVENTORY OPTIMIZATION ====================
+elif st.session_state.current_page == "Inventory Optimization":
+    render_inventory_optimization_page(data, kpis, format_currency, format_percentage, format_number)
+
+# ==================== PAGE: MARGIN ANALYSIS ====================
+elif st.session_state.current_page == "Margin Analysis":
+    render_margin_analysis_page(data, kpis, format_currency, format_percentage, format_number)
+
+# ==================== PAGE: SMART ALERTS ====================
+elif st.session_state.current_page == "Smart Alerts":
+    render_smart_alerts_page(data, kpis, format_currency, format_percentage, format_number)
+
+# ==================== PAGE: COHORT ANALYSIS ====================
+elif st.session_state.current_page == "Cohort Analysis":
+    render_cohort_analysis_page(data, kpis, format_currency, format_percentage, format_number)
+
+# ==================== PAGE: CUSTOMER LTV ====================
+elif st.session_state.current_page == "Customer LTV":
+    render_customer_ltv_page(data, kpis, format_currency, format_percentage, format_number)
+
+# ==================== PAGE: REVENUE ATTRIBUTION ====================
+elif st.session_state.current_page == "Revenue Attribution":
+    render_revenue_attribution_page(data, kpis, format_currency, format_percentage, format_number)
+
+# ==================== PAGE: COMPETITIVE BENCHMARK ====================
+elif st.session_state.current_page == "Competitive Benchmark":
+    render_competitive_benchmark_page(data, kpis, format_currency, format_percentage, format_number)
         
 elif st.session_state.current_page == "Data Sources":    
         render_data_sources_page()
