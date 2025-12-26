@@ -148,7 +148,7 @@ def fetch_data_from_source(source_key, source_info):
         DataFrame with fetched data or None if error
     """
     # Try to fetch from real API first
-try:
+    try:
         api_data = fetch_data_from_api(source_key)
         
         if api_data is not None and not api_data.empty:
