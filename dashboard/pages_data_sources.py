@@ -6,7 +6,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import io
-from data_source_apis import fetch_data_from_api
+# from data_source_apis import fetch_data_from_api
 
 # ==================== DATA SOURCE CONFIGURATIONS ====================
 DATA_SOURCES = {
@@ -148,8 +148,8 @@ def fetch_data_from_source(source_key, source_info):
         DataFrame with fetched data or None if error
     """
     # Try to fetch from real API first
-    try:
-        api_data = fetch_data_from_api(source_key)
+    # try:
+        #         api_data = fetch_data_from_api(source_key)
         
         if api_data is not None and not api_data.empty:
             return api_data
