@@ -159,3 +159,22 @@ def fetch_data_from_source(source_key, source_info):
     # Fallback to demo data if API fails or credentials not configured
         return generate_demo_data_fallback(source_key)
 
+
+
+# ==================== MAIN PAGE RENDER FUNCTION ====================
+def render_data_sources_page():
+    """Main function to render the data sources integration page"""
+    st.title("📂 Data Sources")
+    st.markdown("### Connect your business data sources")
+    st.markdown("---")
+    
+    # Render each data source card
+    for source_key, source_info in DATA_SOURCES.items():
+        render_source_card(source_key, source_info)
+    
+    # Show upload history if exists
+    if st.session_state.upload_history:
+        st.markdown("---")
+        st.subheader("📋 Upload History")
+        history_df = pd.DataFrame(st.session_state.upload_history)
+        st.dataframe(history_df, use_container_width=True)
