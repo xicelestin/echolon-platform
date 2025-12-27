@@ -400,19 +400,13 @@ def render_csv_upload_section():
     else:
         # Show instructions when no file uploaded
         st.info(
-            """👋 **Get Started:**
-            
-1. Prepare your CSV file with business data
-2. Drag and drop it above or click to browse  
-3. Map your columns to Echolon fields
-4. Review the preview and click Process
-            
-**Required Columns:** date, revenue, orders
-**Optional Columns:** customers, cost, marketing_spend
-            """
-        )
-
-# ==================== UPDATE MAIN RENDER FUNCTION ====================
+            "Get Started: 1. Prepare your CSV file with business data. "
+            "2. Drag and drop it above or click to browse. "
+            "3. Map your columns to Echolon fields. "
+            "4. Review the preview and click Process. "
+            "Required Columns: date, revenue, orders. "
+            "Optional Columns: customers, cost, marketing_spend."
+        )# ==================== UPDATE MAIN RENDER FUNCTION ====================
 # Modify render_data_sources_page to include tabs for better organization
 def render_data_sources_page_enhanced():
     """Enhanced main function with tabs for better UX"""
