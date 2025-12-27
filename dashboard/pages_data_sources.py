@@ -153,7 +153,7 @@ def fetch_data_from_source(source_key, source_info):
         
                     if api_data is not None and not api_data.empty:
                                 return api_data
-    except Exception as e:
+        except Exception as e:
                         st.warning(f"Could not fetch from API: {str(e)}. Using demo data.")
     
     # Fallback to demo data if API fails or credentials not configured
