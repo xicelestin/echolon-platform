@@ -178,3 +178,76 @@ def render_data_sources_page():
         st.subheader("📋 Upload History")
         history_df = pd.DataFrame(st.session_state.upload_history)
         st.dataframe(history_df, use_container_width=True)
+
+
+def sync_data_source(source_key):
+    """Re-sync data from a connected source"""
+    with st.spinner(f"Syncing {source_key}..."):
+        # In production, fetch fresh data from API
+        # For MVP, we'll regenerate demo data
+        source_info = DATA_SOURCES.get(source_key, {})
+        
+        try:
+            data_df = fetch_data_from_source(source_key, source_info)
+            
+            if data_df is not None and not data_df.empty:
+                st.session_state.uploaded_data = data_df
+                st.session_state.connected_sources[source_key]['last_sync'] = datetime.now().strftime("%Y-%m-%d %H:%M")
+                st.success(f"✅ Successfully synced {len(data_df)} rows from {source_info['name']}!")
+            else:
+                st.warning("Sync completed but no new data was found.")
+        except Exception as e:
+            st.error(f"Sync failed: {str(e)}")
+    
+    st.rerun()
+
+def disconnect_source(source_key):
+    """Disconnect a data source"""
+    if source_key in st.session_state.connected_sources:
+        del st.session_state.connected_sources[source_key]
+        st.success(f"Disconnected from {DATA_SOURCES[source_key]['name']}")
+        st.rerun()
+
+def generate_demo_data_fallback(source_key):
+    """Generate demo data as fallback when API connection fails"""
+    import numpy as np
+    
+    # Generate 365 days of demo data
+    dates = pd.date_range(start='2024-01-01', end='2024-12-31', freq='D')
+    np.random.seed(42)  # For reproducibility
+    
+    # Base data generation with realistic patterns
+    trend = np.linspace(40000, 60000, len(dates))
+    seasonality = 5000 * np.sin(np.linspace(0, 4*np.pi, len(dates)))
+    noise = np.random.normal(0, 3000, len(dates))
+    
+    data = pd.DataFrame({
+        'date': dates,
+        'revenue': trend + seasonality + noise,
+        'orders': np.random.poisson(100, len(dates)) + (trend/1000).astype(int),
+        'customers': np.random.poisson(50, len(dates)) + (trend/2000).astype(int),
+        'cost': (trend + seasonality + noise) * 0.6,
+        'marketing_spend': np.random.normal(5000, 1000, len(dates)),
+        'inventory_units': np.random.randint(500, 2000, len(dates)),
+        'new_customers': np.random.randint(10, 50, len(dates)),
+        'conversion_rate': np.random.uniform(1.5, 4.5, len(dates))
+    })
+    
+    # Derived metrics
+    data['profit'] = data['revenue'] - data['cost']
+    data['profit_margin'] = (data['profit'] / data['revenue'] * 100).round(2)
+    data['roas'] = (data['revenue'] / data['marketing_spend']).round(2)
+    data['avg_order_value'] = (data['revenue'] / data['orders']).round(2)
+    
+    # Add source-specific fields
+    if source_key == 'shopify':
+        data['platform'] = 'Shopify'
+        data['channel'] = np.random.choice(['Online Store', 'POS', 'Mobile App'], len(dates))
+    elif source_key == 'quickbooks':
+        data['platform'] = 'QuickBooks'
+        data['expense_category'] = np.random.choice(['COGS', 'Marketing', 'Operations'], len(dates))
+    elif source_key == 'stripe':
+        data['platform'] = 'Stripe'
+        data['payment_method'] = np.random.choice(['card', 'bank', 'wallet'], len(dates))
+    
+    return data
