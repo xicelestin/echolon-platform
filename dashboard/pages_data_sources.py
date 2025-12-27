@@ -406,7 +406,9 @@ def render_csv_upload_section():
                         "4. Review the preview and click Process. "
                         "Required Columns: date, revenue, orders. "
                         "Optional Columns: customers, cost, marketing_spend."
-                ) # ==================== UPDATE MAIN RENDER FUNCTION ====================
+                )
+
+# ==================== UPDATE MAIN RENDER FUNCTION ====================
 # Modify render_data_sources_page to include tabs for better organization
 def render_data_sources_page_enhanced():
     """Enhanced main function with tabs for better UX"""
