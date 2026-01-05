@@ -9,6 +9,7 @@ import io
 # Import new utilities
 from utils import DataValidator
 from components import create_line_chart, create_bar_chart, COLORS, COLOR_PALETTE
+from utils import create_multi_format_export, create_download_button
 from ml_integration import get_ml_insights, initialize_ml_models, forecast_revenue_ml, detect_anomalies_ml, predict_churn_ml
 
 from pages_financial_insights import render_financial_page
@@ -543,9 +544,15 @@ elif st.session_state.current_page == "Analytics":
             fig = px.area(data.tail(90), x='date', y='new_customers', title='New Customers (Last 90 Days)')
             st.plotly_chart(fig, use_container_width=True)
 
+
+    # Export Data Section
+    st.markdown("---")
+    st.subheader("📥 Export Analytics Data")
+    create_multi_format_export(data, 'analytics_data', formats=['csv', 'excel', 'json'])
 # ==================== PAGE: PREDICTIONS ====================
 elif st.session_state.current_page == "Predictions":
     st.title("🔮 AI-Powered Predictions")
+
     st.markdown("### Forecast future performance using AI")
     
     # Forecast Controls
