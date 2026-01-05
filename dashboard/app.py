@@ -6,6 +6,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import io
+# Import new utilities
+from utils import DataValidator
+from components import create_line_chart, create_bar_chart, COLORS, COLOR_PALETTE
 from ml_integration import get_ml_insights, initialize_ml_models, forecast_revenue_ml, detect_anomalies_ml, predict_churn_ml
 
 from pages_financial_insights import render_financial_page
@@ -306,6 +309,18 @@ else:
 # Initialize ML models
 initialize_ml_models(data)
 
+# Add data validation with loading state
+with st.spinner('Validating data...'):
+    validator = DataValidator()
+    is_valid, errors = validator.validate_dataframe(data)
+    if not is_valid:
+        st.error(f"⚠️ Data validation issues detected:")
+        for error in errors:
+            st.warning(error)
+        # Continue with caution but don't stop
+    else:
+        st.success("✅ Data validated successfully", icon="✅")
+
 # Calculate KPIs (shared across all pages)
 kpis = calculate_kpis(data)
 
@@ -388,11 +403,8 @@ if st.session_state.current_page == "Dashboard":
     with col1:
         st.subheader("📈 Revenue Trend")
         if 'revenue' in data.columns and 'date' in data.columns:
-            fig = px.line(data_filtered, x='date', y=
-            'revenue', title='Last 90 Days Revenue')
-            fig.update_layout(xaxis_title='Date', yaxis_title='Revenue ($)')
-            st.plotly_chart(fig, use_container_width=True)
-    
+            fig = create_line_chart(data_filtered, 'date', ['revenue'],             'revenue', title='Last 90 Days Revenue')
+                title='Last 90 Days Revenue', height=400)            st.plotly_chart(fig, use_container_width=True) # Using standardized chart component
     with col2:
         st.subheader("⚠️ Alerts & Notifications")
 
