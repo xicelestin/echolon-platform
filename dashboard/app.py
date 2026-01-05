@@ -786,6 +786,18 @@ elif st.session_state.current_page == "What-If Analysis":
     fig.update_layout(barmode='group', title='Financial Impact Comparison')
     st.plotly_chart(fig, use_container_width=True)
 
+    # Export Data Section
+    st.markdown("---")
+    st.subheader("📥 Export What-If Analysis Data")
+
+    # Create export data with scenario comparison
+    whatif_export = comparison_df.copy()
+    whatif_export['revenue_change_%'] = revenue_change
+    whatif_export['cost_change_%'] = cost_change
+    whatif_export['marketing_change_%'] = marketing_change
+    whatif_export['customer_change_%'] = customer_change
+    create_multi_format_export(whatif_export, 'whatif_analysis', formats=['csv', 'excel', 'json'])
+
 # ==================== PAGE: INVENTORY ====================
 elif st.session_state.current_page == "Inventory":
     st.title("🎨 Inventory Management")
