@@ -302,13 +302,13 @@ with st.sidebar:
 
 # ==================== LOAD DATA ====================
 if st.session_state.uploaded_data is not None:
-    data = st.session_state.uploaded_data
-else:
+    data = st.session_state.uploaded_datawith st.spinner('Loading demo data...'):
     data = generate_demo_data()
     
 # Initialize ML models
-initialize_ml_models(data)
-
+# Initialize ML models
+with st.spinner('Initializing ML models...'):
+    initialize_ml_models(data)
 # Add data validation with loading state
 with st.spinner('Validating data...'):
     validator = DataValidator()
