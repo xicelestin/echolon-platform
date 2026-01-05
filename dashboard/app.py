@@ -598,6 +598,20 @@ elif st.session_state.current_page == "Predictions":
         else:
             st.warning("⚠️ Lower confidence - high variability detected")
 
+    # Export Data Section
+    st.markdown("---")
+    st.subheader("📥 Export Prediction Data")
+
+    # Combine historical and forecast data for export
+    if forecast_df is not None:
+                forecast_df['data_type'] = 'forecast'
+                historical_data = data.copy()
+                historical_data['data_type'] = 'historical'
+                combined_data = pd.concat([historical_data, forecast_df], ignore_index=True)
+                create_multi_format_export(combined_data, 'predictions_data', formats=['csv', 'excel', 'json'])
+            else:
+                        create_multi_format_export(data, 'predictions_data', formats=['csv', 'excel', 'json'])
+
 # ==================== PAGE: RECOMMENDATIONS ====================
 elif st.session_state.current_page == "Recommendations":
     st.title("💡 AI Business Recommendations")
