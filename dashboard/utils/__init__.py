@@ -44,8 +44,7 @@ __all__ = [
     'export_with_metadata',
     'to_csv',
     'to_excel',
-    'to_json',,
-    # Metrics utilities
+    'to_json',    # Metrics utilities
     'calculate_period_comparison',
     'get_period_data',
     'calculate_business_health_score',
