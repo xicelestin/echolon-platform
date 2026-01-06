@@ -306,7 +306,7 @@ with st.sidebar:
 # ==================== LOAD DATA ====================
 if st.session_state.uploaded_data is not None:
         data = st.session_state.uploaded_data
-else:
+    else:
     with st.spinner('Loading demo data...'):
         data = generate_demo_data()
     
