@@ -10,6 +10,8 @@ import io
 from utils import DataValidator
 from components import create_line_chart, create_bar_chart, COLORS, COLOR_PALETTE
 from utils import create_multi_format_export, create_download_button
+from utils import calculate_business_health_score, calculate_metric_comparison
+from components import display_business_health_score, display_metric_with_comparison, display_key_metrics_grid
 from ml_integration import get_ml_insights, initialize_ml_models, forecast_revenue_ml, detect_anomalies_ml, predict_churn_ml
 
 from pages_financial_insights import render_financial_page
@@ -353,32 +355,61 @@ if st.session_state.current_page == "Dashboard":
     kpis = calculate_kpis(data_filtered)
     
     st.markdown("---")
+
+    # Business Health Score
+    st.subheader("📊 Business Health Score")
+    health_score, components = calculate_business_health_score(kpis, data_filtered)
+    display_business_health_score(health_score, components)
+
     
     # KPI Cards
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric(
+        comparison = calculate_metric_comparison(
+            'total_revenue',
+            kpis.get('total_revenue', 0),
+            kpis.get('revenue_growth', 0)
+        )
+        display_metric_with_comparison(
+            col1,
             "Total Revenue",
-                format_currency(kpis.get('total_revenue', 0), decimals=1),            f"{kpis.get('revenue_growth', 0):.1f}%"
+            format_currency(kpis.get('total_revenue', 0), decimals=1),
+            comparison
+        )    with col2:
+        comparison = calculate_metric_comparison(
+            'total_orders',
+            kpis.get('total_orders', 0),
+            kpis.get('orders_growth', 0)
         )
-    with col2:
-        st.metric(
+        display_metric_with_comparison(
+            col2,
             "Total Orders",
-            f"{format_number(kpis.get('total_orders', 0))}",
-        )
-            
+            format_number(kpis.get('total_orders', 0)),
+            comparison
+        )            
     with col3:
-        st.metric(
-            "Total Customers",
-            f"{format_number(kpis.get('total_customers', 0))}",
-            f"{format_percentage(kpis.get('customers_growth', 0))}")
-    
-    with col4:
-        st.metric(
-            "Avg Order Value",
-            f"{format_currency(kpis.get('avg_order_value', 0), decimals=0)}"
+        comparison = calculate_metric_comparison(
+            'total_customers',
+            kpis.get('total_customers', 0),
+            kpis.get('customers_growth', 0)
         )
-
+        display_metric_with_comparison(
+            col3,
+            "Total Customers",
+            format_number(kpis.get('total_customers', 0)),
+            comparison
+        )    with col4:
+        comparison = calculate_metric_comparison(
+            'avg_order_value',
+            kpis.get('avg_order_value', 0),
+            kpis.get('aov_growth', 0)
+        )
+        display_metric_with_comparison(
+            col4,
+            "Avg Order Value",
+            format_currency(kpis.get('avg_order_value', 0), decimals=0),
+            comparison
+        )
                 
     # Row 2: Business Metrics
     col5, col6, col7 = st.columns(3)
