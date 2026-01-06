@@ -307,8 +307,8 @@ with st.sidebar:
 if st.session_state.uploaded_data is not None:
         data = st.session_state.uploaded_data
     else:
-        with st.spinner('Loading demo data...'):
-            data = generate_demo_data()
+    with st.spinner('Loading demo data...'):
+        data = generate_demo_data()
     
 # Initialize ML models
 # Initialize ML models
