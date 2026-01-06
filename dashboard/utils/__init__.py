@@ -20,8 +20,6 @@ from .export_utils import (
     to_excel,
     to_json
 )
-)
-
 from .metrics_utils import (
     calculate_period_comparison,
     get_period_data,
