@@ -22,6 +22,17 @@ from .export_utils import (
 )
 )
 
+from .metrics_utils import (
+    calculate_period_comparison,
+    get_period_data,
+    calculate_business_health_score,
+    calculate_key_metrics,
+    get_goal_progress,
+    format_currency,
+    format_percentage,
+    get_trend_indicator
+)
+
 __all__ = [
     'DataValidator',
     'validate_dashboard_data',
@@ -34,7 +45,16 @@ __all__ = [
     'export_with_metadata',
     'to_csv',
     'to_excel',
-    'to_json',
+    'to_json',,
+    # Metrics utilities
+    'calculate_period_comparison',
+    'get_period_data',
+    'calculate_business_health_score',
+    'calculate_key_metrics',
+    'get_goal_progress',
+    'format_currency',
+    'format_percentage',
+    'get_trend_indicator'
 ]
 
 __version__ = '1.0.0'
