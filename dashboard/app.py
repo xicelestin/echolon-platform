@@ -435,9 +435,8 @@ if st.session_state.current_page == "Dashboard":
     with col1:
         st.subheader("📈 Revenue Trend")
         if 'revenue' in data.columns and 'date' in data.columns:
-            fig = create_line_chart(data_filtered, 'date', ['revenue'],             'revenue', title='Last 90 Days Revenue')
-                title='Last 90 Days Revenue', height=400)            st.plotly_chart(fig, use_container_width=True) # Using standardized chart component
-    with col2:
+            fig = create_line_chart(data_filtered, 'date', ['revenue'], 'revenue', title='Last 90 Days Revenue', height=400)
+            st.plotly_chart(fig, use_container_width=True) # Using standardized chart compone
         st.subheader("⚠️ Alerts & Notifications")
 
             
