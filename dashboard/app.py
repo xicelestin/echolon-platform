@@ -378,8 +378,8 @@ if st.session_state.current_page == "Dashboard":
             format_currency(kpis.get('total_revenue', 0), decimals=1),
             comparison
         )
-    with col2:        comparison = calculate_metric_comparison(
-            'total_orders',
+    with col2:
+        comparison = calculate_metric_comparison(            'total_orders',
             kpis.get('total_orders', 0),
             kpis.get('orders_growth', 0)
         )
