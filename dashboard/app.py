@@ -12,8 +12,7 @@ from components import create_line_chart, create_bar_chart, COLORS, COLOR_PALETT
 from utils import create_multi_format_export, create_download_button
 from utils import calculate_business_health_score, calculate_metric_comparison
 from components import display_business_health_score, display_metric_with_comparison, display_key_metrics_grid
-from ml_integration import get_ml_insights, initialize_ml_models, forecast_revenue_ml, detect_anomalies_ml, predict_churn_ml
-
+# from ml_integration import get_ml_insights, initialize_ml_models, forecast_revenue_ml, detect_anomalies_ml, predict_churn_ml
 from pages_financial_insights import render_financial_page
 from pages_inventory_optimization import render_inventory_optimization_page
 from pages_margin_analysis import render_margin_analysis_page
