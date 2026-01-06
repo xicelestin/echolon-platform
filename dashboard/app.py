@@ -641,8 +641,7 @@ elif st.session_state.current_page == "Predictions":
                 historical_data['data_type'] = 'historical'
                 combined_data = pd.concat([historical_data, forecast_df], ignore_index=True)
                 create_multi_format_export(combined_data, 'predictions_data', formats=['csv', 'excel', 'json'])
-            else:
-                        create_multi_format_export(data, 'predictions_data', formats=['csv', 'excel', 'json'])
+    else:                        create_multi_format_export(data, 'predictions_data', formats=['csv', 'excel', 'json'])
 
 # ==================== PAGE: RECOMMENDATIONS ====================
 elif st.session_state.current_page == "Recommendations":
