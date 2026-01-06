@@ -400,9 +400,9 @@ if st.session_state.current_page == "Dashboard":
             "Total Customers",
             format_number(kpis.get('total_customers', 0)),
             comparison
-        )    with col4:
-        comparison = calculate_metric_comparison(
-            'avg_order_value',
+        )
+    with col4:
+        comparison = calculate_metric_comparison(            'avg_order_value',
             kpis.get('avg_order_value', 0),
             kpis.get('aov_growth', 0)
         )
