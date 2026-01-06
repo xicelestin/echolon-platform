@@ -10,7 +10,7 @@ import io
 from utils import DataValidator
 from components import create_line_chart, create_bar_chart, COLORS, COLOR_PALETTE
 from utils import create_multi_format_export, create_download_button
-from utils import calculate_business_health_score, calculate_metric_comparison
+from utils import calculate_business_health_score, calculate_period_comparison
 from components import display_business_health_score, display_metric_with_comparison, display_key_metrics_grid
 # from ml_integration import get_ml_insights, initialize_ml_models, forecast_revenue_ml, detect_anomalies_ml, predict_churn_ml
 from pages_financial_insights import render_financial_page
@@ -366,7 +366,7 @@ if st.session_state.current_page == "Dashboard":
     # KPI Cards
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        comparison = calculate_metric_comparison(
+        comparison = calculate_period_comparison(
             'total_revenue',
             kpis.get('total_revenue', 0),
             kpis.get('revenue_growth', 0)
@@ -378,7 +378,7 @@ if st.session_state.current_page == "Dashboard":
             comparison
         )
     with col2:
-        comparison = calculate_metric_comparison(            'total_orders',
+        comparison = calculate_period_comparison(            'total_orders',
             kpis.get('total_orders', 0),
             kpis.get('orders_growth', 0)
         )
@@ -389,7 +389,7 @@ if st.session_state.current_page == "Dashboard":
             comparison
         )            
     with col3:
-        comparison = calculate_metric_comparison(
+        comparison = calculate_period_comparison(
             'total_customers',
             kpis.get('total_customers', 0),
             kpis.get('customers_growth', 0)
@@ -401,7 +401,7 @@ if st.session_state.current_page == "Dashboard":
             comparison
         )
     with col4:
-        comparison = calculate_metric_comparison(            'avg_order_value',
+        comparison = calculate_period_comparison(            'avg_order_value',
             kpis.get('avg_order_value', 0),
             kpis.get('aov_growth', 0)
         )
