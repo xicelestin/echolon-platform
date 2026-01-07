@@ -103,8 +103,8 @@ def calculate_business_health_score(metrics: Dict[str, float], weights: Optional
         'efficiency': 0.10
     }
     
-    weights = weights or default_weights
-    
+    if weights is None:
+        weights = default_weights    
     # Normalize each metric to 0-100 scale
     def normalize_growth(value, excellent=20, good=10, poor=-10):
         if value >= excellent:
