@@ -360,9 +360,7 @@ if st.session_state.current_page == "Dashboard":
     # st# .subheader("📊 Business Health Score")    health_score_data = calculate_business_health_score(kpis)
         # display_business_health_score(health_score_data['score'], health_score_data['breakdown'])    
     # KPI Cards
-        """
-    # col1, col2, col3, col4 = st.columns(4)    with col1:
-        comparison = calculate_period_comparison(kpis.get('total_revenue', 0), kpis.get('total_revenue', 0) * 0.9)  # Using 10% lower as previous            'total_revenue',
+    # KPI Cards        comparison = calculate_period_comparison(kpis.get('total_revenue', 0), kpis.get('total_revenue', 0) * 0.9)  # Using 10% lower as previous            'total_revenue',
         display_metric_with_comparison(
             col1,
             "Total Revenue",
