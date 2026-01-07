@@ -359,8 +359,7 @@ if st.session_state.current_page == "Dashboard":
     # Business Health Score
     st.subheader("📊 Business Health Score")
     health_score_data = calculate_business_health_score(kpis)
-                display_business_health_score(health_score_data['score'], health_score_data['breakdown'])(health_score_data['score'], health_score_data['breakdown'])
-    
+        display_business_health_score(health_score_data['score'], health_score_data['breakdown'])    
     # KPI Cards
     col1, col2, col3, col4 = st.columns(4)
     with col1:
