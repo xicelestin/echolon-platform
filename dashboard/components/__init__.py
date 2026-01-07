@@ -16,6 +16,12 @@ from .charts import (
     COLOR_PALETTE
 )
 
+from .enhanced_metrics import (
+    display_business_health_score,
+    display_metric_with_comparison,
+    display_key_metrics_grid
+)
+
 __all__ = [
     'create_line_chart',
     'create_bar_chart',
@@ -27,5 +33,8 @@ __all__ = [
     'create_metric_card_chart',
     'apply_default_layout',
     'COLORS',
-    'COLOR_PALETTE'
+    'COLOR_PALETTE',
+    'display_business_health_score',
+    'display_metric_with_comparison',
+    'display_key_metrics_grid'
 ]
