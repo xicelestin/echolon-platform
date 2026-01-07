@@ -313,16 +313,16 @@ else:
 # Initialize ML models
 # with st.spinner('Initializing ML models...'# initialize_ml_models(data)
 # Add data validation with loading state
-with st.spinner('Validating data...'):
-    validator = DataValidator()
-    is_valid, errors = validator.validate_dataframe(data)
-    if not is_valid:
-        st.error(f"⚠️ Data validation issues detected:")
-        for error in errors:
-            st.warning(error)
+# with st.spinner('Validating data...'):
+    # validator = DataValidator()
+    # is_valid, errors = validator.validate_dataframe(data)
+    # if not is_valid:
+        # st.error(f"⚠️ Data validation issues detected:")
+        # for error in errors:
+            # st.warning(error)
         # Continue with caution but don't stop
-    else:
-        st.success("✅ Data validated successfully", icon="✅")
+    # else:
+        # st.success("✅ Data validated successfully", icon="✅")
 
 # Calculate KPIs (shared across all pages)
 kpis = calculate_kpis(data)
