@@ -357,10 +357,19 @@ if st.session_state.current_page == "Dashboard":
     st.markdown("---")
 
     # Business Health Score
-    # st# .subheader("📊 Business Health Score")    health_score_data = calculate_business_health_score(kpis)
-        # display_business_health_score(health_score_data['score'], health_score_data['breakdown'])    
+    st.subheader("📊 Business Health Score")
+    health_score, components = calculate_business_health_score(kpis, data_filtered)
+    display_business_health_score(health_score, components)
+
+    
     # KPI Cards
-    # KPI Cards        comparison = calculate_period_comparison(kpis.get('total_revenue', 0), kpis.get('total_revenue', 0) * 0.9)  # Using 10% lower as previous            'total_revenue',
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        comparison = calculate_period_comparison(
+            'total_revenue',
+            kpis.get('total_revenue', 0),
+            kpis.get('revenue_growth', 0)
+        )
         display_metric_with_comparison(
             col1,
             "Total Revenue",
@@ -401,7 +410,9 @@ if st.session_state.current_page == "Dashboard":
             format_currency(kpis.get('avg_order_value', 0), decimals=0),
             comparison
         )
-                    col5, col6, col7 = st.columns(3)
+                
+    # Row 2: Business Metrics
+    col5, col6, col7 = st.columns(3)
     
     with col5:
         # Customer Lifetime Value (CLV)
@@ -636,11 +647,11 @@ elif st.session_state.current_page == "Recommendations":
     st.markdown("### Actionable insights derived from your data")
     
  # Get ML-powered insights
-    # ml_insights = get_ml_insights(data)
+    ml_insights = get_ml_insights(data)
     
     # Generate Smart Recommendations
     recommendations = []
-    # 
+    
     # Revenue-based recommendations
     revenue_trend = kpis.get('revenue_growth', 0)
     if revenue_trend < -5:
