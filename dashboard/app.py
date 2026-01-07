@@ -358,8 +358,8 @@ if st.session_state.current_page == "Dashboard":
 
     # Business Health Score
     st.subheader("📊 Business Health Score")
-    health_score, components = calculate_business_health_score(kpis, data_filtered)
-    display_business_health_score(health_score, components)
+        health_score_dict = calculate_business_health_score(kpis)
+        display_business_health_score(health_score_dict, health_score_dict.get('breakdown', {}))
 
     
     # KPI Cards
