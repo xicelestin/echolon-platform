@@ -311,8 +311,7 @@ else:
     
 # Initialize ML models
 # Initialize ML models
-with st.spinner('Initializing ML models...'):
-    # initialize_ml_models(data)
+# with st.spinner('Initializing ML models...'# initialize_ml_models(data)
 # Add data validation with loading state
 with st.spinner('Validating data...'):
     validator = DataValidator()
