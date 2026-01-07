@@ -647,11 +647,11 @@ elif st.session_state.current_page == "Recommendations":
     st.markdown("### Actionable insights derived from your data")
     
  # Get ML-powered insights
-    ml_insights = get_ml_insights(data)
+    # ml_insights = get_ml_insights(data)
     
     # Generate Smart Recommendations
     recommendations = []
-    
+    # 
     # Revenue-based recommendations
     revenue_trend = kpis.get('revenue_growth', 0)
     if revenue_trend < -5:
