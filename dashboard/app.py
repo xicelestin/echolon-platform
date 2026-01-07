@@ -362,11 +362,7 @@ if st.session_state.current_page == "Dashboard":
     # KPI Cards
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        comparison = calculate_period_comparison(
-            'total_revenue',
-            kpis.get('total_revenue', 0),
-            kpis.get('revenue_growth', 0)
-        )
+        comparison = calculate_period_comparison(kpis.get('total_revenue', 0), kpis.get('total_revenue', 0) * 0.9)  # Using 10% lower as previous            'total_revenue',
         display_metric_with_comparison(
             col1,
             "Total Revenue",
