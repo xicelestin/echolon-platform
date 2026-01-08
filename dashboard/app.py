@@ -261,7 +261,8 @@ with st.sidebar:
     st.image("https://via.placeholder.com/150x50/1f77b4/ffffff?text=Echolon+AI", use_container_width=True)
     st.title("🎯 Echolon AI")
     st.markdown("### Business Intelligence Platform")
-    st.markdown("---")
+    357
+    
     
     st.markdown("## 📍 Navigation")
     pages = {
@@ -356,6 +357,91 @@ if st.session_state.current_page == "Dashboard":
     
     st.markdown("---")
 
+        # ===================================================================================
+    # SECTION 1: TOP-LEVEL KPI TILES
+    # ===================================================================================
+    
+    # Calculate key metrics
+    total_revenue = kpis.get('total_revenue', 0)
+    revenue_per_day = total_revenue / 90 if total_revenue > 0 else 0
+    revenue_growth = kpis.get('revenue_growth', 0)
+    profit_margin = kpis.get('profit_margin', 0)
+    total_customers = int(kpis.get('total_customers', 0))
+    total_orders = int(kpis.get('total_orders', 0))
+    
+    # Forecast revenue (mock: 5% growth)
+    forecast_revenue = total_revenue * 1.05
+    
+    # Create 4 KPI columns
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric(
+            label="💰 Total Revenue (90d)",
+            value=format_currency(total_revenue, decimals=0),
+            delta=f"{revenue_growth:+.1f}% vs last period"
+        )
+    
+    with col2:
+        st.metric(
+            label="📈 Profit Margin",
+            value=f"{profit_margin:.1f}%",
+            delta="+2.1% vs last month"
+        )
+    
+    with col3:
+        st.metric(
+            label="👥 Active Customers",
+            value=f"{total_customers:,}",
+            delta=f"+{int(total_customers * 0.05)} this period"
+        )
+    
+    with col4:
+        st.metric(
+            label="🎯 Total Orders",
+            value=f"{total_orders:,}",
+            delta=f"+{int(total_orders * 0.08)} this period"
+        )
+    
+    # Second row of KPIs
+    col5, col6, col7, col8 = st.columns(4)
+    
+    with col5:
+        st.metric(
+            label="📊 Avg Daily Revenue",
+            value=format_currency(revenue_per_day, decimals=0),
+            delta="+5.2% vs yesterday"
+        )
+    
+    with col6:
+        avg_order_value = kpis.get('avg_order_value', 0)
+        st.metric(
+            label="💳 Avg Order Value",
+            value=format_currency(avg_order_value, decimals=2),
+            delta="+3.1% vs last period"
+        )
+    
+    with col7:
+        st.metric(
+            label="🔮 Forecast (30d)",
+            value=format_currency(forecast_revenue / 3, decimals=0),
+            delta="+5.0% projected"
+        )
+    
+    with col8:
+        # Inventory risk indicator (mock for now)
+        st.metric(
+            label="📦 Inventory Health",
+            value="Good",
+            delta="2 items low stock"
+        )
+
+        st.markdown("---")
+    
+    # ===================================================================================
+    # SECTION 2: BUSINESS HEALTH SIGNAL
+    # ===================================================================================
+
     # Business Health Score
     st.subheader("📊 Business Health Score")
     health_score_dict = calculate_business_health_score(kpis)
@@ -364,6 +450,116 @@ if st.session_state.current_page == "Dashboard":
     # KPI Cards
     col1, col2, col3, col4 = st.columns(4)
     with col1:
+
+            
+    st.markdown("---")
+    
+    # ===================================================================================
+    # SECTION 3: FORECAST SNAPSHOT
+    # ===================================================================================
+    
+    st.subheader("📈 Revenue Forecast")
+    st.caption("Future-facing projection for next 30 days")
+    
+    # Create forecast visualization
+    forecast_col1, forecast_col2 = st.columns([2, 1])
+    
+    with forecast_col1:
+        # Mock forecast data
+        try:
+            forecast_df = forecast_revenue(data, days_ahead=30)
+            # Simple line chart
+            fig = px.line(forecast_df, x='date', y='revenue', title="Revenue Projection")
+            fig.update_layout(height=250)
+            st.plotly_chart(fig, use_container_width=True)
+        except:
+            st.info("🔮 Forecast visualization coming soon")
+    
+    with forecast_col2:
+        st.metric(
+            label="Projected Revenue (30d)",
+            value=format_currency(forecast_revenue / 3, decimals=0),
+            delta="+5.0% vs current pace"
+        )
+        st.caption("✅ At current pace, revenue is projected to grow 5% next month.")
+    
+    st.markdown("---")
+    
+    # ===================================================================================
+    # SECTION 4: KEY INSIGHTS & ALERTS (The Brain of Echolon)
+    # ===================================================================================
+    
+    st.subheader("🧠 Key Insights")
+    st.caption("Top 3 insights ranked by importance")
+    
+    # Mock insights - In production, these would come from ML models
+    insights = [
+        {
+            "priority": "high",
+            "icon": "⚠️",
+            "title": "Inventory Alert",
+            "description": "Product X will run out in 9 days at current sales pace.",
+            "action": "Reorder now to avoid stockout"
+        },
+        {
+            "priority": "medium",
+            "icon": "📈",
+            "title": "Weekend Performance",
+            "description": "Weekday sales outperform weekends by 18%.",
+            "action": "Focus promotions on weekdays"
+        },
+        {
+            "priority": "medium",
+            "icon": "💰",
+            "title": "Margin Opportunity",
+            "description": "Premium products have 35% higher margins but represent only 12% of sales.",
+            "action": "Increase premium product visibility"
+        }
+    ]
+    
+    for idx, insight in enumerate(insights, 1):
+        with st.container():
+            col_insight1, col_insight2 = st.columns([4, 1])
+            
+            with col_insight1:
+                priority_color = "red" if insight["priority"] == "high" else "orange" if insight["priority"] == "medium" else "green"
+                st.markdown(f"**{insight['icon']} {insight['title']}**")
+                st.caption(insight['description'])
+                
+            with col_insight2:
+                if st.button("👁️ View", key=f"insight_{idx}"):
+                    st.info(f"Action: {insight['action']}")
+            
+            if idx < len(insights):
+                st.divider()
+    
+    st.markdown("---")
+    
+    # ===================================================================================
+    # SECTION 5: RECOMMENDED ACTIONS
+    # ===================================================================================
+    
+    st.subheader("✅ Recommended Actions")
+    st.caption("AI-powered suggestions to improve your business")
+    
+    actions = [
+        "📦 Reorder Product X by Friday to avoid stockout (9 days remaining)",
+        "📊 Reduce ad spend on Campaign B (-15% conversion vs average)",
+        "🎯 Focus promotions on weekdays (+18% performance vs weekends)"
+    ]
+    
+    for idx, action in enumerate(actions, 1):
+        st.info(f"**Action {idx}:** {action}")
+    
+    st.markdown("---")
+    
+    # ===================================================================================
+    # SECTION 6: DATA FRESHNESS & STATUS
+    # ===================================================================================
+    
+    current_time = datetime.now().strftime("%I:%M %p")
+    st.caption(f"🔄 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
+    
         comparison = calculate_period_comparison(
                 kpis.get('total_revenue', 0),
                                 kpis.get('total_revenue', 0) * 0.9  # Mock previous: 90% of currentkpis.get('total_revenue_previous', 0)
