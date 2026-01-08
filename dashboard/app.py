@@ -646,7 +646,8 @@ elif st.session_state.current_page == "Recommendations":
     st.markdown("### Actionable insights derived from your data")
     
  # Get ML-powered insights
-    ml_insights = get_ml_insights(data)
+        # TODO: Implement get_ml_insights function
+    ml_insights = {}  # Placehlder until function is implementedm
     
     # Generate Smart Recommendations
     recommendations = []
