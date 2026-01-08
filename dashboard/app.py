@@ -448,15 +448,8 @@ if st.session_state.current_page == "Dashboard":
     display_business_health_score(health_score_dict)
     
     # KPI Cards
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-
             
-    st.markdown("---")
-    
-    # ===================================================================================
-    # SECTION 3: FORECAST SNAPSHOT
-    # ===================================================================================
+    st.m=================================================================================
     
     st.subheader("📈 Revenue Forecast")
     st.caption("Future-facing projection for next 30 days")
