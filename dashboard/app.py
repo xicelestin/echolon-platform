@@ -449,12 +449,10 @@ if st.session_state.current_page == "Dashboard":
     
     # KPI Cards
             
-    st.m=================================================================================
-    
+    st.markdown("---")    
     st.subheader("📈 Revenue Forecast")
     st.caption("Future-facing projection for next 30 days")
-    
-    # Create forecast visualization
+    st.markdown("---")    # Create forecast visualization
     forecast_col1, forecast_col2 = st.columns([2, 1])
     
     with forecast_col1:
