@@ -365,10 +365,9 @@ if st.session_state.current_page == "Dashboard":
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         comparison = calculate_period_comparison(
-            'total_revenue',
-            kpis.get('total_revenue', 0),
-            kpis.get('revenue_growth', 0)
-        )
+                kpis.get('total_revenue', 0),
+                kpis.get('total_revenue_previous', 0)
+            )
         display_metric_with_comparison(
             col1,
             "Total Revenue",
@@ -376,10 +375,10 @@ if st.session_state.current_page == "Dashboard":
             comparison
         )
     with col2:
-        comparison = calculate_period_comparison(            'total_orders',
-            kpis.get('total_orders', 0),
-            kpis.get('orders_growth', 0)
-        )
+        comparison = calculate_period_comparison(
+                kpis.get('total_orders', 0),
+                kpis.get('total_orders_previous', 0)
+            )
         display_metric_with_comparison(
             col2,
             "Total Orders",
@@ -387,7 +386,7 @@ if st.session_state.current_page == "Dashboard":
             comparison
         )            
     with col3:
-        comparison = calculate_period_comparison(
+        comparison = 
             'total_customers',
             kpis.get('total_customers', 0),
             kpis.get('customers_growth', 0)
