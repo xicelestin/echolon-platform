@@ -366,7 +366,7 @@ if st.session_state.current_page == "Dashboard":
     with col1:
         comparison = calculate_period_comparison(
                 kpis.get('total_revenue', 0),
-                kpis.get('total_revenue_previous', 0)
+                                kpis.get('total_revenue', 0) * 0.9  # Mock previous: 90% of currentkpis.get('total_revenue_previous', 0)
             )
         display_metric_with_comparison(
             col1,
@@ -377,7 +377,7 @@ if st.session_state.current_page == "Dashboard":
     with col2:
         comparison = calculate_period_comparison(
                 kpis.get('total_orders', 0),
-                kpis.get('total_orders_previous', 0)
+                                kpis.get('total_orders', 0) * 0.9  # Mock previous: 90% of currentkpis.get('total_orders_previous', 0)
             )
         display_metric_with_comparison(
             col2,
@@ -388,11 +388,11 @@ if st.session_state.current_page == "Dashboard":
     with col3:
         comparison = calculate_period_comparison(
                 kpis.get('total_customers', 0),
-                kpis.get('total_customers_previous', 0)
+                                kpis.get('total_customers', 0) * 0.9  # Mock previous: 90% of currentkpis.get('total_customers_previous', 0)
             )
         display_metric_with_comparison(
             col3,
-            "Total Customers",
+            "Tot                kpis.get('total_customers', 0) * 0.9  # Mock previous: 90% of currental Customers",
             format_number(kpis.get('total_customers', 0)),
             comparison
         )
@@ -403,7 +403,7 @@ if st.session_state.current_page == "Dashboard":
             )
         display_metric_with_comparison(
             col4,
-            "Avg Order Value",
+            "Avg                kpis.get('avg_order_value', 0) * 0.9  # Mock previous: 90% of current Order Value",
             format_currency(kpis.get('avg_order_value', 0), decimals=0),
             comparison
         )
