@@ -386,11 +386,10 @@ if st.session_state.current_page == "Dashboard":
             comparison
         )            
     with col3:
-        comparison = 
-            'total_customers',
-            kpis.get('total_customers', 0),
-            kpis.get('customers_growth', 0)
-        )
+        comparison = calculate_period_comparison(
+                kpis.get('total_customers', 0),
+                kpis.get('total_customers_previous', 0)
+            )
         display_metric_with_comparison(
             col3,
             "Total Customers",
@@ -398,10 +397,10 @@ if st.session_state.current_page == "Dashboard":
             comparison
         )
     with col4:
-        comparison = calculate_period_comparison(            'avg_order_value',
-            kpis.get('avg_order_value', 0),
-            kpis.get('aov_growth', 0)
-        )
+        comparison = calculate_period_comparison(
+                kpis.get('avg_order_value', 0),
+                kpis.get('avg_order_value_previous', 0)
+            )
         display_metric_with_comparison(
             col4,
             "Avg Order Value",
