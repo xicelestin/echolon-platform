@@ -566,7 +566,6 @@ if st.session_state.current_page == "Dashboard":
                 
     # Row 2: Business Metrics
     col5, col6, col7 = st.columns(3)
-            pass  # Metrics removed - section under reconstruction
     
     with col5:
         # Customer Lifetime Value (CLV)
