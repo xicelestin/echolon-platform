@@ -143,7 +143,7 @@ def calculate_business_health_score(metrics: Dict[str, float], weights: Optional
     profit_score = normalize_margin(metrics.get('profit_margin', 0))
     cash_score = normalize_positive(metrics.get('cash_flow_ratio', 1))
     customer_score = normalize_growth(metrics.get('customer_growth', 0))
-    efficiency_score = normalize_positive(metrics.get('roas', 1) / 10)  # Normalize ROAS
+    efficiency_score = normalize_positive(metrics.get('roas', 1))  # Normalize ROAS
     
     # Calculate weighted score
     total_score = (
