@@ -450,6 +450,7 @@ if st.session_state.current_page == "Dashboard":
     # KPI Cards
     col1, col2, col3, col4 = st.columns(4)
     with col1:
+                pass  # Placeholder - KPI cards removed
 
             
     st.markdown("---")
