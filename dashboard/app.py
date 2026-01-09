@@ -561,7 +561,7 @@ if st.session_state.current_page == "Dashboard":
     current_time = datetime.now().strftime("%I:%M %p")
     st.caption(f"🔄 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
     
-          display_metric_with_comparison(
+      display_metric_with_comparison(
             col1,
             "Total Revenue",
             format_currency(kpis.get('total_revenue', 0), decimals=1),
