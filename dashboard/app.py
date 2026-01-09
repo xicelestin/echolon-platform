@@ -561,7 +561,8 @@ if st.session_state.current_page == "Dashboard":
     current_time = datetime.now().strftime("%I:%M %p")
     st.caption(f"🔄 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
     with col2:
-                pass  # Metrics removed - section under reconstruction
+                pass
+             - section under reconstruction
     # REMOVED: Corrupted display_metric_with_comparison blocks that were causing TypeError        )
                 
     # Row 2: Business Metrics
@@ -571,7 +572,7 @@ if st.session_state.current_page == "Dashboard":
         # Customer Lifetime Value (CLV)
         clv = kpis.get('avg_order_value', 0) * 3  # Simplified: AOV * avg purchases
         st.metric("Customer Lifetime Value", format_currency(clv, decimals=0))
-                pass  # Metrics removed - section under reconstruction
+             - section under reconstruction
     
     with col6:
         # Customer Acquisition Cost (CAC)
