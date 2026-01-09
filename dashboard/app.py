@@ -561,11 +561,7 @@ if st.session_state.current_page == "Dashboard":
     current_time = datetime.now().strftime("%I:%M %p")
     st.caption(f"🔄 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
     
-        comparison = calculate_period_comparison(
-                kpis.get('total_revenue', 0),
-                                kpis.get('total_revenue', 0) * 0.9  # Mock previous: 90% of currentkpis.get('total_revenue_previous', 0)
-            )
-        display_metric_with_comparison(
+          display_metric_with_comparison(
             col1,
             "Total Revenue",
             format_currency(kpis.get('total_revenue', 0), decimals=1),
