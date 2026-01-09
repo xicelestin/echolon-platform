@@ -561,38 +561,7 @@ if st.session_state.current_page == "Dashboard":
     current_time = datetime.now().strftime("%I:%M %p")
     st.caption(f"🔄 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
     with col2:
-        comparison = calculate_period_comparison(
-                kpis.get('total_orders', 0),
-                                kpis.get('total_orders', 0) * 0.9  # Mock previous: 90% of currentkpis.get('total_orders_previous', 0)
-            )
-        display_metric_with_comparison(
-            col2,
-            "Total Orders",
-            format_number(kpis.get('total_orders', 0)),
-            comparison
-        )            
-    with col3:
-        comparison = calculate_period_comparison(
-                kpis.get('total_customers', 0),
-                                kpis.get('total_customers', 0) * 0.9  # Mock previous: 90% of currentkpis.get('total_customers_previous', 0)
-            )
-        display_metric_with_comparison(
-            col3,
-            "Tot                kpis.get('total_customers', 0) * 0.9  # Mock previous: 90% of currental Customers",
-            format_number(kpis.get('total_customers', 0)),
-            comparison
-        )
-    with col4:
-        comparison = calculate_period_comparison(
-                kpis.get('avg_order_value', 0),
-                kpis.get('avg_order_value_previous', 0)
-            )
-        display_metric_with_comparison(
-            col4,
-            "Avg                kpis.get('avg_order_value', 0) * 0.9  # Mock previous: 90% of current Order Value",
-            format_currency(kpis.get('avg_order_value', 0), decimals=0),
-            comparison
-        )
+    # REMOVED: Corrupted display_metric_with_comparison blocks that were causing TypeError        )
                 
     # Row 2: Business Metrics
     col5, col6, col7 = st.columns(3)
