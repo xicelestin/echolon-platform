@@ -561,6 +561,7 @@ if st.session_state.current_page == "Dashboard":
     current_time = datetime.now().strftime("%I:%M %p")
     st.caption(f"🔄 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
     with col2:
+                pass  # Metrics removed - section under reconstruction
     # REMOVED: Corrupted display_metric_with_comparison blocks that were causing TypeError        )
                 
     # Row 2: Business Metrics
