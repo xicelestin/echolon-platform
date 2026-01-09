@@ -478,7 +478,7 @@ if st.session_state.current_page == "Dashboard":
     with forecast_col2:
         st.metric(
             label="Projected Revenue (30d)",
-                value=format_currency(forecast_revenue / 3, decimals=0),
+                e=format_currency(forecast_revenue / 3, decimals=0),
             delta="+5.0% vs current pace"
         )
         st.caption("✅ At current pace, revenue is projected to grow 5% next month.")
