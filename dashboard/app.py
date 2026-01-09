@@ -573,7 +573,7 @@ if st.session_state.current_page == "Dashboard":
     
     with col6:
         # Customer Acquisition Cost (CAC)
-                cac = (data['marketing_spend'].sum() / kpis.get('total_customers', 1)) if 'marketing_spend' in data.columns else 0
+                        cac = (data['marketing_spend'].sum() / kpis.get('total_customers', 1)) if 'marketing_spend' in data.columns else 0
         st.metric("Customer Acquisition Cost", format_currency(cac, decimals=0))
     
     with col7:
