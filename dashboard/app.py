@@ -572,10 +572,9 @@ if st.session_state.current_page == "Dashboard":
         st.metric("Customer Lifetime Value", format_currency(clv, decimals=0))
     
     with col6:
-        # Customer Acquisition Cost (CAC)
-                                cac = (data['marketing_spend'].sum() / kpis.get('total_customers', 1)) if 'marketing_spend' in data.columns else 0
+            # Customer Acquisition Cost (CAC)
+        cac = (data['marketing_spend'].sum() / kpis.get('total_customers', 1)) if 'marketing_spend' in data.columns else 0
         st.metric("Customer Acquisition Cost", format_currency(cac, decimals=0))
-    
     with col7:
         # Conversion data_filtered
         conv_rate = data['conversion_rate'].mean() if 'conversion_rate' in data_filtered.columns else 0
