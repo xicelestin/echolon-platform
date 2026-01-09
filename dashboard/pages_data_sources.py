@@ -61,7 +61,7 @@ if 'upload_history' not in st.session_state:
 # ==================== HELPER FUNCTIONS ====================
 def render_source_card(source_key, source_info):
     """Render a data source integration card"""
-    is_connected = source_key in st.session_state.connected_sources
+    is_connected = source_key in getattr(st.session_state, 'connected_sources', {})
     
     with st.container():
         col1, col2, col3 = st.columns([1, 4, 2])
