@@ -104,7 +104,7 @@ def generate_demo_data():
     
     # Derived metrics
     data['profit'] = data['revenue'] - data['cost']
-    data['profit_margin'] = (data['profit'] / data['revenue'] * 100).round(2)
+    data['avg_profit_margin'] = (data['profit'] / data['revenue'] * 100).round(2)
     data['roas'] = (data['revenue'] / data['marketing_spend']).round(2)
     data['avg_order_value'] = (data['revenue'] / data['orders']).round(2)
     
@@ -196,7 +196,7 @@ def generate_demo_data():
     
     # Derived metrics
     data['profit'] = data['revenue'] - data['cost']
-    data['profit_margin'] = (data['profit'] / data['revenue'] * 100).round(2)
+    data['avg_profit_margin'] = (data['profit'] / data['revenue'] * 100).round(2)
     data['roas'] = (data['revenue'] / data['marketing_spend']).round(2)
     data['avg_order_value'] = (data['revenue'] / data['orders']).round(2)
     
@@ -232,7 +232,7 @@ def calculate_kpis(df):
         'orders_growth': orders_growth,
         'customers_growth': customers_growth,
         'total_profit': df['profit'].sum() if 'profit' in df.columns else 0,
-        'avg_profit_margin': df['profit_margin'].mean() if 'profit_margin' in df.columns else 0
+        'avg_profit_margin': df['avg_profit_margin'].mean() if 'avg_profit_margin' in df.columns else 0
             }
 def forecast_revenue(df, days_ahead=30):
     from sklearn.linear_model import LinearRegression
@@ -365,7 +365,7 @@ if st.session_state.current_page == "Dashboard":
     total_revenue = kpis.get('total_revenue', 0)
     revenue_per_day = total_revenue / 90 if total_revenue > 0 else 0
     revenue_growth = kpis.get('revenue_growth', 0)
-    profit_margin = kpis.get('profit_margin', 0)
+    profit_margin = kpis.get('avg_profit_margin', 0)
     total_customers = int(kpis.get('total_customers', 0))
     total_orders = int(kpis.get('total_orders', 0))
     
