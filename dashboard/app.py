@@ -472,16 +472,15 @@ forecast_col1, forecast_col2 = st.columns([2, 1])
 forecast_revenue = 0    
 with forecast_col1:
         # Mock forecast data
-                try:
+        try:
             forecast_df = forecast_revenue(data, days_ahead=30)
-                        # Simple line chart
-                        fig = px.line(forecast_df, x='date', y='revenue', title="Revenue Projection")
-                                            fig.update_layout(height=250)
-                                st.plotly_chart(fig, use_container_width=True)
-                    forecast_revenue = forecast_df['revenue'].sum() if forecast_df is not None else 0
-                    except Exception as e:
-                                st.error(f"❌ Error generating forecast: {str(e)}")
-    
+            # Simple line chart
+            fig = px.line(forecast_df, x='date', y='revenue', title="Revenue Projection")
+            fig.update_layout(height=250)
+            st.plotly_chart(fig, use_container_width=True)
+            forecast_revenue = forecast_df['revenue'].sum() if forecast_df is not None else 0
+        except Exception as e:
+            st.error(f"❌ Error generating forecast: {str(e)}")    
 with forecast_col2:        st.caption("✅ At current pace, revenue is projected to grow 5% next month.")
     
 st.m    arkdown("---")
