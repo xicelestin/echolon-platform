@@ -449,7 +449,7 @@ with col8:
     # Business Health Score
 st.subheader("📊 Business Health Score")
 health_score_dict = calculate_business_health_score(kpis)
-    display_business_health_score(health_score_dict)
+display_business_health_score(health_score_dict)
     
     # KPI Cards
     col1, col2, col3, col4 = st.columns(4)
