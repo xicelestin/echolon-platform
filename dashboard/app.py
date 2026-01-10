@@ -474,8 +474,8 @@ if st.session_state.current_page == "Dashboard":
             # Simple line chart
             fig = px.line(forecast_df, x='date', y='revenue', title="Revenue Projection")
             fig.update_layout(height=250)
-            st.plotly_chart(fig, use_container_width=True)
-                        forecast_revenue = forecast_df['revenue'].sum() if forecast_df is not None else 0
+                    st.plotly_chart(fig, use_container_width=True)
+            forecast_revenue = forecast_df['revenue'].sum() if forecast_df is not None else 0
         except Exception as e:
                         st.error(f"❌ Error generating forecast: {str(e)}")
     with forecast_col2:
