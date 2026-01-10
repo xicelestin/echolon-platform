@@ -476,7 +476,7 @@ with forecast_col1:
             forecast_df = forecast_revenue(data, days_ahead=30)
                         # Simple line chart
                         fig = px.line(forecast_df, x='date', y='revenue', title="Revenue Projection")
-                                try:
+                                            fig.update_layout(height=250)
                                 st.plotly_chart(fig, use_container_width=True)
                     forecast_revenue = forecast_df['revenue'].sum() if forecast_df is not None else 0
                     except Exception as e:
