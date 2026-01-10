@@ -410,14 +410,14 @@ with col4:
     # Second row of KPIs
     col5, col6, col7, col8 = st.columns(4)
     
-    with col5:
+with col5:
         st.metric(
             label="📊 Avg Daily Revenue",
             value=format_currency(revenue_per_day, decimals=0),
             delta="+5.2% vs yesterday"
         )
     
-    with col6:
+with col6:
         avg_order_value = kpis.get('avg_order_value', 0)
         st.metric(
             label="💳 Avg Order Value",
@@ -425,14 +425,14 @@ with col4:
             delta="+3.1% vs last period"
         )
     
-    with col7:
+with col7:
         st.metric(
             label="🔮 Forecast (30d)",
             value=format_currency(forecast_revenue / 3, decimals=0),
             delta="+5.0% projected"
         )
     
-    with col8:
+with col8:
         # Inventory risk indicator (mock for now)
         st.metric(
             label="📦 Inventory Health",
