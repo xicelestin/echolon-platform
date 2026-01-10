@@ -374,7 +374,7 @@ total_customers = int(kpis.get('total_customers', 0))
 total_orders = int(kpis.get('total_orders', 0))
 
 # Forecast revenue (mock: 5% growth)
-    forecast_revenue = total_revenue * 1.05
+forecast_revenue = total_revenue * 1.05
         
     # Create 4 KPI columns
     col1, col2, col3, col4 = st.columns(4)
