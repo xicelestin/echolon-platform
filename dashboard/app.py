@@ -457,14 +457,15 @@ if st.session_state.current_page == "Dashboard":
     
     # ===================================================================================
     # SECTION 3: FORECAST SNAPSHOT
-    # ===================================================================================
-        forecast_revenue = 0  # Default value if forecast fails
     
     st.subheader("📈 Revenue Forecast")
     st.caption("Future-facing projection for next 30 days")
     
     # Create forecast visualization
     forecast_col1, forecast_col2 = st.columns([2, 1])
+
+        # Initialize forecast_revenue for later use
+    forecast_revenue = 0
     
     with forecast_col1:
         # Mock forecast data
