@@ -376,26 +376,26 @@ total_orders = int(kpis.get('total_orders', 0))
 # Forecast revenue (mock: 5% growth)
 forecast_revenue = total_revenue * 1.05
         
-    # Create 4 KPI columns
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric(
-            label="💰 Total Revenue (90d)",
-            value=format_currency(total_revenue, decimals=0),
-            delta=f"{revenue_growth:+.1f}% vs last period"
-        )
-    
-    with col2:
-        st.metric(
-            label="📈 Profit Margin",
-            value=f"{profit_margin:.1f}%",
-            delta="+2.1% vs last month"
-        )
-    
-    with col3:
-        st.metric(
-            label="👥 Active Customers",
+        # Create 4 KPI columns
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric(
+                label="💰 Total Revenue (90d)",
+                value=format_currency(total_revenue, decimals=0),
+                delta=f"{revenue_growth:+.1f}% vs last period"
+            )
+        
+        with col2:
+            st.metric(
+                label="📈 Profit Margin",
+                value=f"{profit_margin:.1f}%",
+                delta="+2.1% vs last month"
+            )
+        
+        with col3:
+            st.metric(
+                label="👥 Active Customers",
             value=f"{total_customers:,}",
             delta=f"+{int(total_customers * 0.05)} this period"
         )
