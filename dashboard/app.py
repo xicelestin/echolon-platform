@@ -483,7 +483,7 @@ with forecast_col1:
             st.error(f"❌ Error generating forecast: {str(e)}")    
 with forecast_col2:        st.caption("✅ At current pace, revenue is projected to grow 5% next month.")
     
-st.m    arkdown("---")
+    st.markdown("---")
     
     # ===================================================================================
     # SECTION 4: KEY INSIGHTS & ALERTS (The Brain of Echolon)
