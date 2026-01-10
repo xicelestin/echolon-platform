@@ -447,8 +447,8 @@ with col8:
     # ===================================================================================
 
     # Business Health Score
-    st.subheader("📊 Business Health Score")
-    health_score_dict = calculate_business_health_score(kpis)
+st.subheader("📊 Business Health Score")
+health_score_dict = calculate_business_health_score(kpis)
     display_business_health_score(health_score_dict)
     
     # KPI Cards
