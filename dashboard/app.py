@@ -466,12 +466,11 @@ st.subheader("📈 Revenue Forecast")
 st.    aption("Future-facing projection for next 30 days")
     
     # Create forecast visualization
-    forecast_col1, forecast_col2 = st.columns([2, 1])
+forecast_col1, forecast_col2 = st.columns([2, 1])
 
         # Initialize forecast_revenue for later use
-    forecast_revenue = 0
-    
-    with forecast_col1:
+forecast_revenue = 0    
+with forecast_col1:
         # Mock forecast data
         try:
             forecast_df = forecast_revenue(data, days_ahead=30)
@@ -483,16 +482,16 @@ st.    aption("Future-facing projection for next 30 days")
         except Exception as e:
             st.error(f"❌ Error generating forecast: {str(e)}")
     
-    with forecast_col2:        st.caption("✅ At current pace, revenue is projected to grow 5% next month.")
+with forecast_col2:        st.caption("✅ At current pace, revenue is projected to grow 5% next month.")
     
-    st.markdown("---")
+st.m    arkdown("---")
     
     # ===================================================================================
     # SECTION 4: KEY INSIGHTS & ALERTS (The Brain of Echolon)
     # ===================================================================================
     
-    st.subheader("🧠 Key Insights")
-    st.caption("Top 3 insights ranked by importance")
+st.subheader("🧠 Key Insights")
+st.    aption("Top 3 insights ranked by importance")
     
     # Mock insights - In production, these would come from ML models
     insights = [
