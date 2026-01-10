@@ -473,7 +473,7 @@ if st.session_state.current_page == "Dashboard":
             fig = px.line(forecast_df, x='date', y='revenue', title="Revenue Projection")
             fig.update_layout(height=250)
             st.plotly_chart(fig, use_container_width=True)
-                pt Exception as e:
+                except Exception as e:
 st.e                rror(f"❌ Error generating forecast: {str(e)}")    
     with forecast_col2:
         st.metric(
