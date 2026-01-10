@@ -458,6 +458,7 @@ if st.session_state.current_page == "Dashboard":
     # ===================================================================================
     # SECTION 3: FORECAST SNAPSHOT
     # ===================================================================================
+        forecast_revenue = 0  # Default value if forecast fails
     
     st.subheader("📈 Revenue Forecast")
     st.caption("Future-facing projection for next 30 days")
@@ -473,12 +474,13 @@ if st.session_state.current_page == "Dashboard":
             fig = px.line(forecast_df, x='date', y='revenue', title="Revenue Projection")
             fig.update_layout(height=250)
             st.plotly_chart(fig, use_container_width=True)
+                        forecast_revenue = forecast_df['revenue'].sum() if forecast_df is not None else 0
         except Exception as e:
                         st.error(f"❌ Error generating forecast: {str(e)}")
     with forecast_col2:
         st.metric(
             label="Projected Revenue (30d)",
-                e=format_currency(forecast_revenue / 3, decimals=0),
+            value=format_currency(forecast_revenue / 3, decimals=0),
             delta="+5.0% vs current pace"
         )
         st.caption("✅ At current pace, revenue is projected to grow 5% next month.")
