@@ -377,8 +377,8 @@ total_orders = int(kpis.get('total_orders', 0))
 forecast_revenue = total_revenue * 1.05
         
         # Create 4 KPI columns
-        col1, col2, col3, col4 = st.columns(4)
-        
+col1, col2, col3, col4 = st.columns(4)
+
         with col1:
             st.metric(
                 label="💰 Total Revenue (90d)",
