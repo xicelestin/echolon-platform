@@ -408,7 +408,7 @@ with col4:
         )
     
     # Second row of KPIs
-    col5, col6, col7, col8 = st.columns(4)
+col5, col6, col7, col8 = st.columns(4)
     
 with col5:
         st.metric(
