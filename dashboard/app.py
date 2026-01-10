@@ -457,7 +457,7 @@ with col1:
                 pass  # Placeholder - KPI cards removed
 
             
-    st.markdown("---")
+st.markdown("---")
     
     # ===================================================================================
     # SECTION 3: FORECAST SNAPSHOT
