@@ -339,7 +339,7 @@ kpis['cash_flow_ratio'] = 1.0  # Simplified - actual calculation would use cash 
         
     # Time Period Selector
     col_filter1, col_filter2, col_filter3 = st.columns([2, 1, 1])
-    with col_filter1:
+with col_filter1:
         time_period = st.selectbox(
             "📅 Time Period",
             ["Last 7 Days", "Last 30 Days", "Last 90 Days", "All Time"],
