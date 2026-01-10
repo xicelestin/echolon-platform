@@ -360,7 +360,7 @@ with col_filter1:
     # Recalculate KPIs for filtered period
         kpis = calculate_kpis(data_filtered)
     
-    st.markdown("---")
+        st.markdown("---")
 
         # ===================================================================================
     # SECTION 1: TOP-LEVEL KPI TILES
