@@ -479,8 +479,8 @@ with forecast_col1:
 fig.update_layout(height=250)
             st.plotly_chart(fig, use_container_width=True) 
             forecast_revenue = forecast_df['revenue'].sum() if forecast_df is not None else 0
-        except Exception as e:
-            st.error(f"❌ Error generating forecast: {str(e)}")
+                except Exception as e:
+                        st.error(f"❌ Error generating forecast: {str(e)}")
     
 with forecast_col2:        st.caption("✅ At current pace, revenue is projected to grow 5% next month.")
     
