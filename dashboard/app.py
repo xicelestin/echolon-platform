@@ -363,20 +363,20 @@ with col_filter1:
         st.markdown("---")
 
         # ===================================================================================
-    # SECTION 1: TOP-LEVEL KPI TILES
-    # ===================================================================================
-    
-    # Calculate key metrics
-    total_revenue = kpis.get('total_revenue', 0)
-    revenue_per_day = total_revenue / 90 if total_revenue > 0 else 0
-    revenue_growth = kpis.get('revenue_growth', 0)
-    profit_margin = kpis.get('avg_profit_margin', 0)
-    total_customers = int(kpis.get('total_customers', 0))
-    total_orders = int(kpis.get('total_orders', 0))
-    
-    # Forecast revenue (mock: 5% growth)
-    forecast_revenue = total_revenue * 1.05
-    
+370
+        # ===================================================================================
+        
+        # Calculate key metrics
+        total_revenue = kpis.get('total_revenue', 0)
+        revenue_per_day = total_revenue / 90 if total_revenue > 0 else 0
+        revenue_growth = kpis.get('revenue_growth', 0)
+        profit_margin = kpis.get('avg_profit_margin', 0)
+        total_customers = int(kpis.get('total_customers', 0))
+        total_orders = int(kpis.get('total_orders', 0))
+        
+        # Forecast revenue (mock: 5% growth)
+        forecast_revenue = total_revenue * 1.05
+        
     # Create 4 KPI columns
     col1, col2, col3, col4 = st.columns(4)
     
