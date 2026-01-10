@@ -452,7 +452,7 @@ health_score_dict = calculate_business_health_score(kpis)
 display_business_health_score(health_score_dict)
     
     # KPI Cards
-    col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4 = st.columns(4)
     with col1:
                 pass  # Placeholder - KPI cards removed
 
