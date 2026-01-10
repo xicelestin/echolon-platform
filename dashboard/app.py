@@ -358,7 +358,7 @@ with col_filter1:
                 data_filtered = data
     
     # Recalculate KPIs for filtered period
-    kpis = calculate_kpis(data_filtered)
+        kpis = calculate_kpis(data_filtered)
     
     st.markdown("---")
 
