@@ -1,3 +1,4 @@
+470
 import streamlit as st
 # Trigger rebuild # Force redeploy
 import pandas as pd
@@ -331,6 +332,10 @@ kpis = calculate_kpis(data)
 # ==================== PAGE: DASHBOARD ====================
 if st.session_state.current_page == "Dashboard":
     st.title("🏠 Dashboard - CEO View")
+    
+# Fix key naming for business health score calculation
+kpis['profit_margin'] = kpis.get('avg_profit_margin', 0)
+kpis['cash_flow_ratio'] = 1.0  # Simplified - actual calculation would use cash flow data
     st.markdown("### High-level overview of your business at a glance")
         
     # Time Period Selector
