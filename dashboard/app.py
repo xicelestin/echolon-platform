@@ -379,7 +379,7 @@ forecast_revenue = total_revenue * 1.05
         # Create 4 KPI columns
 col1, col2, col3, col4 = st.columns(4)
 
-    with col1:
+with col1:
         st.metric(
                 label="💰 Total Revenue (90d)",
                 value=format_currency(total_revenue, decimals=0),
