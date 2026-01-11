@@ -462,7 +462,7 @@ st.markdown("---")
     # SECTION 3: FORECAST SNAPSHOT
     
 st.subheader("📈 Revenue Forecast")
-st.    aptioncaption("Future-facing projection for next 30 days")
+st.    caption("Future-facing projection for next 30 days")
     
     # Create forecast visualization
 forecast_col1, forecast_col2 = st.columns([2, 1])
