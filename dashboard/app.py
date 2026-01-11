@@ -481,7 +481,6 @@ with forecast_col1:
             forecast_revenue = forecast_df['revenue'].sum() if forecast_df is not None else 0
         except Exception as e:
             st.error(f"❌ Error generating forecast: {str(e)}")    
-    # with forecast_col2: # Commented out to fix indentation    
 st.markdown("---")
 
     
