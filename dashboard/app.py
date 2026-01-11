@@ -534,14 +534,14 @@ for idx, insight in enumerate(insights, 1):
     
     st.markdown("---")
     
-    # ===================================================================================
-    # SECTION 5: RECOMMENDED ACTIONS
-    # ===================================================================================
+# ===================================================================================
+# SECTION 5: RECOMMENDED ACTIONS
+=================================================================================
     
-    st.subheader("✅ Recommended Actions")
-    st.caption("AI-powered suggestions to improve your business")
+st.subheader("✅ Recommended Actions")
+st.caption("AI-powered suggestions to improve your business")
     
-    actions = [
+actions = [
         "📦 Reorder Product X by Friday to avoid stockout (9 days remaining)",
         "📊 Reduce ad spend on Campaign B (-15% conversion vs average)",
         "🎯 Focus promotions on weekdays (+18% performance vs weekends)"
