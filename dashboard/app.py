@@ -532,7 +532,7 @@ for idx, insight in enumerate(insights, 1):
             if idx < len(insights):
                 st.divider()
     
-    st.markdown("---")
+st.markdown("---")
     
 # ===================================================================================
 # SECTION 5: RECOMMENDED ACTIONS
