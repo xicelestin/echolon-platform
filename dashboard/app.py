@@ -482,11 +482,11 @@ with forecast_col1:
         except Exception as e:
             st.error(f"❌ Error generating forecast: {str(e)}")    
     # with forecast_col2: # Commented out to fix indentation    
-st.markdown("---")535
+st.markdown("---")
 
     
     # ===================================================================================
-    # SECTION 4: KEY INSIGHTS & ALERTS (The Brain of Echolon)
+    # SECTION 4: KEY INSIGHTS & ALERTS (The Brain of Echol
     # ===================================================================================
     
 st.subheader("🧠 Key Insights")
