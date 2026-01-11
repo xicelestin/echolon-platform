@@ -345,8 +345,8 @@ with col_filter1:
         )
     
     # Filter data based on selection
-            if time_period == "Last 7 Days":
-        data_filtered = data.tail(7)
+    if time_period == "Last 7 Days":
+                data_filtered = data.tail(7)
     elif time_period == "Last 30 Days":
         data_filtered = data.tail(30)
     elif time_period == "Last 90 Days":
