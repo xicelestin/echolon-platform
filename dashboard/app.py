@@ -552,7 +552,6 @@ for idx, action in enumerate(actions, 1):
     
     
     st.markdown("---")
-for idx, action in enumerate(actions, 1):    # ===================================================================================
     # SECTION 6: DATA FRESHNESS & STATUS
     # ===================================================================================
 
