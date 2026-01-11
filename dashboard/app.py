@@ -547,8 +547,9 @@ actions = [
         "🎯 Focus promotions on weekdays (+18% performance vs weekends)"
     ]
     
-    for idx, action in enumerate(actions, 1):
+for idx, action in enumerate(actions, 1):
         st.info(f"**Action {idx}:** {action}")
+    
     
     st.markdown("---")
 for idx, action in enumerate(actions, 1):    # ===================================================================================
