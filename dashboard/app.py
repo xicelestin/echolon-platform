@@ -345,7 +345,7 @@ with col_filter1:
         )
     
     # Filter data based on selection
-                f time_period == "Last 7 Days":
+                if time_period == "Last 7 Days":
         data_filtered = data.tail(7)
     elif time_period == "Last 30 Days":
         data_filtered = data.tail(30)
@@ -377,7 +377,7 @@ col1, col2, col3, col4 = st.columns(4)
 
 with col1:
         st.metric(
-                label="💰 Total Revenue (90d)",
+348
                 value=format_currency(total_revenue, decimals=0),
                 delta=f"{revenue_growth:+.1f}% vs last period"
             )
