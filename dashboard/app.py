@@ -491,8 +491,8 @@ st.markdown("---")
 st.subheader("🧠 Key Insights")
 st.caption("Top 3 insights ranked by importance")
     
-    # Mock insights - In production, these would come from ML models
-    insights = [
+# Mock insights - In production, these would come from ML models
+insights = [
         {
             "priority": "high",
             "icon": "⚠️",
