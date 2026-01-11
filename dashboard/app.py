@@ -553,9 +553,8 @@ for idx, action in enumerate(actions, 1):
     
 st.markdown("---")  # SECTION 6: DATA FRESHNESS & STATUS    # ===================================================================================
 
-    current_time = datetime.now().strftime("%I:%M %p")
-    st.caption(f"🔄 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
-    with col2:
+current_time = datetime.now().strftime("%I:%M %p")
+st.caption(f"🔄 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")    with col2:
                 pass
     # REMOVED: Corrupted display_metric_with_comparison blocks that were causing TypeError        )
                 
