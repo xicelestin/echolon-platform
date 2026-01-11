@@ -133,11 +133,10 @@ def format_currency(value, decimals=0):
     """Format numbers as currency with proper abbreviation"""
     if value >= 1_000_000:
         return f"${value/1_000_000:.{decimals}f}M"
-elif value >= 1_000:
+    elif value >= 1_000:
         return f"${value/1_000:.{decimals}f}K"
     else:
         return f"${value:,.{decimals}f}"
-
 def format_number(value, decimals=0):
     """Format large numbers with commas"""
     if isinstance(value, (int, float)):
