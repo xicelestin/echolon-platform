@@ -347,11 +347,11 @@ with col_filter1:
     # Filter data based on selection
     if time_period == "Last 7 Days":
                 data_filtered = data.tail(7)
-    elif time_period == "Last 30 Days":
+        elif time_period == "Last 30 Days":
         data_filtered = data.tail(30)
-    elif time_period == "Last 90 Days":
+        elif time_period == "Last 90 Days":
         data_filtered = data.tail(90)
-    else:
+        else:
         data_filtered = data
     # Recalculate KPIs for filtered period
         kpis = calculate_kpis(data_filtered)
