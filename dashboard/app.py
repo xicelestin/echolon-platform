@@ -556,3 +556,77 @@ current_time = datetime.now().strftime("%I:%M %p")
 st.caption(f"🔄 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
 with col2:
     pass
+
+# ==================== PAGE: Analytics ====================
+elif st.session_state.current_page == "Analytics":
+    st.title("📊 Analytics")
+    st.write("Analytics page - Coming soon")
+
+# ==================== PAGE: Predictions ====================
+elif st.session_state.current_page == "Predictions":
+    st.title("🔮 Predictions")
+    st.write("Predictions page - Coming soon")
+
+# ==================== PAGE: Recommendations ====================
+elif st.session_state.current_page == "Recommendations":
+    st.title("💡 Recommendations")
+    st.write("Recommendations page - Coming soon")
+
+# ==================== PAGE: What-If Analysis ====================
+elif st.session_state.current_page == "What-If Analysis":
+    st.title("📝 What-If Analysis")
+    st.write("What-If Analysis page - Coming soon")
+
+# ==================== PAGE: Inventory ====================
+elif st.session_state.current_page == "Inventory":
+    st.title("🎨 Inventory")
+    st.write("Inventory page - Coming soon")
+
+# ==================== PAGE: Upload Data ====================
+elif st.session_state.current_page == "Upload Data":
+    st.title("📂 Upload Data")
+    st.write("Upload Data page - Coming soon")
+
+# ==================== PAGE: Customer Insights ====================
+elif st.session_state.current_page == "Customer Insights":
+    render_customer_insights_page(data, kpis)
+
+# ==================== PAGE: Inventory & Demand ====================
+elif st.session_state.current_page == "Inventory & Demand":
+    render_inventory_demand_page(data, kpis)
+
+# ==================== PAGE: Anomalies & Alerts ====================
+elif st.session_state.current_page == "Anomalies & Alerts":
+    render_anomalies_alerts_page(data, kpis)
+
+# ==================== PAGE: Data Sources ====================
+elif st.session_state.current_page == "Data Sources":
+    render_data_sources_page()
+
+# ==================== PAGE: Inventory Optimization ====================
+elif st.session_state.current_page == "Inventory Optimization":
+    render_inventory_optimization_page(data, kpis)
+
+# ==================== PAGE: Margin Analysis ====================
+elif st.session_state.current_page == "Margin Analysis":
+    render_margin_analysis_page(data, kpis)
+
+# ==================== PAGE: Smart Alerts ====================
+elif st.session_state.current_page == "Smart Alerts":
+    render_smart_alerts_page(data, kpis)
+
+# ==================== PAGE: Cohort Analysis ====================
+elif st.session_state.current_page == "Cohort Analysis":
+    render_cohort_analysis_page(data, kpis)
+
+# ==================== PAGE: Customer LTV ====================
+elif st.session_state.current_page == "Customer LTV":
+    render_customer_ltv_page(data, kpis)
+
+# ==================== PAGE: Revenue Attribution ====================
+elif st.session_state.current_page == "Revenue Attribution":
+    render_revenue_attribution_page(data, kpis)
+
+# ==================== PAGE: Competitive Benchmark ====================
+elif st.session_state.current_page == "Competitive Benchmark":
+    render_competitive_benchmark_page(data, kpis)
