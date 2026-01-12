@@ -456,7 +456,7 @@ if st.session_state.current_page == "Dashboard":
     # ===================================================================================
     # SECTION 3: FORECAST SNAPSHOT
     
-    stt.subheader("📈 Revenue Forecast")
+    st.subheader("📈 Revenue Forecast")
     st.    caption("Future-facing projection for next 30 days")
     
     # Create forecast visualization
