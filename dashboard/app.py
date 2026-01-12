@@ -482,11 +482,11 @@ if st.session_state.current_page == "Dashboard":
     # SECTION 4: KEY INSIGHTS & ALERTS (The Brain of Echol
     # ===================================================================================
     
-st.subheader("🧠 Key Insights")
-st.caption("Top 3 insights ranked by importance")
+    st.subheader("🧠 Key Insights")
+    st.caption("Top 3 insights ranked by importance")
     
 # Mock insights - In production, these would come from ML models
-insights = [
+    insights = [
         {
             "priority": "high",
             "icon": "⚠️",
