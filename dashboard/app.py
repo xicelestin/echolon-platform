@@ -332,7 +332,7 @@ if st.session_state.current_page == "Dashboard":
     
 # Fix key naming for business health score calculation
 kpis['profit_margin'] = kpis.get('avg_profit_margin', 0)
-kpis['cash_flow_ratio'] = 1.0  # Simplified - actual calculation would use cash flow d        st.markdown("### High-level overview of your business at a glance")
+kpis['cash_flow_ratio'] = 1.0  # Simplified - actual calculation would use cash flow data
         
     st.markdown("### High-level overview of your business at a glance")    
     # Time Period Selec
