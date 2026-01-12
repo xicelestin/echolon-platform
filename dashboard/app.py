@@ -12,8 +12,9 @@ from components import create_line_chart, create_bar_chart, COLORS, COLOR_PALETT
 from utils import create_multi_format_export, create_download_button
 from utils import calculate_business_health_score, calculate_period_comparison
 from utils.metrics_utils import forecast_revenue
-from components import display_business_health_score, display_metric_with_comparison, display_key_metrics_gridfro
-from pages_inventory_optimization import render_inventory_optimization_page
+from components import display_business_health_score
+from components import display_metric_with_comparison
+from components import display_key_metrics_gri
 from pages_margin_analysis import render_margin_analysis_page
 from pages_smart_alerts import render_smart_alerts_page
 from pages_cohort_analysis import render_cohort_analysis_page
