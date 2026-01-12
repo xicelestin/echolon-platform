@@ -553,7 +553,7 @@ st.caption(f"🔄 Last updated: {current_time} | Data sources: ✅ Connected | S
 
 # ==================== PAGE: Analytics ====================
 elif st.session_state.current_page == "Analytics":
-    st.title("📊 Analytics"s")
+    st.title("📊 Analytics")
     st.write("Analytics page - Coming soon")
 
 # ==================== PAGE: Predictions ====================
