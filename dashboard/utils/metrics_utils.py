@@ -337,3 +337,65 @@ def get_trend_indicator(values: list) -> str:
         return 'down'
     else:
         return 'flat'
+
+
+
+def forecast_revenue(data: pd.DataFrame, days_ahead: int = 30) -> pd.DataFrame:
+    """
+    Forecast revenue for the next N days using simple time series methods.
+    
+    Args:
+        data: DataFrame with 'date' and 'revenue' columns
+        days_ahead: Number of days to forecast ahead
+        
+    Returns:
+        DataFrame with forecasted dates and revenue values
+    """
+    try:
+        # Ensure data is sorted by date
+        data = data.sort_values('date').copy()
+        
+        # Calculate simple moving average for trend
+        window = min(30, len(data) // 2)
+        data['ma'] = data['revenue'].rolling(window=window, min_periods=1).mean()
+        
+        # Calculate growth rate from moving average
+        recent_data = data.tail(window)
+        if len(recent_data) > 1:
+            growth_rate = (recent_data['ma'].iloc[-1] - recent_data['ma'].iloc[0]) / len(recent_data)
+        else:
+            growth_rate = 0
+        
+        # Generate future dates
+        last_date = pd.to_datetime(data['date'].iloc[-1])
+        future_dates = pd.date_range(start=last_date + timedelta(days=1), periods=days_ahead, freq='D')
+        
+        # Forecast using linear projection
+        last_revenue = float(data['revenue'].iloc[-1])
+        forecasted_values = []
+        
+        for i in range(days_ahead):
+            # Add growth with some variance based on historical std
+            forecast = last_revenue + (growth_rate * (i + 1))
+            forecasted_values.append(max(0, forecast))  # Ensure non-negative
+        
+        # Create forecast dataframe
+        forecast_df = pd.DataFrame({
+            'date': future_dates,
+            'revenue': forecasted_values
+        })
+        
+        return forecast_df
+        
+    except Exception as e:
+        # Return simple fallback forecast if errors occur
+        last_date = pd.to_datetime(data['date'].iloc[-1])
+        last_revenue = float(data['revenue'].iloc[-1])
+        
+        future_dates = pd.date_range(start=last_date + timedelta(days=1), periods=days_ahead, freq='D')
+        forecast_df = pd.DataFrame({
+            'date': future_dates,
+            'revenue': [last_revenue] * days_ahead  # Flat forecast as fallback
+        })
+        
+        return forecast_df
