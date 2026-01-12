@@ -514,41 +514,41 @@ if st.session_state.current_page == "Dashboard":
                 with st.container():
                         col_insight1, col_insight2 = st.columns([4, 1])
             
-            with col_insight1:
-                priority_color = "red" if insight["priority"] == "high" else "orange" if insight["priority"] == "medium" else "green"
-                st.markdown(f"**{insight['icon']} {insight['title']}**")
-                st.caption(insight['description'])
+                        with col_insight1:
+                                priority_color = "red" if insight["priority"] == "high" else "orange" if insight["priority"] == "medium" else "green"
+                                st.markdown(f"**{insight['icon']} {insight['title']}**")
+                                st.caption(insight['description'])
                 
-            with col_insight2:
-                if st.button("👁️ View", key=f"insight_{idx}"):
-                    st.info(f"Action: {insight['action']}")
+                        with col_insight2:
+                                if st.button("👁️ View", key=f"insight_{idx}"):
+                                        st.info(f"Action: {insight['action']}")
             
-            if idx < len(insights):
-                st.divider()
+                        if idx < len(insights):
+                                st.divider()
     
-st.markdown("---")
+    st.markdown("---")
     
 # ===================================================================================
 # SECTION 5: RECOMMENDED ACTIONS
 # =================================================================================
     
-st.subheader("✅ Recommended Actions")
-st.caption("AI-powered suggestions to improve your business")
+    st.subheader("✅ Recommended Actions")
+    st.caption("AI-powered suggestions to improve your business")
     
-actions = [
-        "📦 Reorder Product X by Friday to avoid stockout (9 days remaining)",
-        "📊 Reduce ad spend on Campaign B (-15% conversion vs average)",
-        "🎯 Focus promotions on weekdays (+18% performance vs weekends)"
-    ]
+    actions = [
+                "📦 Reorder Product X by Friday to avoid stockout (9 days remaining)",
+                "📊 Reduce ad spend on Campaign B (-15% conversion vs average)",
+                "🎯 Focus promotions on weekdays (+18% performance vs weekends)"
+        ]
     
-for idx, action in enumerate(actions, 1):
-        st.info(f"**Action {idx}:** {action}")
+    for idx, action in enumerate(actions, 1):
+                st.info(f"**Action {idx}:** {action}")
     
     
-st.markdown("---")  # SECTION 6: DATA FRESHNESS & STATUS
+    st.markdown("---")  # SECTION 6: DATA FRESHNESS & STATUS
 
-current_time = datetime.now().strftime("%I:%M %p")
-st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
+    current_time = datetime.now().strftime("%I:%M %p")
+    st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
 # ==================== PAGE: Analytics ====================
 if st.session_state.current_page == "Analytics":
     st.title("📊 Analytics")
