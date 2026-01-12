@@ -487,32 +487,32 @@ if st.session_state.current_page == "Dashboard":
     
 # Mock insights - In production, these would come from ML models
     insights = [
-        {
-            "priority": "high",
-            "icon": "⚠️",
-            "title": "Inventory Alert",
-            "description": "Product X will run out in 9 days at current sales pace.",
-            "action": "Reorder now to avoid stockout"
-        },
-        {
-            "priority": "medium",
-            "icon": "📈",
-            "title": "Weekend Performance",
-            "description": "Weekday sales outperform weekends by 18%.",
-            "action": "Focus promotions on weekdays"
-        },
-        {
-            "priority": "medium",
-            "icon": "💰",
-            "title": "Margin Opportunity",
-            "description": "Premium products have 35% higher margins but represent only 12% of sales.",
-            "action": "Increase premium product visibility"
-        }
-    ]
+                {
+                        "priority": "high",
+                        "icon": "⚠️",
+                        "title": "Inventory Alert",
+                        "description": "Product X will run out in 9 days at current sales pace.",
+                        "action": "Reorder now to avoid stockout"
+                },
+                {
+                        "priority": "medium",
+                        "icon": "📈",
+                        "title": "Weekend Performance",
+                        "description": "Weekday sales outperform weekends by 18%.",
+                        "action": "Focus promotions on weekdays"
+                },
+                {
+                        "priority": "medium",
+                        "icon": "💰",
+                        "title": "Margin Opportunity",
+                        "description": "Premium products have 35% higher margins but represent only 12% of sales.",
+                        "action": "Increase premium product visibility"
+                }
+        ]
     
-for idx, insight in enumerate(insights, 1):
-        with st.container():
-            col_insight1, col_insight2 = st.columns([4, 1])
+    for idx, insight in enumerate(insights, 1):
+                with st.container():
+                        col_insight1, col_insight2 = st.columns([4, 1])
             
             with col_insight1:
                 priority_color = "red" if insight["priority"] == "high" else "orange" if insight["priority"] == "medium" else "green"
