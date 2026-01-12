@@ -1295,7 +1295,7 @@ elif st.session_state.current_page == "Upload Data":
         
         csv = sample_data.to_csv(index=False)
         st.download_button(
-            label="📥 Download Sample CSV",
+            label="📥 Download Sample CSV", format_currency, format_percentage, format_number)
             data=csv,
             file_name="sample_business_data.csv",
             mime="text/csv",
@@ -1303,15 +1303,15 @@ elif st.session_state.current_page == "Upload Data":
         )
 # ==================== PAGE: Customer Insights ====================
 elif st.session_state.current_page == "Customer Insights":
-    render_customer_insights_page(data, kpis)
+    render_customer_insights_page(data, kpis, format_currency, format_percentage, format_number)
 
 # ==================== PAGE: Inventory & Demand ====================
 elif st.session_state.current_page == "Inventory & Demand":
-    render_inventory_demand_page(data, kpis)
+    render_inventory_demand_page(data, kpis, format_currency, format_percentage, format_number)
 
 # ==================== PAGE: Anomalies & Alerts ====================
 elif st.session_state.current_page == "Anomalies & Alerts":
-    render_anomalies_alerts_page(data, kpis)
+    render_anomalies_alerts_page(data, kpis, format_currency, format_percentage, format_number)
 
 # ==================== PAGE: Data Sources ====================
 elif st.session_state.current_page == "Data Sources":
@@ -1319,28 +1319,28 @@ elif st.session_state.current_page == "Data Sources":
 
 # ==================== PAGE: Inventory Optimization ====================
 elif st.session_state.current_page == "Inventory Optimization":
-    render_inventory_optimization_page(data, kpis)
+    render_inventory_optimization_page(data, kpis, format_currency, format_percentage, format_number)
 
 # ==================== PAGE: Margin Analysis ====================
 elif st.session_state.current_page == "Margin Analysis":
-    render_margin_analysis_page(data, kpis)
+    render_margin_analysis_page(data, kpis, format_currency, format_percentage, format_number)
 
 # ==================== PAGE: Smart Alerts ====================
 elif st.session_state.current_page == "Smart Alerts":
-    render_smart_alerts_page(data, kpis)
+    render_smart_alerts_page(data, kpis, format_currency, format_percentage, format_number)
 
 # ==================== PAGE: Cohort Analysis ====================
 elif st.session_state.current_page == "Cohort Analysis":
-    render_cohort_analysis_page(data, kpis)
+    render_cohort_analysis_page(data, kpis, format_currency, format_percentage, format_number)
 
 # ==================== PAGE: Customer LTV ====================
 elif st.session_state.current_page == "Customer LTV":
-    render_customer_ltv_page(data, kpis)
+    render_customer_ltv_page(data, kpis, format_currency, format_percentage, format_number)
 
 # ==================== PAGE: Revenue Attribution ====================
 elif st.session_state.current_page == "Revenue Attribution":
-    render_revenue_attribution_page(data, kpis)
+    render_revenue_attribution_page(data, kpis, format_currency, format_percentage, format_number)
 
 # ==================== PAGE: Competitive Benchmark ====================
 elif st.session_state.current_page == "Competitive Benchmark":
-    render_competitive_benchmark_page(data, kpis)
+    render_competitive_benchmark_page(data, kpis, format_currency, format_percentage, format_number)
