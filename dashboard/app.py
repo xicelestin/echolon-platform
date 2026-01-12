@@ -396,7 +396,7 @@ if st.session_state.current_page == "Dashboard":
     
 with col4:
         st.metric(
-            lalabel="🎯 Total Orders",
+            label="🎯 Total Orders",
             value=f"{total_orders:,}",
             delta=f"+{int(total_orders * 0.08)} this period"
         )
