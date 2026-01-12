@@ -10,7 +10,7 @@ import io
 from utils import DataValidator
 from components import create_line_chart, create_bar_chart, COLORS, COLOR_PALETTE
 from utils import create_multi_format_export, create_download_button
-from utils import calculate_business_health_score, calculate_period_comparison
+from utils import calculate_business_health_score, calculate_period_comparison, forecast_revenue
 from components import display_business_health_score, display_metric_with_comparison, display_key_metrics_grid
 # from ml_integration import get_ml_insights, initialize_ml_models, forecast_revenue_ml, detect_anomalies_ml, predict_churn_ml
 from pages_financial_insights import render_financial_page
