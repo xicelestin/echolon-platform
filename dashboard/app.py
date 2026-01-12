@@ -1300,7 +1300,6 @@ elif st.session_state.current_page == "Upload Data":
             file_name="sample_business_data.csv",
             mime="text/csv",
             use_container_width=True
-        )
 # ==================== PAGE: Customer Insights ====================
 elif st.session_state.current_page == "Customer Insights":
     render_customer_insights_page(data, kpis, format_currency, format_percentage, format_number)
