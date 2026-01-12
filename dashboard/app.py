@@ -1295,11 +1295,11 @@ elif st.session_state.current_page == "Upload Data":
         
         csv = sample_data.to_csv(index=False)
         st.download_button(
-            label="📥 Download Sample CSV", format_currency, format_percentage, format_number)
+                    label="📥 Download Sample CSV",
             data=csv,
             file_name="sample_business_data.csv",
             mime="text/csv",
-            use_container_width=True
+            use_container_width=True)
 # ==================== PAGE: Customer Insights ====================
 elif st.session_state.current_page == "Customer Insights":
     render_customer_insights_page(data, kpis, format_currency, format_percentage, format_number)
