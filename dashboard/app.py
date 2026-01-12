@@ -550,7 +550,7 @@ st.markdown("---")  # SECTION 6: DATA FRESHNESS & STATUS
 current_time = datetime.now().strftime("%I:%M %p")
 st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
 # ==================== PAGE: Analytics ====================
-elift.session_state.current_page == "Analytics":
+if. stession_state.current_page == "Analytics":
     st.title("📊 Analytics")
     st.write("Analytics page - Coming soon")
 
