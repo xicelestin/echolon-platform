@@ -356,8 +356,7 @@ if st.session_state.current_page == "Dashboard":
         data_filtered = data
     # Recalculate KPIs for filtered period
     kpis = calculate_kpis(data_filtered)
-    st.markdown("---")    st.markdown("---")    st.markdown("---")
-        # ===================================================================================
+    st.markdown("---")        # ===================================================================================
 370
         # ===================================================================================
         
@@ -375,11 +374,12 @@ forecast_revenue = total_revenue * 1.05
         # Create 4 KPI columns
 col1, col2, col3, col4 = st.columns(4)
 
-with col1:
+    with col1:
         st.metric(
-348
-                value=format_currency(total_revenue, decimals=0),
-                delta=f"{revenue_growth:+.1f}% vs last period"
+            label="💰 Total Revenue",
+            value=format_currency(total_revenue, decimals=0),
+            delta=f"{revenue_growth:+.1f}% vs last period"
+        
             )
         
         with col2:
