@@ -335,9 +335,9 @@ kpis['profit_margin'] = kpis.get('avg_profit_margin', 0)
 kpis['cash_flow_ratio'] = 1.0  # Simplified - actual calculation would use cash flow d        st.markdown("### High-level overview of your business at a glance")
         
     # Time Period Selec
-
-col_filter1, col_filter2, col_filter3 = st.columns([2, 1, 1])
-with col_filter1:
+    
+    col_filter1, col_filter2, col_filter3 = st.columns([2, 1, 1])
+    with col_filter1:
         time_period = st.selectbox(
             "📅 Time Period",
             ["Last 7 Days", "Last 30 Days", "Last 90 Days", "All Time"],
@@ -346,17 +346,16 @@ with col_filter1:
     
     # Filter data based on selection
     if time_period == "Last 7 Days":
-                data_filtered = data.tail(7)
-        elif time_period == "Last 30 Days":
+        data_filtered = data.tail(7)
+    elif time_period == "Last 30 Days":
         data_filtered = data.tail(30)
-        elif time_period == "Last 90 Days":
+    elif time_period == "Last 90 Days":
         data_filtered = data.tail(90)
-        else:
+    else:
         data_filtered = data
     # Recalculate KPIs for filtered period
-        kpis = calculate_kpis(data_filtered)
-st.markdown("---")
-
+    kpis = calculate_kpis(data_filtered)
+    st.markdown("---")
         # ===================================================================================
 370
         # ===================================================================================
