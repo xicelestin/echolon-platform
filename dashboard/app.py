@@ -357,7 +357,6 @@ if st.session_state.current_page == "Dashboard":
     # Recalculate KPIs for filtered period
     kpis = calculate_kpis(data_filtered)
     st.markdown("---")        # ===================================================================================
-370
         # ===================================================================================
         
     # Calculate key metrics
