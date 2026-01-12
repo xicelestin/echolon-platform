@@ -401,8 +401,8 @@ if st.session_state.current_page == "Dashboard":
             delta=f"+{int(total_orders * 0.08)} this period"
         )
     
-    # Second row of KPIs
-col5, col6, col7, col8 = st.columns(4)
+        # Second row of KPIs
+    col5, col6, col7, col8 = st.columns(4)
     
 with col5:
         st.metric(
