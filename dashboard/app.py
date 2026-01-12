@@ -379,8 +379,7 @@ col1, col2, col3, col4 = st.columns(4)
             label="💰 Total Revenue",
             value=format_currency(total_revenue, decimals=0),
             delta=f"{revenue_growth:+.1f}% vs last period"
-        
-            )
+        )
         
         with col2:
             st.metric(
