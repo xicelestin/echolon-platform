@@ -451,31 +451,31 @@ if st.session_state.current_page == "Dashboard":
                 pass  # Placeholder - KPI cards removed
 
             
-st.markdown("---")
+    st.markdown("---")
     
     # ===================================================================================
     # SECTION 3: FORECAST SNAPSHOT
     
-st.subheader("📈 Revenue Forecast")
-st.    caption("Future-facing projection for next 30 days")
+    stt.subheader("📈 Revenue Forecast")
+    st.    caption("Future-facing projection for next 30 days")
     
     # Create forecast visualization
-forecast_col1, forecast_col2 = st.columns([2, 1])
+    forecast_col1, forecast_col2 = st.columns([2, 1])
 
         # Initialize forecast_revenue for later use
-forecast_revenue = 0    
-with forecast_col1:
+    forecast_revenue = 0    
+    with forecast_col1:
         # Mock forecast data
-        try:
-            forecast_df = forecast_revenue(data, days_ahead=30)
+                try:
+                        forecast_df = forecast_revenue(data, days_ahead=30)
             # Simple line chart
-            fig = px.line(forecast_df, x='date', y='revenue', title="Revenue Projection")
-            fig.update_layout(height=250)
-            st.plotly_chart(fig, use_container_width=True)
-            forecast_revenue = forecast_df['revenue'].sum() if forecast_df is not None else 0
-        except Exception as e:
-            st.error(f"❌ Error generating forecast: {str(e)}")    
-st.markdown("---")
+                        fig = px.line(forecast_df, x='date', y='revenue', title="Revenue Projection")
+                        fig.update_layout(height=250)
+                        st.plotly_chart(fig, use_container_width=True)
+                        forecast_revenue = forecast_df['revenue'].sum() if forecast_df is not None else 0
+                except Exception as e:
+                        st.error(f"❌ Error generating forecast: {str(e)}")    
+    st.markdown("---")
 
     
     # ===================================================================================
