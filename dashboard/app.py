@@ -334,6 +334,8 @@ if st.session_state.current_page == "Dashboard":
 kpis['profit_margin'] = kpis.get('avg_profit_margin', 0)
 kpis['cash_flow_ratio'] = 1.0  # Simplified - actual calculation would use cash flow d        st.markdown("### High-level overview of your business at a glance")
         
+    st.markdown("### High-level overview of your business at a glance")
+    
     # Time Period Selec
     
     col_filter1, col_filter2, col_filter3 = st.columns([2, 1, 1])
@@ -355,7 +357,7 @@ kpis['cash_flow_ratio'] = 1.0  # Simplified - actual calculation would use cash 
         data_filtered = data
     # Recalculate KPIs for filtered period
     kpis = calculate_kpis(data_filtered)
-    st.markdown("---")
+    st.markdown("---")    st.markdown("---")
         # ===================================================================================
 370
         # ===================================================================================
