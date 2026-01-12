@@ -14,7 +14,7 @@ from utils import calculate_business_health_score, calculate_period_comparison
 from utils.metrics_utils import forecast_revenue
 from components import display_business_health_score
 from components import display_metric_with_comparison
-from components import display_key_metrics_gri
+from components import display_key_metrics_grid
 from pages_margin_analysis import render_margin_analysis_page
 from pages_smart_alerts import render_smart_alerts_page
 from pages_cohort_analysis import render_cohort_analysis_page
