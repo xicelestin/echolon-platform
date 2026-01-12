@@ -360,44 +360,44 @@ if st.session_state.current_page == "Dashboard":
 370
         # ===================================================================================
         
-        # Calculate key metrics
-total_revenue = kpis.get('total_revenue', 0)
-revenue_per_day = total_revenue / 90 if total_revenue > 0 else 0
-revenue_growth = kpis.get('revenue_growth', 0)
-profit_margin = kpis.get('avg_profit_margin', 0)
-total_customers = int(kpis.get('total_customers', 0))
-total_orders = int(kpis.get('total_orders', 0))
-
-# Forecast revenue (mock: 5% growth)
-forecast_revenue = total_revenue * 1.05
-        
-        # Create 4 KPI columns
-col1, col2, col3, col4 = st.columns(4)
-
+    # Calculate key metrics
+    total_revenue = kpis.get('total_revenue', 0)
+    revenue_per_day = total_revenue / 90 if total_revenue > 0 else 0
+    revenue_growth = kpis.get('revenue_growth', 0)
+    profit_margin = kpis.get('avg_profit_margin', 0)
+    total_customers = int(kpis.get('total_customers', 0))
+    total_orders = int(kpis.get('total_orders', 0))
+    
+    # Forecast revenue (mock: 5% growth)
+    forecast_revenue = total_revenue * 1.05
+    
+    # Create 4 KPI columns
+    col1, col2, col3, col4 = st.columns(4)
+    
     with col1:
         st.metric(
             label="💰 Total Revenue",
             value=format_currency(total_revenue, decimals=0),
             delta=f"{revenue_growth:+.1f}% vs last period"
         )
-        
-        with col2:
-            st.metric(
-                label="📈 Profit Margin",
-                value=f"{profit_margin:.1f}%",
-                delta="+2.1% vs last month"
-            )
-        
-        with col3:
-            st.metric(
-                label="👥 Active Customers",
+    
+    with col2:
+        st.metric(
+            label="📈 Profit Margin",
+            value=f"{profit_margin:.1f}%",
+            delta="+2.1% vs last month"
+        )
+    
+    with col3:
+        st.metric(
+            label="👥 Active Customers",
             value=f"{total_customers:,}",
             delta=f"+{int(total_customers * 0.05)} this period"
         )
     
 with col4:
         st.metric(
-            label="🎯 Total Orders",
+            lalabel="🎯 Total Orders",
             value=f"{total_orders:,}",
             delta=f"+{int(total_orders * 0.08)} this period"
         )
