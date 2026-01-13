@@ -337,8 +337,6 @@ if st.session_state.current_page == "Dashboard":
     st.subheader("📋 Executive Summary")
     summary_col1, summary_col2, summary_col3 = st.columns(3)
         
-602
-:602
                 # Alerts & Notifications Section
     st.markdown("---")
     alert_col1, alert_col2 = st.columns([2, 1])
