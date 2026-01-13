@@ -291,24 +291,28 @@ with col3:
     # Second row of KPIs
 col5, col6, col7, col8 = st.columns(4)
 with col5:
-        label="📊 Avg Daily Revenue",
+st.metric(        label="📊 Avg Daily Revenue",
         value=format_currency(revenue_per_day, decimals=0),
         delta="+5.2% vs yesterday"
+              )
 with col6:
     avg_order_value = kpis.get('avg_order_value', 0)
-        label="💳 Avg Order Value",
+st.metric(        label="💳 Avg Order Value",
         value=format_currency(avg_order_value, decimals=2),
         delta="+3.1% vs last period"
 with col7:
-        label="🔮 Forecast (30d)",
+        )
+st.metric(        label="🔮 Forecast (30d)",
         value=format_currency(projected_revenue_value / 3, decimals=0),
         delta="+5.0% projected"
 with col8:
+        )
     # Inventory risk indicator (mock for now)
-        label="📦 Inventory Health",
+st.metric(        label="📦 Inventory Health",
         value="Good",
         delta="2 items low stock"
 # ===================================================================================
+              )
 # SECTION 2: BUSINESS HEALTH SIGNAL
 # Business Health Score
 st.subheader("📊 Business Health Score")
