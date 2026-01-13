@@ -338,30 +338,30 @@ if st.session_state.current_page == "Dashboard":
     summary_col1, summary_col2, summary_col3 = st.columns(3)
         
 with summary_col1:
-        st.metric(
-            label="📊 Overall Health",
-            value="Good",
-            delta="Stable",
-            help="Based on revenue, profitability, and customer metrics"
-        )
-    
-    with summary_col2:
-        revenue_growth_pct = kpis.get('revenue_growth', 0)
-        st.metric(
-            label="🎯 Key Focus",
-            value="Revenue Growth",
-            delta=f"+{revenue_growth_pct}%" if revenue_growth_pct >= 0 else f"{revenue_growth_pct}%",
-            help="Primary area requiring attention"
-        )
-    
-    with summary_col3:
-        st.metric(
-            label="⚡ Action Required",
-            value="Monitor",
-            delta="2 alerts",
-            delta_color="inverse",
-            help="Items needing immediate attention"
-        )
+    st.metric(
+        label="📊 Overall Health",
+        value="Good",
+        delta="Stable",
+        help="Based on revenue, profitability, and customer metrics"
+    )
+
+with summary_col2:
+    revenue_growth_pct = kpis.get('revenue_growth', 0)
+    st.metric(
+        label="🎯 Key Focus",
+        value="Revenue Growth",
+        delta=f"+{revenue_growth_pct}%" if revenue_growth_pct >= 0 else f"{revenue_growth_pct}%",
+        help="Primary area requiring attention"
+    )
+
+with summary_col3:
+    st.metric(
+        label="⚡ Action Required",
+        value="Monitor",
+        delta="2 alerts",
+        delta_color="inverse",
+        help="Items needing immediate attention"
+    )
 
                 # Alerts & Notifications Section
     st.markdown("---")
