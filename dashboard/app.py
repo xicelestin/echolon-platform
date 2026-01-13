@@ -322,7 +322,7 @@ st.subheader("📊 Business Health Score")
 health_score_dict = calculate_business_health_score(kpis)
 display_business_health_score(health_score_dict)
 # KPI Cards
-            pass  # Placeholder - KPI cards removed
+        pass  # Placeholder - KPI cards removed
 st.markdown("---")
 # SECTION 3: FORECAST SNAPSHOT
 st.subheader("📈 Revenue Forecast")
