@@ -274,11 +274,13 @@ with col2:
     st.metric(        label="📈 Profit Margin",
         value=f"{profit_margin:.1f}%",
         delta="+2.1% vs last month"
+                  )
 with col3:
         )
     st.metric(        label="👥 Active Customers",
         value=f"{total_customers:,}",
         delta=f"+{int(total_customers * 0.05)} this period"
+                  )
     with col4:
             )
             st.metric(
