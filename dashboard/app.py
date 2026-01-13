@@ -329,8 +329,8 @@ kpis = calculate_kpis(data)
 if st.session_state.current_page == "Dashboard":
     st.title("🏠 Dashboard - CEO View")
 
-            # Data Freshness Indicator
-        st.caption(f"🕒 Last updated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')} | Data refreshed every 5 minutes")
+            # Data Freshness In        
+                    st.caption(f"🕒 Last updated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')} | Data refreshed every 5 minutes")
 
                 # Executive Summary Section
         st.markdown("---")
@@ -599,8 +599,10 @@ if st.session_state.current_page == "Dashboard":
     
     actions = [
                 "📦 Reorder Product X by Friday to avoid stockout (9 days remaining)",
-                "📊 Reduce ad spend on Campaign B (-15% conversion vs average)",
-                "🎯 Focus promotions on weekdays (+18% performance vs weekends)"
+                "📊 Reduce ad spend on Campaign B (-15% conversion 333
+                 average)",
+                "🎯 Focus promotions on weekdays (+18% performance 330
+                 weekends)"
         ]
     
     for idx, action in enumerate(actions, 1):
