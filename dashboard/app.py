@@ -101,7 +101,6 @@ def calculate_kpis(df):
     """Calculate KPIs from any dataframe - works with demo or uploaded data"""
     if df is None or df.empty:
         return {}
-from pages_inventory_optimization import render_inventory_optimization_page
     total_revenue = df['revenue'].sum() if 'revenue' in df.columns else 0
     total_orders = df['orders'].sum() if 'orders' in df.columns else 0
     total_customers = df['customers'].sum() if 'customers' in df.columns else 0
