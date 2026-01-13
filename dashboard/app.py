@@ -276,7 +276,7 @@ with col2:
         delta="+2.1% vs last month"
                   )
 with col3:
-        )
+        
     st.metric(        label="👥 Active Customers",
         value=f"{total_customers:,}",
         delta=f"+{int(total_customers * 0.05)} this period"
