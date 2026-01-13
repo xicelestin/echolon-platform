@@ -337,32 +337,8 @@ if st.session_state.current_page == "Dashboard":
     st.subheader("📋 Executive Summary")
     summary_col1, summary_col2, summary_col3 = st.columns(3)
         
-with summary_col1:
-    st.metric(
-        label="📊 Overall Health",
-        value="Good",
-        delta="Stable",
-        help="Based on revenue, profitability, and customer metrics"
-    )
-
-with summary_col2:
-    revenue_growth_pct = kpis.get('revenue_growth', 0)
-    st.metric(
-        label="🎯 Key Focus",
-        value="Revenue Growth",
-        delta=f"+{revenue_growth_pct}%" if revenue_growth_pct >= 0 else f"{revenue_growth_pct}%",
-        help="Primary area requiring attention"
-    )
-
-with summary_col3:
-    st.metric(
-        label="⚡ Action Required",
-        value="Monitor",
-        delta="2 alerts",
-        delta_color="inverse",
-        help="Items needing immediate attention"
-    )
-
+602
+:602
                 # Alerts & Notifications Section
     st.markdown("---")
     alert_col1, alert_col2 = st.columns([2, 1])
@@ -599,7 +575,7 @@ st.caption("AI-powered suggestions to improve your business")
 
 actions = [
             "📦 Reorder Product X by Friday to avoid stockout (9 days remaining)",
-        "📊 Reduce ad spend on Campaign B (-15% conversion vs average)",             average)",
+        "📊 Reduce ad spend on Campaign B (-15% conversion vs average)",             
                 "🎯 Focus promotions on weekdays (+18% performance vs weekends)"
     ]
 
