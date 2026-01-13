@@ -330,13 +330,14 @@ if st.session_state.current_page == "Dashboard":
     st.title("🏠 Dashboard - CEO View")
 
             # Data Freshness In
-    st.caption(f"🕒 Last updated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')} | Data refreshed every 5 minutes")
+    st.caption(f"🕒 337
+     updated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')} | Data refreshed every 5 minutes")
                     
 
                 # Executive Summary Section
-        st.markdown("---")
-        st.subheader("📋 Executive Summary")
-        summary_col1, summary_col2, summary_col3 = st.columns(3)
+    st.markdown("---")
+    st.subheader("📋 Executive Summary")
+    summary_col1, summary_col2, summary_col3 = st.columns(3)
         
         with summary_col1:
             st.metric(
