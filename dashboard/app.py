@@ -301,18 +301,18 @@ with col6:
         value=format_currency(avg_order_value, decimals=2),
         delta="+3.1% vs last period"
 with col7:
-        )
+
     st.metric(        label="🔮 Forecast (30d)",
         value=format_currency(projected_revenue_value / 3, decimals=0),
         delta="+5.0% projected"
 with col8:
-        )
+
     # Inventory risk indicator (mock for now)
     st.metric(        label="📦 Inventory Health",
         value="Good",
         delta="2 items low stock"
 # ===================================================================================
-              )
+              
 # SECTION 2: BUSINESS HEALTH SIGNAL
 # Business Health Score
 st.subheader("📊 Business Health Score")
