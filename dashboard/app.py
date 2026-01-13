@@ -228,6 +228,7 @@ if st.session_state.current_page == "Dashboard":
         if st.button("📧 Email Summary", use_container_width=True):
             st.toast("Email feature coming soon!")
         if st.button("🔄 Refresh Data", use_container_width=True):
+                    st.rerun()
 # Fix key naming for business health score calculation
 kpis['profit_margin'] = kpis.get('avg_profit_margin', 0)
 kpis['cash_flow_ratio'] = 1.0  # Simplified - actual calculation would use cash flow data
