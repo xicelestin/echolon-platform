@@ -329,8 +329,8 @@ kpis = calculate_kpis(data)
 if st.session_state.current_page == "Dashboard":
     st.title("🏠 Dashboard - CEO View")
 
-            # Data Freshness In        
-            st.caption(f"🕒 Last updated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')} | Data refreshed every 5 minutes")
+            # Data Freshness In
+    st.caption(f"🕒 Last updated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')} | Data refreshed every 5 minutes")
                     
 
                 # Executive Summary Section
