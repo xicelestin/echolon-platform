@@ -287,6 +287,7 @@ with col3:
         label="🎯 Total Orders",
         value=f"{total_orders:,}",
         delta=f"+{int(total_orders * 0.08)} this period"
+                    )
     # Second row of KPIs
 col5, col6, col7, col8 = st.columns(4)
 with col5:
