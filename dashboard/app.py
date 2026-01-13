@@ -368,7 +368,7 @@ if st.session_state.current_page == "Dashboard":
     total_orders = int(kpis.get('total_orders', 0))
     
     # Forecast revenue (mock: 5% growth)
-    forecast_revenue = total_revenue * 1.05
+    projected_revenue_value = total_revenue * 1.05
     
     # Create 4 KPI columns
     col1, col2, col3, col4 = st.columns(4)
@@ -422,7 +422,7 @@ if st.session_state.current_page == "Dashboard":
     with col7:
         st.metric(
             label="🔮 Forecast (30d)",
-            value=format_currency(forecast_revenue / 3, decimals=0),
+            value=format_currency(projected_revenue_value / 3, decimals=0),
             delta="+5.0% projected"
         )
     
@@ -472,7 +472,7 @@ if st.session_state.current_page == "Dashboard":
                         fig = px.line(forecast_df, x='date', y='revenue', title="Revenue Projection")
                         fig.update_layout(height=250)
                         st.plotly_chart(fig, use_container_width=True)
-                        forecast_revenue = forecast_df['revenue'].sum() if forecast_df is not None else 0
+                        projected_revenue_value = forecast_df['revenue'].sum() if forecast_df is not None else 0
                 except Exception as e:
                         st.error(f"❌ Error generating forecast: {str(e)}")    
     st.markdown("---")
