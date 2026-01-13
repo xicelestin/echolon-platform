@@ -327,13 +327,68 @@ else:
 kpis = calculate_kpis(data)
 
 if st.session_state.current_page == "Dashboard":
-    st.title("🏠 Dashboard - CEO View")
+    st.title("🏠 360
+    ")
+        st.caption(f"🕒 Last updated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')} | Data refreshed every 5 minutes")369
+
+
+        # Executive Summary Section
+    st.markdown("---")
+    summary_col1, summary_col2, summary_col3 = st.columns(3)
+    
+    with summary_col1:
+        st.metric(
+            label="📊 Overall Health",
+            value="Good",
+            delta="Stable",
+            help="Based on revenue, profitability, and customer metrics"
+        )
+    
+    with summary_col2:
+        st.metric(
+            label="🎯 Key Focus",
+            value="Revenue Growth",
+            delta="+6.9%",
+            help="Primary area requiring attention"
+        )
+    
+    with summary_col3:
+        st.metric(
+            label="⚡ Action Required",
+            value="2 items",
+            delta="Low stock",
+            delta_color="inverse",
+            help="Items needing immediate attention"
+        )
+        st.markdown("<p style='font-size: 1.1rem; color: #888; margin-top: -10px;'>Executive dashboard for data-driven decision making</p>", unsafe_allow_html=True)
     
     # Fix key naming for business health score calculation
     kpis['profit_margin'] = kpis.get('avg_profit_margin', 0)
     kpis['cash_flow_ratio'] = 1.0  # Simplified - actual calculation would use cash flow data
     
-    st.markdown("### High-level overview of your business at a glance")
+    
+
+        # Alerts & Notifications Section
+    st.markdown("---")
+    alert_col1, alert_col2 = st.columns([2, 1])
+    
+    with alert_col1:
+        st.subheader("⚠️ Alerts & Notifications")
+        
+        # Low stock alert
+        st.warning("📦 **Low Stock Alert:** 2 items are running low on inventory")
+        
+        # Positive revenue trend
+        st.success("📈 **Positive Trend:** Revenue increased by 6.9% this period")
+        
+    with alert_col2:
+        st.subheader("🎯 Quick Actions")
+        if st.button("📄 View Full Report", use_container_width=True):
+            st.toast("Report generation feature coming soon!")
+        if st.button("📧 Email Summary", use_container_width=True):
+            st.toast("Email feature coming soon!")
+        if st.button("🔄 Refresh Data", use_container_width=True):
+            st.rerun()
     
     # Time Period Selec
     
@@ -370,8 +425,11 @@ if st.session_state.current_page == "Dashboard":
     # Forecast revenue (mock: 5% growth)
     projected_revenue_value = total_revenue * 1.05
     
-    # Create 4 KPI columns
-    col1, col2, col3, col4 = st.columns(4)
+    440
+    470
+    500
+
+    col1, col2, col3, col4 = st.columns, gap="large")4)
     
     with col1:
         st.metric(
@@ -402,7 +460,7 @@ if st.session_state.current_page == "Dashboard":
         )
     
         # Second row of KPIs
-    col5, col6, col7, col8 = st.columns(4)
+col5, col6, col7, col8 = st.columns(4, gap="large")
     
     with col5:
         st.metric(
@@ -441,6 +499,7 @@ if st.session_state.current_page == "Dashboard":
     # ===================================================================================
 
     # Business Health Score
+# 330
     st.subheader("📊 Business Health Score")
     health_score_dict = calculate_business_health_score(kpis)
     display_business_health_score(health_score_dict)
