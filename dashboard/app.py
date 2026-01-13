@@ -269,6 +269,7 @@ with col1:
         label="💰 Total Revenue",
         value=format_currency(total_revenue, decimals=0),
         delta=f"{revenue_growth:+.1f}% vs last period"
+            )
 with col2:
         label="📈 Profit Margin",
         value=f"{profit_margin:.1f}%",
