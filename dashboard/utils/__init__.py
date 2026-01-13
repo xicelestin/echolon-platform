@@ -5,12 +5,12 @@ Echolon AI Dashboard - Utilities Package
 Provides utility functions and classes for the dashboard.
 """
 
-from .data_validation import (
-    DataValidator,
-    validate_dashboard_data,
-    get_validated_data,
-    safe_divide
-)
+# from .data_validation import (
+    #     DataValidator,
+    #     validate_dashboard_data,
+    #     get_validated_data,
+    #     safe_divide
+# )
 
 from .export_utils import (
     create_download_button,
@@ -33,10 +33,10 @@ from .metrics_utils import (
 )
 
 __all__ = [
-    'DataValidator',
-    'validate_dashboard_data',
-    'get_validated_data',
-    'safe_divide'
+#         'DataValidator',
+    #     'validate_dashboard_data',
+    #     'get_validated_data',
+    #     'safe_divide'
         # Export utilities
     'create_download_button',
     'create_multi_format_export',
