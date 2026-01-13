@@ -327,12 +327,7 @@ else:
 kpis = calculate_kpis(data)
 
 if st.session_state.current_page == "Dashboard":
-    st.title("🏠 360
-    ")
-        st.caption(f"🕒 Last updated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')} | Data refreshed every 5 minutes")369
-
-
-        # Executive Summary Section
+        st.title("🏠 Dashboard - CEO View")        # Executive Summary Section
     st.markdown("---")
     summary_col1, summary_col2, summary_col3 = st.columns(3)
     
