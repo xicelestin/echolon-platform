@@ -418,7 +418,7 @@ with col3:
 st.subheader("👥 Customer Analytics")
 col1, col2 = st.columns(2)
     customer_chart = px.line(data, x='date', y='customers', title='Active Customers Trend')
-        customer_chart.update_traces(line_color=COLORS['success'])
+    customer_chart.update_traces(line_color=COLORS['success'])
     st.plotly_chart(customer_chart, use_container_width=True)
     orders_chart = px.bar(data.tail(30), x='date', y='orders', title='Daily Orders (Last 30 Days)')
     orders_chart.update_traces(marker_color=COLORS['warning'])
