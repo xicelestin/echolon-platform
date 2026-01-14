@@ -443,8 +443,7 @@ with perf_col3:
 with perf_col4:
     st.metric("Profit Margin", f"{kpis['avg_profit_margin']:.1f}%", "+2.3%")
 # ==================== PAGE: Predictions ====================
-elif st.session_state.current_page == "Predictions":
-    st.title("🔮 Predictions")
+if st.session_state.current_page == "Predictions":    st.title("🔮 Predictions")
 # Predictions Page with AI-powered forecasting
 st.title("🔮 Predictions & Forecasting")
 st.markdown("### AI-powered revenue and business forecasts")
