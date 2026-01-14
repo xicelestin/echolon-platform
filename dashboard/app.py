@@ -358,11 +358,13 @@ insights = [
                     "title": "Weekend Performance",
                     "description": "Weekday sales outperform weekends by 18%.",
                     "action": "Focus promotions on weekdays"
+                        },
                         {
                     "icon": "💰",
                     "title": "Margin Opportunity",
                     "description": "Premium products have 35% higher margins but represent only 12% of sales.",
                     "action": "Increase premium product visibility"
+                            }
     ]
 for idx, insight in enumerate(insights, 1):
             with st.container():
