@@ -392,11 +392,12 @@ st.markdown("---")  # SECTION 6: DATA FRESHNESS & STATUS
 current_time = datetime.now().strftime("%I:%M %p")
 st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
 # ==================== PAGE: Analytics ====================
-395
+    if st.session_state.current_page == "Analytics":
+st.title("📊 Analytics")
+    
 
-    st.title("📊 Analytics")
 # Analytics Page with comprehensive charts and metrics
-st.title("📊 Analytics - Deep Dive")
+itle("📊 Analytics - Deep Dive")
 st.markdown("### Comprehensive business metrics and trends analysis")
 # Time range selector
 col1, col2 = st.columns([3, 1])
