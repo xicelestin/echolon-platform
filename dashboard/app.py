@@ -445,7 +445,7 @@ with perf_col4:
 # ==================== PAGE: Predictions ====================
 if st.session_state.current_page == "Predictions":
         st.title("🔮 Predictions & Forecasting")
-    st.markdown("### AI-powered revenue and business forecasts")# Forecast Period Selector
+        st.markdown("### AI-powered revenue and business forecasts")# Forecast Period Selector
 col1, col2, col3 = st.columns([2, 1, 1])
 forecast_days = st.slider("📅 Forecast Period (Days)", 7, 90, 30)
 confidence_level = st.selectbox("Confidence Level", ["80%", "90%", "95%"], index=1)
