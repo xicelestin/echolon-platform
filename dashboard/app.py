@@ -352,11 +352,13 @@ insights = [
                     "description": "Product X will run out in 9 days at current sales pace.",
                     "action": "Reorder now to avoid stockout"
             },
+            {
                     "priority": "medium",
                     "icon": "📈",
                     "title": "Weekend Performance",
                     "description": "Weekday sales outperform weekends by 18%.",
                     "action": "Focus promotions on weekdays"
+                        {
                     "icon": "💰",
                     "title": "Margin Opportunity",
                     "description": "Premium products have 35% higher margins but represent only 12% of sales.",
