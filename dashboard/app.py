@@ -503,11 +503,11 @@ try:
     st.warning("📉 **Market Volatility**: External factors may impact predictions by ±10%")
     st.info("📋 **Seasonality**: Historical patterns suggest Q4 typically sees 20% increase")
     st.success("✅ **Accuracy**: Model has 87% accuracy based on historical validation")
-except Exception as e:
-    st.error(f"❌ Error generating forecast: {str(e)}")
-    st.info("🔧 Using simplified prediction model...")
-    # Fallback simple prediction
-    st.metric("30-Day Revenue Forecast", format_currency(kpis['total_revenue'] * 1.05), "+5.0% projected")
+    except Exception as e:
+        st.error(f"❌ Error generating forecast: {str(e)}")
+        st.info("🔧 Using simplified prediction model...")
+        # Fallback simple prediction
+        st.metric("30-Day Revenue Forecast", format_currency(kpis['total_revenue'] * 1.05), "+5.0% projected")
 
 # ==================== PAGE: Recommendations ====================
 elif st.session_state.current_page == "Recommendations":
