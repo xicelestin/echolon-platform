@@ -509,7 +509,7 @@ except Exception as e:
     # Fallback simple prediction
     st.metric("30-Day Revenue Forecast", format_currency(kpis['total_revenue'] * 1.05), "+5.0% projected")
 # ==================== PAGE: Recommendations ====================
-elif st.session_state.current_page == "Recommendations"
+elif st.session_state.current_page == "Recommendations":
     st.title("💡 Recommendations")
     # Recommendations Page with AI-generated insights
 st.title("💡 Smart Recommendations")
