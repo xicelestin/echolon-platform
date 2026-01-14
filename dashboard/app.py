@@ -508,17 +508,17 @@ except Exception as e:
     st.info("🔧 Using simplified prediction model...")
     # Fallback simple prediction
     st.metric("30-Day Revenue Forecast", format_currency(kpis['total_revenue'] * 1.05), "+5.0% projected")
+
 # ==================== PAGE: Recommendations ====================
 elif st.session_state.current_page == "Recommendations":
     st.title("💡 Recommendations")
     # Recommendations Page with AI-generated insights
-st.title("💡 Smart Recommendations")
-st.markdown("### AI-generated actionable business recommendations")
-# Priority Filter
-priority_filter = st.multiselect(
-    "🎯 Filter by Priority",
-    ["Critical", "High", "Medium", "Low"],
-    default=["Critical", "High", "Medium"]
+    st.title("💡 Smart Recommendations")
+    st.markdown("### AI-generated actionable business recommendations")
+    # Priority Filter
+    priority_filter = st.multiselect(
+        "🎯 Filter by Priority",
+        ["Critical", "High", "Medium", "Low"],    default=["Critical", "High", "Medium"]
 # Generate smart recommendations based on data
 recommendations = []
 # Revenue optimization
