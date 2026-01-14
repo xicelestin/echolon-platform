@@ -1,0 +1,16 @@
+# Development and Testing Requirements
+# Include backend requirements
+-r backend/requirements.txt
+
+# Development tools
+pylint>=2.17.0
+black>=23.0.0
+mypy>=1.0.0
+
+# Testing
+pytest>=7.3.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.0.0
+
+# Dashboard requirements
+streamlit>=1.28.0
