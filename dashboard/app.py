@@ -397,7 +397,6 @@ if st.session_state.current_page == "Analytics":
     
 
 # Analytics Page with comprehensive charts and metrics
-    st.title("📊 Analytics - Deep Dive")
 st.markdown("### Comprehensive business metrics and trends analysis")
 # Time range selector
 col1, col2 = st.columns([3, 1])
