@@ -398,7 +398,7 @@ if st.session_state.current_page == "Analytics":
 st.title("📊 Analytics - Deep Dive")
 st.markdown("### Comprehensive business metrics and trends analysis")
 # Time range selector
-        , col2 = st.columns([3, 1])
+        col1, col2 = st.columns([3, 1])
     time_range = st.selectbox("📅 Analysis Period", ["Last 7 Days", "Last 30 Days", "Last 90 Days", "Last Year", "All Time"], index=2)
 # Revenue Trend Chart
 st.subheader("💰 Revenue Trend Analysis")
