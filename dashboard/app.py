@@ -397,7 +397,7 @@ st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | S
     
 
 # Analytics Page with comprehensive charts and metrics
-st.title("📊 Analytics - Deep Dive")
+    st.title("📊 Analytics - Deep Dive")
 st.markdown("### Comprehensive business metrics and trends analysis")
 # Time range selector
 col1, col2 = st.columns([3, 1])
