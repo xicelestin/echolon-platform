@@ -399,7 +399,7 @@ st.title("📊 Analytics - Deep Dive")
 st.markdown("### Comprehensive business metrics and trends analysis")
 # Time range selector
 col1, col2 = st.columns([3, 1])
-    time_range = st.selectbox("📅 Analysis Period", ["Last 7 Days", "Last 30 Days", "Last 90 Days", "Last Year", "All Time"], index=2)
+time_range = st.selectbox("📅 Analysis Period", ["Last 7 Days", "Last 30 Days", "Last 90 Days", "Last Year", "All Time"], index=2)
 # Revenue Trend Chart
 st.subheader("💰 Revenue Trend Analysis")
 revenue_chart = px.line(data, x='date', y='revenue', title='Daily Revenue Over Time')
