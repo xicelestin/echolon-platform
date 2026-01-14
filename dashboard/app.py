@@ -392,7 +392,8 @@ st.markdown("---")  # SECTION 6: DATA FRESHNESS & STATUS
 current_time = datetime.now().strftime("%I:%M %p")
 st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
 # ==================== PAGE: Analytics ====================
-if st.session_state.current_page == "Analytics":
+395
+
     st.title("📊 Analytics")
 # Analytics Page with comprehensive charts and metrics
 st.title("📊 Analytics - Deep Dive")
@@ -408,10 +409,12 @@ revenue_chart.update_layout(height=400)
 st.plotly_chart(revenue_chart, use_container_width=True)
 # Three column metrics
 col1, col2, col3 = st.columns(3)
+with col1:
     st.metric("Total Revenue", format_currency(kpis['total_revenue']), f"+{kpis['revenue_growth']:.1f}%")
+with col2:
     st.metric("Avg Daily Revenue", format_currency(kpis['total_revenue']/90))
-    st.metric("Revenue Growth", f"{kpis['revenue_growth']:.1f}%")
-# Customer Analytics
+with col3:
+    st.metric("Revenue Growth", f"{kpis['revenue_growth']:.1f}%")# Customer Analytics
 st.subheader("👥 Customer Analytics")
 col1, col2 = st.columns(2)
     customer_chart = px.line(data, x='date', y='customers', title='Active Customers Trend')
