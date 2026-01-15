@@ -452,7 +452,8 @@ confidence_level = st.selectbox("Confidence Level", ["80%", "90%", "95%"], index
 model_type = st.selectbox("Model", ["Linear", "Advanced"], index=0)
         # Generate forecast
         try:
-            forecast_df = forecast_revenue(data, days_ahead=forecast_days)# Revenue Forecast Chart     st.subheader
+                        forecast_df = forecast_revenue(data, days_ahead=forecast_days)
+
             # Combine historical and forecast data
             combined_data = pd.concat([
                 data[['date', 'revenue']].tail(30),
