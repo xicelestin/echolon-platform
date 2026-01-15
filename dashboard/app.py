@@ -97,10 +97,13 @@ def generate_demo_data():
     data['avg_order_value'] = (data['revenue'] / data['orders']).round(2)
     return data
 # ==================== HELPER FUNCTIONS ====================
-def calculate_kpis(df):
+130
+(df):
     """Calculate KPIs from any dataframe - works with demo or uploaded data"""
     if df is None or df.empty:
         return {}
+
+
     total_revenue = df['revenue'].sum() if 'revenue' in df.columns else 0
     total_orders = df['orders'].sum() if 'orders' in df.columns else 0
     total_customers = df['customers'].sum() if 'customers' in df.columns else 0
@@ -385,7 +388,15 @@ st.caption("AI-powered suggestions to improve your business")
 actions = [
             "📦 Reorder Product X by Friday to avoid stockout (9 days remaining)",
         "📊 Reduce ad spend on Campaign B (-15% conversion vs average)",             
+<<<<<<< HEAD
+                "🎯 Focus promotions on weekdays (+18% performance vs weekends)"
+    ]665
+    664
+    
+
+=======
                 "🎯 Focus promotions on weekdays (+18% performance vs weekends)"]
+>>>>>>> 70f369da8226290be46891d3d093642b9b00ef66
 for idx, action in enumerate(actions, 1):
             st.info(f"**Action {idx}:** {action}")
 st.markdown("---")  # SECTION 6: DATA FRESHNESS & STATUS
