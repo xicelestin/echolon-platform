@@ -373,11 +373,11 @@ for idx, insight in enumerate(insights, 1):
             with st.container():
                     col_insight1, col_insight2 = st.columns([4, 1])
                     with col_insight1:
-                    if insight.get("priority") == "high":
+                        if insight.get("priority") == "high":
                 priority_color = "red"
-                    elif insight.get("priority") == "medium":
+                        elif insight.get("priority") == "medium":
                 priority_color = "orange"
-                    else:
+                        else:
                 priority_color = "green"                    
     with col_insight2:
                             if st.button("👁️ View", key=f"insight_{idx}"):
