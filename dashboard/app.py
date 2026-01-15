@@ -451,17 +451,17 @@ if st.session_state.current_page == "Predictions":
     confidence_level = st.selectbox("Confidence Level", ["80%", "90%", "95%"], index=1)
         model_type = st.selectbox("Model", ["Linear", "Advanced"], index=0)
         # Generate forecast
-    try:
-        forecast_df = forecast_revenue(data, days_ahead=forecast_days)
-            # Combine historical and forecast data
-            combined_data = pd.concat([
-                data[['date', 'revenue']].tail(30),
-                forecast_df
-            ])
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(x=data['date'].tail(30), y=data['revenue'].tail(30),
-                                    name='Historical', line=dict(color=COLORS['primary'], width=2)))
-            fig.add_trace(go.Scatter(x=forecast_df['date'], y=forecast_df['revenue'],
+        try:
+            forecast_df = forecast_revenue(data, days_ahead=forecast_days)
+                # Combine historical and forecast data
+                combined_data = pd.concat([
+                    data[['date', 'revenue']].tail(30),
+                    forecast_df
+                ])
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(x=data['date'].tail(30), y=data['revenue'].tail(30),
+                                        name='Historical', line=dict(color=COLORS['primary'], width=2)))
+                fig.add_trace(go.Scatter(x=forecast_df['date'], y=forecast_df['revenue'],
                                     name='Forecast', line=dict(color=COLORS['success'], width=2, dash='dash')))
             fig.update_layout(title='Revenue Forecast', height=400, xaxis_title='Date', yaxis_title='Revenue ($)')
             st.plotly_chart(fig, use_container_width=True)
@@ -471,35 +471,35 @@ if st.session_state.current_page == "Predictions":
             forecast_total = forecast_df['revenue'].sum()    with col1:
         st.metric("📊 Forecasted Revenue", format_currency(forecast_total))
     with col2:
-        st.metric("💵 Avg Daily Forecast", format_currency(forecast_avg))
-    with col3:
-        st.metric("📈 Expected Growth", f"{forecast_growth:+.1f}%")
-        st.metric("🎯 Confidence", confidence_level)
-    # Additional Predictions
-    st.subheader("🔍 Key Business Predictions")
-    pred_col1, pred_col2 = st.columns(2)
+            st.metric("💵 Avg Daily Forecast", format_currency(forecast_avg))
+        with col3:
+            st.metric("📈 Expected Growth", f"{forecast_growth:+.1f}%")
+            st.metric("🎯 Confidence", confidence_level)
+            # Additional Predictions
+        st.subheader("🔍 Key Business Predictions")
+        pred_col1, pred_col2 = st.columns(2)
     with pred_col1:
-        st.info("👥 **Customer Growth Prediction**")
+            st.info("👥 **Customer Growth Prediction**")
         predicted_customers = int(kpis['total_customers'] * 1.15)
-        st.metric("Expected Customers (30d)", f"{predicted_customers:,}", "+15%")
-        st.info("💳 **Average Order Value Trend**")
-        predicted_aov = kpis['avg_order_value'] * 1.08
+            st.metric("Expected Customers (30d)", f"{predicted_customers:,}", "+15%")
+            st.info("💳 **Average Order Value Trend**")
+            predicted_aov = kpis['avg_order_value'] * 1.08
         st.metric("Predicted AOV", format_currency(predicted_aov), "+8%")
-    with pred_col2:
-        st.info("📦 **Order Volume Forecast**")
-        predicted_orders = int(kpis['total_orders'] * 1.12)
-        st.metric("Expected Orders (30d)", f"{predicted_orders:,}", "+12%")
-        st.info("📊 **Profit Margin Outlook**")
-        predicted_margin = kpis['avg_profit_margin'] * 1.05
-        st.metric("Predicted Margin", f"{predicted_margin:.1f}%", "+5%")
-    # Risk Factors
-    st.subheader("⚠️ Risk Factors & Considerations")
-    st.warning("📉 **Market Volatility**: External factors may impact predictions by ±10%")
-    st.info("📋 **Seasonality**: Historical patterns suggest Q4 typically sees 20% increase")
-    st.success("✅ **Accuracy**: Model has 87% accuracy based on historical validation")
-            except Exception as e:
-        st.error(f"❌ Error generating forecast: {str(e)}")
-        st.info("🔧 Using simplified prediction model...")
+        with pred_col2:
+            st.info("📦 **Order Volume Forecast**")
+            predicted_orders = int(kpis['total_orders'] * 1.12)
+            st.metric("Expected Orders (30d)", f"{predicted_orders:,}", "+12%")
+            st.info("📊 **Profit Margin Outlook**")
+            predicted_margin = kpis['avg_profit_margin'] * 1.05
+            st.metric("Predicted Margin", f"{predicted_margin:.1f}%", "+5%")
+        # Risk Factors
+        st.subheader("⚠️ Risk Factors & Considerations")
+        st.warning("📉 **Market Volatility**: External factors may impact predictions by ±10%")
+        st.info("📋 **Seasonality**: Historical patterns suggest Q4 typically sees 20% increase")
+        st.success("✅ **Accuracy**: Model has 87% accuracy based on historical validation")
+                except Exception as e:
+            st.error(f"❌ Error generating forecast: {str(e)}")
+            st.info("🔧 Using simplified prediction model...")
         # Fallback simple prediction
         st.metric("30-Day Revenue Forecast", format_currency(kpis['total_revenue'] * 1.05), "+5.0% projected")
 
