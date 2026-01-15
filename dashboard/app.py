@@ -477,7 +477,8 @@ if st.session_state.current_page == "Predictions":
             
             # Forecast Metrics
             col1, col2, col3, col4 = st.columns(4)
-            forecast_total = forecast_df['revenue'].sum()    with col1:
+            forecast_total = forecast_df['revenue'].sum()
+                        with col1:
         st.metric("📊 Forecasted Revenue", format_currency(forecast_total))
     with col2:
             st.metric("💵 Avg Daily Forecast", format_currency(forecast_avg))
