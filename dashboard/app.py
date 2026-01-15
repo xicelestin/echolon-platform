@@ -388,15 +388,10 @@ st.caption("AI-powered suggestions to improve your business")
 actions = [
             "📦 Reorder Product X by Friday to avoid stockout (9 days remaining)",
         "📊 Reduce ad spend on Campaign B (-15% conversion vs average)",             
-<<<<<<< HEAD
-                "🎯 Focus promotions on weekdays (+18% performance vs weekends)"
-    ]665
-    664
-    
+         "🎯 Focus promotions on weekdays (+18% performance vs weekends)"
+]
 
-=======
-                "🎯 Focus promotions on weekdays (+18% performance vs weekends)"]
->>>>>>> 70f369da8226290be46891d3d093642b9b00ef66
+
 for idx, action in enumerate(actions, 1):
             st.info(f"**Action {idx}:** {action}")
 st.markdown("---")  # SECTION 6: DATA FRESHNESS & STATUS
