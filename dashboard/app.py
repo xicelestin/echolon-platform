@@ -475,7 +475,7 @@ if st.session_state.current_page == "Predictions":
             fig.update_layout(title='Revenue Forecast', height=400, xaxis_title='Date', yaxis_title='Revenue ($)')
             st.plotly_chart(fig, use_container_width=True)
     
-    except Exception as e:
+        except Exception as e:
         st.error(f"❌ Error generating forecast: {str(e)}")
         st.info("🔧 Using simplified prediction model...")
         # Fallback simple prediction
