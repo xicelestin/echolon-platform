@@ -378,7 +378,8 @@ for idx, insight in enumerate(insights, 1):
                 elif insight.get("priority") == "medium":
                 priority_color = "orange"
                 else:
-                priority_color = "green"                    with col_insight2:
+                priority_color = "green"                    
+    with col_insight2:
                             if st.button("👁️ View", key=f"insight_{idx}"):
                                     st.info(f"Action: {insight['action']}")
                     if idx < len(insights):
