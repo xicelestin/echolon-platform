@@ -478,9 +478,9 @@ if st.session_state.current_page == "Predictions":
             # Forecast Metrics
             col1, col2, col3, col4 = st.columns(4)
             forecast_total = forecast_df['revenue'].sum()
-                        with col1:
+        with col1:
         st.metric("📊 Forecasted Revenue", format_currency(forecast_total))
-    with col2:
+        with col2:
             st.metric("💵 Avg Daily Forecast", format_currency(forecast_avg))
         with col3:
             st.metric("📈 Expected Growth", f"{forecast_growth:+.1f}%")
@@ -488,7 +488,7 @@ if st.session_state.current_page == "Predictions":
             # Additional Predictions
         st.subheader("🔍 Key Business Predictions")
         pred_col1, pred_col2 = st.columns(2)
-    with pred_col1:
+        with pred_col1:
             st.info("👥 **Customer Growth Prediction**")
         predicted_customers = int(kpis['total_customers'] * 1.15)
             st.metric("Expected Customers (30d)", f"{predicted_customers:,}", "+15%")
