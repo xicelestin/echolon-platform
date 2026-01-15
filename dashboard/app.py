@@ -98,7 +98,7 @@ def generate_demo_data():
     return data
 # ==================== HELPER FUNCTIONS ====================
 130
-(df):
+def calculate_kpis(df):
     """Calculate KPIs from any dataframe - works with demo or uploaded data"""
     if df is None or df.empty:
         return {}
