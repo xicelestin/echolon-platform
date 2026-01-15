@@ -373,8 +373,7 @@ for idx, insight in enumerate(insights, 1):
             with st.container():
                     col_insight1, col_insight2 = st.columns([4, 1])
                     with col_insight1:
-                            priority_color = "red" if insight["priority"] == "high" else "orange" if insight["priority"] == "medium" else "green"
-                            st.markdown(f"**{insight['icon']} {insight['title']}**")
+            priority_color = "red" if insight.get("priority", "medium") == "high" else "orange" if insight.get("priority", "medium") == "medium" else "green"                            st.markdown(f"**{insight['icon']} {insight['title']}**")
                             st.caption(insight['description'])
                     with col_insight2:
                             if st.button("👁️ View", key=f"insight_{idx}"):
