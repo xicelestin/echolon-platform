@@ -476,7 +476,7 @@ if st.session_state.current_page == "Predictions":
             st.plotly_chart(fig, use_container_width=True)
     
         except Exception as e:
-        st.error(f"❌ Error generating forecast: {str(e)}")
-        st.info("🔧 Using simplified prediction model...")
-        # Fallback simple prediction
-        st.metric("30-Day Revenue Forecast", format_currency(kpis['total_revenue'] * 1.05), "+5.0% projected")
+            st.error(f"❌ Error generating forecast: {str(e)}")
+            st.info("🔧 Using simplified prediction model...")
+            # Fallback simple prediction
+            st.metric("30-Day Revenue Forecast", format_currency(kpis['total_revenue'] * 1.05), "+5.0% projected")
