@@ -445,10 +445,4 @@ with perf_col4:
     st.metric("Profit Margin", f"{kpis['avg_profit_margin']:.1f}%", "+2.3%")
 # ==================== PAGE: Predictions ====================
 if st.session_state.current_page == "Predictions":
-        st.title("🔮 Predictions & Forecasting")
-        st.markdown("### AI-powered revenue and business forecasts")# Forecast Period Selector
-    col1, col2, col3 = st.columns([2, 1, 1])
-cast_days = st.slider("📅 Forecast Period (Days)", 7, 90, 30)
-confidence_level = st.selectbox("Confidence Level", ["80%", "90%", "95%"], index=1)
-    l_type = st.selectbox("Model", ["Linear", "Advanced"], index=0)
-    nerate forecast
+        st.markdown("### AI-powered revenue and business forecasts")
