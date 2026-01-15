@@ -463,7 +463,7 @@ if st.session_state.current_page == "Predictions":
         try:
             forecast_df = forecast_revenue(data, days_ahead=forecast_days)
                 # Combine historical and forecast data
-                combined_data = pd.concat([
+            combined_data = pd.concat([
                     data[['date', 'revenue']].tail(30),
                     forecast_df
                 ])
