@@ -458,7 +458,7 @@ if st.session_state.current_page == "Predictions":
                 with col2:
             confidence_level = st.selectbox("Confidence Level", ["80%", "90%", "95%"], index=1)
                 with col3:
-                model_typel_type = st.selectbox("Model", ["Linear", "Advanced"], index=0)
+                                        model_type = st.selectbox("Model", ["Linear", "Advanced"], index=0)
             # Generate forecast
         try:
             forecast_df = forecast_revenue(data, days_ahead=forecast_days)
