@@ -451,7 +451,7 @@ forecast_days = st.slider("📅 Forecast Period (Days)", 7, 90, 30)
 confidence_level = st.selectbox("Confidence Level", ["80%", "90%", "95%"], index=1)
 model_type = st.selectbox("Model", ["Linear", "Advanced"], index=0)
         # Generate forecast
-        try:
+    try:
                         forecast_df = forecast_revenue(data, days_ahead=forecast_days)
 
             # Combine historical and forecast data
