@@ -450,27 +450,25 @@ col1, col2, col3 = st.columns([2, 1, 1])
 forecast_days = st.slider("📅 Forecast Period (Days)", 7, 90, 30)
 confidence_level = st.selectbox("Confidence Level", ["80%", "90%", "95%"], index=1)
 model_type = st.selectbox("Model", ["Linear", "Advanced"], index=0)
-    # Generate forecast
-                try:
-            forecast_df = forecast_revenue(data, days_ahead=forecast_days)# Revenue Forecast Chart    st.subheader("💰 Revenue Forecast")
-    # Combine historical and forecast data
-    combined_data = pd.concat([
-        data[['date', 'revenue']].tail(30),
-        forecast_df
-    ])
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=data['date'].tail(30), y=data['revenue'].tail(30), 
-                             name='Historical', line=dict(color=COLORS['primary'], width=2)))
-    fig.add_trace(go.Scatter(x=forecast_df['date'], y=forecast_df['revenue'], 
-                             name='Forecast', line=dict(color=COLORS['success'], width=2, dash='dash')))
-    fig.update_layout(title='Revenue Forecast', height=400, xaxis_title='Date', yaxis_title='Revenue ($)')
-    st.plotly_chart(fig, use_container_width=True)
-    # Forecast Metrics
-    col1, col2, col3, col4 = st.columns(4)
-    forecast_total = forecast_df['revenue'].sum()
-    forecast_avg = forecast_df['revenue'].mean()
-    forecast_growth = ((forecast_avg / data['revenue'].tail(30).mean()) - 1) * 100
-    with col1:
+        # Generate forecast
+        try:
+            forecast_df = forecast_revenue(data, days_ahead=forecast_days)# Revenue Forecast Chart     st.subheader
+            # Combine historical and forecast data
+            combined_data = pd.concat([
+                data[['date', 'revenue']].tail(30),
+                forecast_df
+            ])
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=data['date'].tail(30), y=data['revenue'].tail(30),
+                                    name='Historical', line=dict(color=COLORS['primary'], width=2)))
+            fig.add_trace(go.Scatter(x=forecast_df['date'], y=forecast_df['revenue'],
+                                    name='Forecast', line=dict(color=COLORS['success'], width=2, dash='dash')))
+            fig.update_layout(title='Revenue Forecast', height=400, xaxis_title='Date', yaxis_title='Revenue ($)')
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Forecast Metrics
+            col1, col2, col3, col4 = st.columns(4)
+            forecast_total = forecast_df['revenue'].sum()    with col1:
         st.metric("📊 Forecasted Revenue", format_currency(forecast_total))
     with col2:
         st.metric("💵 Avg Daily Forecast", format_currency(forecast_avg))
@@ -499,7 +497,7 @@ model_type = st.selectbox("Model", ["Linear", "Advanced"], index=0)
     st.warning("📉 **Market Volatility**: External factors may impact predictions by ±10%")
     st.info("📋 **Seasonality**: Historical patterns suggest Q4 typically sees 20% increase")
     st.success("✅ **Accuracy**: Model has 87% accuracy based on historical validation")
-    except Exception as e:
+            except Exception as e:
         st.error(f"❌ Error generating forecast: {str(e)}")
         st.info("🔧 Using simplified prediction model...")
         # Fallback simple prediction
