@@ -455,7 +455,7 @@ if st.session_state.current_page == "Predictions":
         col1, col2, col3 = st.columns([2, 1, 1])
         with col1:
             forecast_days = st.slider("📅 Forecast Period (Days)", 7, 90, 30)
-                with col2:
+            with col2:
             confidence_level = st.selectbox("Confidence Level", ["80%", "90%", "95%"], index=1)
                 with col3:
                                         model_type = st.selectbox("Model", ["Linear", "Advanced"], index=0)
