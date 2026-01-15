@@ -474,7 +474,7 @@ if st.session_state.current_page == "Predictions":
                                     name='Forecast', line=dict(color=COLORS['success'], width=2, dash='dash')))
             fig.update_layout(title='Revenue Forecast', height=400, xaxis_title='Date', yaxis_title='Revenue ($)')
             st.plotly_chart(fig, use_container_width=True)
-                            forecast_total = forecast_df['revenue'].sum()
+        forecast_total = forecast_df['revenue'].sum()
     forecast_avg = forecast_total / forecast_days if forecast_days > 0 else 0
     forecast_growth = ((forecast_total - kpis['total_revenue']) / kpis['total_revenue'] * 100) if kpis['total_revenue'] > 0 else 0
 
