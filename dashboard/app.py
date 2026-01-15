@@ -464,13 +464,13 @@ if st.session_state.current_page == "Predictions":
             forecast_df = forecast_revenue(data, days_ahead=forecast_days)
                 # Combine historical and forecast data
             combined_data = pd.concat([
-                    data[['date', 'revenue']].tail(30),
-                    forecast_df
-                ])
-                fig = go.Figure()
-                fig.add_trace(go.Scatter(x=data['date'].tail(30), y=data['revenue'].tail(30),
+                data[['date', 'revenue']].tail(30),
+                forecast_df
+            ])
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=data['date'].tail(30), y=data['revenue'].tail(30),
                                         name='Historical', line=dict(color=COLORS['primary'], width=2)))
-                fig.add_trace(go.Scatter(x=forecast_df['date'], y=forecast_df['revenue'],
+            fig.add_trace(go.Scatter(x=forecast_df['date'], y=forecast_df['revenue'],
                                     name='Forecast', line=dict(color=COLORS['success'], width=2, dash='dash')))
             fig.update_layout(title='Revenue Forecast', height=400, xaxis_title='Date', yaxis_title='Revenue ($)')
             st.plotly_chart(fig, use_container_width=True)
