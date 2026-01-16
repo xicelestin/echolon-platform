@@ -400,7 +400,7 @@ st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | S
 if st.session_state.current_page == "Analytics":
             st.title("📊 Analytics")
 
-    pass  # TODO: Fix Analytics page indentation
+        pass  # TODO: Fix Analytics page indentation
 
 # Analytics Page with comprehensive charts and metrics
 st.markdown("### Comprehensive business metrics and trends analysis")
