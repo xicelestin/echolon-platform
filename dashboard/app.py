@@ -372,7 +372,7 @@ for idx, insight in enumerate(insights, 1):
             with st.container():
                     col_insight1, col_insight2 = st.columns([4, 1])
                     with col_insight1:
-                with col_insight2:
+                    with col_insight2:
                             if st.button("👁️ View", key=f"insight_{idx}"):
                                     st.info(f"Action: {insight['action']}")
                     if idx < len(insights):
