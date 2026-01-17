@@ -399,8 +399,8 @@ if st.session_state.current_page == "Analytics":
             st.title("📊 Analytics")
 
 
-                # Analytics Page with comprehensive charts and metrics
-                    col1, col2 = st.columns([3, 1])
+                    # Analytics Page with comprehensive charts and metrics
+                        col1, col2 = st.columns([3, 1])
 
             time_range = st.selectbox("📅 Analysis Period", ["Last 7 Days", "Last 30 Days", "Last 90 Days", "Last Year", "All Time"], index=2)
         # Revenue Trend Chart
