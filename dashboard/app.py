@@ -104,7 +104,7 @@ def calculate_kpis(df):
         return {}
 
 
-    total_revenue = df['revenue'].sum() if 'revenue' in df.columns else 0
+405    total_revenue = df['revenue'].sum() if 'revenue' in df.columns else 0
     total_orders = df['orders'].sum() if 'orders' in df.columns else 0
     total_customers = df['customers'].sum() if 'customers' in df.columns else 0
     avg_order_value = (total_revenue / total_orders) if total_orders > 0 else 0
@@ -402,8 +402,9 @@ if st.session_state.current_page == "Analytics":
 
 
             # Analytics Page with comprehensive charts and metrics
-                        st.markdown("### Comprehensive business metrics and trends analysis")
-col1, col2 = st.columns([3, 1])
+        st.markdown("### Comprehensive business metrics and trends analysis")
+    col1, col2 = st.columns([3, 1])
+
         time_range = st.selectbox("📅 Analysis Period", ["Last 7 Days", "Last 30 Days", "Last 90 Days", "Last Year", "All Time"], index=2)
         # Revenue Trend Chart
         st.subheader("💰 Revenue Trend Analysis")
