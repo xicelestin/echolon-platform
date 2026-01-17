@@ -404,16 +404,16 @@ if st.session_state.current_page == "Analytics":
             # Analytics Page with comprehensive charts and metrics
             st.markdown("### Comprehensive business metrics and trends analysis")            # Time range selector
             col1, col2 = st.columns([3, 1])
-            time_range = st.selectbox("📅 Analysis Period", ["Last 7 Days", "Last 30 Days", "Last 90 Days", "Last Year", "All Time"], index=2)
-    # Revenue Trend Chart
-    st.subheader("💰 Revenue Trend Analysis")
-    revenue_chart = px.line(data, x='date', y='revenue', title='Daily Revenue Over Time')
-    revenue_chart.update_traces(line_color=COLORS['primary'])
-    revenue_chart.update_layout(height=400)
-    st.plotly_chart(revenue_chart, use_container_width=True)
-    # Three column metrics
-    col1, col2, col3 = st.columns(3)
-    with col1:
+                time_range = st.selectbox("📅 Analysis Period", ["Last 7 Days", "Last 30 Days", "Last 90 Days", "Last Year", "All Time"], index=2)
+        # Revenue Trend Chart
+        st.subheader("💰 Revenue Trend Analysis")
+            revenue_chart = px.line(data, x='date', y='revenue', title='Daily Revenue Over Time')
+        revenue_chart.update_traces(line_color=COLORS['primary'])
+        revenue_chart.update_layout(height=400)
+        st.plotly_chart(revenue_chart, use_container_width=True)
+        # Three column metrics
+        col1, col2, col3 = st.columns(3)
+        with col1:
         st.metric("Total Revenue", format_currency(kpis['total_revenue']), f"+{kpis['revenue_growth']:.1f}%")
     with col2:
         st.metric("Avg Daily Revenue", format_currency(kpis['total_revenue']/90))
