@@ -97,14 +97,13 @@ def generate_demo_data():
     data['avg_order_value'] = (data['revenue'] / data['orders']).round(2)
     return data
 # ==================== HELPER FUNCTIONS ====================
-130
 def calculate_kpis(df):
     """Calculate KPIs from any dataframe - works with demo or uploaded data"""
     if df is None or df.empty:
         return {}
 
 
-405    total_revenue = df['revenue'].sum() if 'revenue' in df.columns else 0
+    total_revenue = df['revenue'].sum() if 'revenue' in df.columns else 0
     total_orders = df['orders'].sum() if 'orders' in df.columns else 0
     total_customers = df['customers'].sum() if 'customers' in df.columns else 0
     avg_order_value = (total_revenue / total_orders) if total_orders > 0 else 0
@@ -147,7 +146,6 @@ with st.sidebar:
     st.image("https://via.placeholder.com/150x50/1f77b4/ffffff?text=Echolon+AI", use_container_width=True)
     st.title("🎯 Echolon AI")
     st.markdown("### Business Intelligence Platform")
-    357
     st.markdown("## 📍 Navigation")
     pages = {
         "🏠 Dashboard": "Dashboard",
@@ -403,7 +401,7 @@ if st.session_state.current_page == "Analytics":
 
             # Analytics Page with comprehensive charts and metrics
         st.markdown("### Comprehensive business metrics and trends analysis")
-    col1, col2 = st.columns([3, 1])
+    col1, col2 = st.columns([3, 1])135
 
         time_range = st.selectbox("📅 Analysis Period", ["Last 7 Days", "Last 30 Days", "Last 90 Days", "Last Year", "All Time"], index=2)
         # Revenue Trend Chart
