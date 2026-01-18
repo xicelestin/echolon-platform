@@ -401,40 +401,50 @@ if st.session_state.current_page == "Analytics":
             st.title("📊 Analytics")
 
 
-                    # Analytics Page with comprehensive charts and metrics
-           col1, col2 = st.columns([3, 1])
-
-            time_range = st.selectbox("📅 Analysis Period", ["Last 7 Days", "Last 30 Days", "Last 90 Days", "Last Year", "All Time"], index=2)
-        # Revenue Trend Chart
-        st.subheader("💰 Revenue Trend Analysis")
-            nue_chart = px.line(data, x='date', y='revenue', title='Daily Revenue Over Time')
-        revenue_chart.update_traces(line_color=COLORS['primary'])
-        revenue_chart.update_layout(height=400)
-        st.plotly_chart(revenue_chart, use_container_width=True)
-        # Three column metrics
-        col1, col2, col3 = st.columns(3)
-        with col1:
+                        # Analytics Page with comprehensive charts and metrics
+    st.markdown("### Comprehensive business metrics and trends analysis")
+    
+    # Time range selector
+    col1, col2 = st.columns([3, 1])
+    time_range = st.selectbox("📅 Analysis Period", ["Last 7 Days", "Last 30 Days", "Last 90 Days", "Last Year", "All Time"], index=2)
+    
+    # Revenue Trend Chart
+    st.subheader("💰 Revenue Trend Analysis")
+    revenue_chart = px.line(data, x='date', y='revenue', title='Daily Revenue Over Time')
+    revenue_chart.update_traces(line_color=COLORS['primary'])
+    revenue_chart.update_layout(height=400)
+    st.plotly_chart(revenue_chart, use_container_width=True)
+    
+    # Three column metrics
+    col1, col2, col3 = st.columns(3)
+    with col1:
         st.metric("Total Revenue", format_currency(kpis['total_revenue']), f"+{kpis['revenue_growth']:.1f}%")
     with col2:
         st.metric("Avg Daily Revenue", format_currency(kpis['total_revenue']/90))
     with col3:
-        st.metric("Revenue Growth", f"{kpis['revenue_growth']:.1f}%")# Customer Analytics
+        st.metric("Revenue Growth", f"{kpis['revenue_growth']:.1f}%")
+    
+    # Customer Analytics
     st.subheader("👥 Customer Analytics")
     col1, col2 = st.columns(2)
     customer_chart = px.line(data, x='date', y='customers', title='Active Customers Trend')
     customer_chart.update_traces(line_color=COLORS['success'])
     st.plotly_chart(customer_chart, use_container_width=True)
+    
     orders_chart = px.bar(data.tail(30), x='date', y='orders', title='Daily Orders (Last 30 Days)')
     orders_chart.update_traces(marker_color=COLORS['warning'])
     st.plotly_chart(orders_chart, use_container_width=True)
+    
     # Profitability Analysis
     st.subheader("💎 Profitability Metrics")
     profit_chart = px.area(data, x='date', y='profit', title='Profit Trend')
     profit_chart.update_traces(line_color=COLORS['primary'], fillcolor='rgba(31, 119, 180, 0.3)')
     st.plotly_chart(profit_chart, use_container_width=True)
+    
     margin_chart = px.line(data, x='date', y='profit_margin', title='Profit Margin %')
     margin_chart.update_traces(line_color=COLORS['danger'])
     st.plotly_chart(margin_chart, use_container_width=True)
+    
     # Performance Summary
     st.subheader("📈 Performance Summary")
     perf_col1, perf_col2, perf_col3, perf_col4 = st.columns(4)
@@ -445,7 +455,8 @@ if st.session_state.current_page == "Analytics":
     with perf_col3:
         st.metric("Total Customers", f"{kpis['total_customers']:,}", f"+{kpis['customers_growth']:.1f}%")
     with perf_col4:
-    st.metric("Profit Margin", f"{kpis['avg_profit_margin']:.1f}%", "+2.3%")
+        st.metric("Profit Margin", f"{kpis['avg_profit_margin']:.1f}%", "+2.3%")
+
 # ==================== PAGE: Predictions ====================
 if st.session_state.current_page == "Predictions":
         st.title("🔮 Predictions & Forecasting")
