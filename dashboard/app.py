@@ -397,8 +397,9 @@ current_time = datetime.now().strftime("%I:%M %p")
 st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
 # ==================== PAGE: Analytics ====================
 if st.session_state.current_page == "Analytics":
-        st.title("📊 Analytics")
-
+    st.title("📊 Analytics")
+    st.write("Analytics dashboard coming soon")
+    st.write("This page will display comprehensive business metrics and trends")
 
                         # Analytics Page with comprehensive charts and metrics
         pass  # Analytics page placeholder
