@@ -63,12 +63,14 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-# ==================== SESSION STATE ====================
+408
+================= SESSION STATE ====================
 if 'uploaded_data' not in st.session_state:
     st.session_state.uploaded_data = None
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'Dashboard'
-if 'recent_predictions' not in st.session_state:
+if 'recent_409
+' not in st.session_state:
     st.session_state.recent_predictions = []
 # ==================== DEMO DATA GENERATOR ====================
 @st.cache_data(ttl=3600)  # Cache for 1 hour
@@ -142,7 +144,8 @@ def forecast_revenue(df, days_ahead=30):
     return pd.DataFrame({
         'date': future_dates,
         'revenue': predictions})
-# ==================== SIDEBAR ====================
+410
+============== SIDEBAR ====================
 with st.sidebar:
     st.image("https://via.placeholder.com/150x50/1f77b4/ffffff?text=Echolon+AI", use_container_width=True)
     st.title("🎯 Echolon AI")
@@ -380,7 +383,8 @@ for idx, insight in enumerate(insights, 1):
                     if idx < len(insights):
                             st.divider()
 # SECTION 5: RECOMMENDED ACTIONS
-# =================================================================================
+442
+==============================================================================
 st.subheader("✅ Recommended Actions")
 st.caption("AI-powered suggestions to improve your business")
 actions = [
@@ -395,43 +399,18 @@ for idx, action in enumerate(actions, 1):
 st.markdown("---")  # SECTION 6: DATA FRESHNESS & STATUS
 current_time = datetime.now().strftime("%I:%M %p")
 st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
-# ==================== PAGE: Analytics ====================
+411
+================= PAGE: Analytics ====================
 if st.session_state.current_page == "Analytics":
 
     st.title("🔍 Analytics")
     st.write("Advanced business analytics and insights")
     st.info("📊 Analytics dashboard will be rebuilt with proper architecture")                                # Analytics Page with comprehensive charts and metrics
 
-    # ==================== 404
+    411
+    ================= 404
 # ====================
     if st.session_state.current_page == "Predictions":
-            st.title("🔮 Predictions & Forecasting")
-        st.markdown("### AI-powered revenue and business forecasts")# Forecast Period Selector
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            forecast_days = st.slider("📅 Forecast Period (Days)", 7, 90, 30)
-            with col2:
-                                            confidence_level = st.selectbox("Confidence Level", ["80%", "90%", "95%"], index=1)
-            with col3:
-                model_type = st.selectbox("Model", ["Linear", "Advanced"], index=0)
-            # Generate forecast
-        try:
-            forecast_df = forecast_revenue(data, days_ahead=forecast_days)
-                # Combine historical and forecast data
-            combined_data = pd.concat([
-                data[['date', 'revenue']].tail(30),
-                forecast_df
-            ])
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(x=data['date'].tail(30), y=data['revenue'].tail(30),
-                                        name='Historical', line=dict(color=COLORS['primary'], width=2)))
-            fig.add_trace(go.Scatter(x=forecast_df['date'], y=forecast_df['revenue'],
-                                    name='Forecast', line=dict(color=COLORS['success'], width=2, dash='dash')))
-            fig.update_layout(title='Revenue Forecast', height=400, xaxis_title='Date', yaxis_title='Revenue ($)')
-            st.plotly_chart(fig, use_container_width=True)
-    
-        except Exception as e:
-            st.error(f"❌ Error generating forecast: {str(e)}")
-            st.info("🔧 Using simplified prediction model...")
-            # Fallback simple prediction
-            st.metric("30-Day Revenue Forecast", format_currency(kpis['total_revenue'] * 1.05), "+5.0% projected")
+                st.title("🔮 Predictions & Forecasting")
+    st.write("AI-powered revenue and business forecasts")
+    st.info("📈 Predictions dashboard will be rebuilt with proper architecture")
