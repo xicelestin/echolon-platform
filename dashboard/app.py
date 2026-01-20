@@ -1,3 +1,4 @@
+72
 
 import streamlit as st
 # Trigger rebuild # Force redeploy 49 50
@@ -381,7 +382,6 @@ for idx, insight in enumerate(insights, 1):
                     if idx < len(insights):
                             st.divider()
 # SECTION 5: RECOMMENDED ACTIONS
-442
 ==============================================================================
 st.subheader("✅ Recommended Actions")
 st.caption("AI-powered suggestions to improve your business")
@@ -397,7 +397,6 @@ for idx, action in enumerate(actions, 1):
 st.markdown("---")  # SECTION 6: DATA FRESHNESS & STATUS
 current_time = datetime.now().strftime("%I:%M %p")
 st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
-411
 ================= PAGE: Analytics ====================
 if st.session_state.current_page == "Analytics":
 
@@ -405,10 +404,9 @@ if st.session_state.current_page == "Analytics":
     st.write("Advanced business analytics and insights")
     st.info("📊 Analytics dashboard will be rebuilt with proper architecture")                                # Analytics Page with comprehensive charts and metrics
 
-    411
-    ================= 404
+    =====================================
 # ====================
     if st.session_state.current_page == "Predictions":
                 st.title("🔮 Predictions & Forecasting")
     st.write("AI-powered revenue and business forecasts")
-    st.info("📈 Predictions dashboard will be rebuilt with proper architecture")408
+    st.info("📈 Predictions dashboard will be rebuilith proper architecture")
