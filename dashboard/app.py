@@ -403,7 +403,7 @@ if st.session_state.current_page == "Analytics":
     st.info("📊 Analytics dashboard will be rebuilt with proper architecture")                                # Analytics Page with comprehensive charts and metrics
 
     # ==================== 404
-====================
+# ====================
     if st.session_state.current_page == "Predictions":
             st.title("🔮 Predictions & Forecasting")
         st.markdown("### AI-powered revenue and business forecasts")# Forecast Period Selector
