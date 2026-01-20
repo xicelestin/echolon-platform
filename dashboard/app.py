@@ -401,8 +401,9 @@ if st.session_state.current_page == "Analytics":
     st.title("🔍 Analytics")
     st.write("Advanced business analytics and insights")
     st.info("📊 Analytics dashboard will be rebuilt with proper architecture")                                # Analytics Page with comprehensive charts and metrics
+
+        """
     
-    if False:  # TODO: Remove old broken Analytics code below
                 # Time range selector
         col1, col2 = st.columns([3, 1])
         time_range = st.selectbox("📅 Analysis Period", ["Last 7 Days", "Last 30 Days", "Last 90 Days", "Last Year", "All Time"], index=2)
@@ -455,7 +456,7 @@ if st.session_state.current_page == "Analytics":
             st.metric("Total Customers", f"{kpis['total_customers']:,}", f"+{kpis['customers_growth']:.1f}%")
         with perf_col4:
             st.metric("Profit Margin", f"{kpis['avg_profit_margin']:.1f}%", "+2.3%")
-
+    """
     # ==================== 404
 ====================
     if st.session_state.current_page == "Predictions":
