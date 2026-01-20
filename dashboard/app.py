@@ -69,7 +69,7 @@ if 'uploaded_data' not in st.session_state:
     st.session_state.uploaded_data = None
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'Dashboard'
-if 'recent_predictionsot in st.session_state:
+if 'recent_predictions' not in st.session_state:
     st.session_state.recent_predictions = []
 # ==================== DEMO DATA GENERATOR ====================
 @st.cache_data(ttl=3600)  # Cache for 1 hour
