@@ -63,13 +63,13 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-408
 ================= SESSION STATE ====================
 if 'uploaded_data' not in st.session_state:
     st.session_state.uploaded_data = None
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'Dashboard'
 if 'recent_predictions' not in st.session_state:
+ 66
     st.session_state.recent_predictions = []
 # ==================== DEMO DATA GENERATOR ====================
 @st.cache_data(ttl=3600)  # Cache for 1 hour
@@ -143,7 +143,6 @@ def forecast_revenue(df, days_ahead=30):
     return pd.DataFrame({
         'date': future_dates,
         'revenue': predictions})
-410
 ============== SIDEBAR ====================
 with st.sidebar:
     st.image("https://via.placeholder.com/150x50/1f77b4/ffffff?text=Echolon+AI", use_container_width=True)
