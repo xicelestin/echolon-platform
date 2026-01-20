@@ -398,7 +398,11 @@ st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | S
 # ==================== PAGE: Analytics ====================
 if st.session_state.current_page == "Analytics":
 
-                                # Analytics Page with comprehensive charts and metrics
+    st.title("🔍 Analytics")
+    st.write("Advanced business analytics and insights")
+    st.info("📊 Analytics dashboard will be rebuilt with proper architecture")                                # Analytics Page with comprehensive charts and metrics
+    
+    if False:  # TODO: Remove old broken Analytics code below
                 # Time range selector
         col1, col2 = st.columns([3, 1])
         time_range = st.selectbox("📅 Analysis Period", ["Last 7 Days", "Last 30 Days", "Last 90 Days", "Last Year", "All Time"], index=2)
