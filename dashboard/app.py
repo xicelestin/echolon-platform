@@ -69,8 +69,7 @@ if 'uploaded_data' not in st.session_state:
     st.session_state.uploaded_data = None
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'Dashboard'
-if 'recent_409
-' not in st.session_state:
+if 'recent_predictionsot in st.session_state:
     st.session_state.recent_predictions = []
 # ==================== DEMO DATA GENERATOR ====================
 @st.cache_data(ttl=3600)  # Cache for 1 hour
@@ -413,4 +412,4 @@ if st.session_state.current_page == "Analytics":
     if st.session_state.current_page == "Predictions":
                 st.title("🔮 Predictions & Forecasting")
     st.write("AI-powered revenue and business forecasts")
-    st.info("📈 Predictions dashboard will be rebuilt with proper architecture")
+    st.info("📈 Predictions dashboard will be rebuilt with proper architecture")408
