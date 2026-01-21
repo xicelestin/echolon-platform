@@ -380,7 +380,7 @@ for idx, insight in enumerate(insights, 1):
                     if idx < len(insights):
                             st.divider()
 # SECTION 5: RECOMMENDED ACTIONS
-==============================================================================
+# ==============================================================================
 st.subheader("✅ Recommended Actions")
 st.caption("AI-powered suggestions to improve your business")
 actions = [
@@ -395,7 +395,7 @@ for idx, action in enumerate(actions, 1):
 st.markdown("---")  # SECTION 6: DATA FRESHNESS & STATUS
 current_time = datetime.now().strftime("%I:%M %p")
 st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
-================= PAGE: Analytics ====================
+# ================= PAGE: Analytics ====================
 if st.session_state.current_page == "Analytics":
 
     st.title("🔍 Analytics")
