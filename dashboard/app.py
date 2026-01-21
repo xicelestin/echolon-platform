@@ -394,15 +394,13 @@ st.markdown("---")  # SECTION 6: DATA FRESHNESS & STATUS
 current_time = datetime.now().strftime("%I:%M %p")
 st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
 # ================= PAGE: Analytics ====================
-if st.session_state.current_page == "Analytics":
-
+elif st.session_state.current_page == "Analytics":
     st.title("🔍 Analytics")
     st.write("Advanced business analytics and insights")
     st.info("📊 Analytics dashboard will be rebuilt with proper architecture")                                # Analytics Page with comprehensive charts and metrics
 
     # =====================================
 # ====================
-    if st.session_state.current_page == "Predictions":
-                st.title("🔮 Predictions & Forecasting")
+    elif st.session_state.current_page == "Predictions":                st.title("🔮 Predictions & Forecasting")
     st.write("AI-powered revenue and business forecasts")
     st.info("📈 Predictions dashboard will be rebuilith proper architecture")
