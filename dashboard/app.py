@@ -63,13 +63,12 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-================= SESSION STATE ====================
+# ================= SESSION STATE ====================
 if 'uploaded_data' not in st.session_state:
     st.session_state.uploaded_data = None
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'Dashboard'
 if 'recent_predictions' not in st.session_state:
- 66
     st.session_state.recent_predictions = []
 # ==================== DEMO DATA GENERATOR ====================
 @st.cache_data(ttl=3600)  # Cache for 1 hour
