@@ -167,7 +167,7 @@ with st.sidebar:
         "🏆 Competitive Benchmark": "Competitive Benchmark",
         "📂 Data Sources": "Data Sources",
     }
-        for page_name, page_id in pages.items():i
+        for page_name, page_id in pages.items():
         f st.sidebar.button(page_name, key=page_id, use_container_width=True):
             st.session_state.current_page = page_id
             st.rerun()
