@@ -142,7 +142,7 @@ def forecast_revenue(df, days_ahead=30):
     return pd.DataFrame({
         'date': future_dates,
         'revenue': predictions})
-============== SIDEBAR ====================
+# ============== SIDEBAR ====================
 with st.sidebar:
     st.image("https://via.placeholder.com/150x50/1f77b4/ffffff?text=Echolon+AI", use_container_width=True)
     st.title("🎯 Echolon AI")
