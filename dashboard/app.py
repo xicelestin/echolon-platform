@@ -167,12 +167,10 @@ with st.sidebar:
         "🏆 Competitive Benchmark": "Competitive Benchmark",
         "📂 Data Sources": "Data Sources",
     }
-        for page_name, page_id in pages.items():
-                    if st.sidebar.button(page_name, key=page_id, use_container_width=True):
-                                    st.session_state.current_page = page_id
-                                    st.rerun()
-    st.markdown("---")
-    st.markdown("## 📊 Data Source")
+    for page_name, page_id in pages.items():
+        if st.sidebar.button(page_name, key=page_id, use_container_width=True):
+                        st.session_state.current_page = page_id
+            st.rerun()    st.markdown("## 📊 Data Source")
     if st.session_state.uploaded_data is not None:
         st.info("✅ Using Uploaded Data")
         st.info("📋 Using Demo Data")
