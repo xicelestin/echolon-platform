@@ -388,7 +388,7 @@ actions = [
 ]
 
 
-    for idx, action in enumerate(actions, 1):
+        for idx, action in enumerate(actions, 1):
                         st.info(f"**Action {idx}:** {action}")
     st.markdown("---")  # SECTION 6: DATA FRESHNESS & STATUS
     current_time = datetime.now().strftime("%I:%M %p")
