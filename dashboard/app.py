@@ -386,7 +386,7 @@ actions = [
         "📊 Reduce ad spend on Campaign B (-15% conversion vs average)",             
          "🎯 Focus promotions on weekdays (+18% performance vs weekends)"
     ]
-l    for idx, action in enumerate(actions, 1):
+    for idx, action in enumerate(actions, 1):
         st.info(f"**Action {idx}:** {action}")    st.markdown("---")  # SECTION 6: DATA FRESHNESS & STATUS
     current_time = datetime.now().strftime("%I:%M %p")
     st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
