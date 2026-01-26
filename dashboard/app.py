@@ -392,7 +392,9 @@ st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | S
 elif st.session_state.current_page == "Analytics":
     st.title("🔍 Analytics")
     st.write("Advanced business analytics and insights")
-    st.info("📊 Analytics dashboard will be rebuilt with proper architecture")                                # Analytics Page with comprehensive charts and metrics
+    st.info("📊 Analytics dashboard will be rebuilt with proper architecture")            
+
+# Analytics Page with comprehensive charts and metrics
 
     # =====================================
 # ====================
