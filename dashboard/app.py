@@ -378,15 +378,15 @@ for idx, insight in enumerate(insights, 1):
                                     st.info(f"Action: {insight['action']}")
     # SECTION 5: RECOMMENDED
     st.subheader("✅ Recommended Actions")
-    st.caption("AI-powered suggestions to improve your business")
-    actions = [
-        "📦 Reorder Product X by Friday to avoid stockout (9 days remaining)",
-        "📊 Reduce ad spend on Campaign B (-15% conversion vs average)",
-        "🎯 Focus promotions on weekdays (+18% performance vs weekends)"
-    ]
-    for idx, action in enumerate(actions, 1):
-        st.info(f"**Action {idx}:** {action}")
-    st.markdown("---")
+        st.caption("AI-powered suggestions to improve your business")
+        actions = [
+                "🎧 Reorder Product X by Friday to avoid stockout (9 days remaining)",
+                "📈 Reduce ad spend on Campaign B (-15% conversion vs average)",
+                "🏷️ Focus promotions on weekdays (+18% performance vs weekends)"
+        ]
+        for idx, action in enumerate(actions, 1):
+                st.info(f"⭐Action {idx}: ** {action}")
+            st.markdown("---")
 
     # SECTION 6: DATA FRESHNESS & STATUS
     current_time = datetime.now().strftime("%I:%M %p")
