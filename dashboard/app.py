@@ -376,8 +376,6 @@ for idx, insight in enumerate(insights, 1):
                     with col_insight2:
                             if st.button("👁️ View", key=f"insight_{idx}"):
                                     st.info(f"Action: {insight['action']}")
-                    if idx < len(insights):
-                            st.divider()
     # SECTION 5: RECOMMENDED
     st.subheader("✅ Recommended Actions")
     st.caption("AI-powered suggestions to improve your business")
@@ -393,3 +391,13 @@ for idx, insight in enumerate(insights, 1):
     # SECTION 6: DATA FRESHNESS & STATUS
     current_time = datetime.now().strftime("%I:%M %p")
     st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
+
+elif st.session_state.current_page == "Analytics":
+    st.title("🔍 Analytics")
+    st.write("Advanced business analytics and insights")
+    st.info("📊 Analytics dashboard will be rebuilt with proper architecture")
+
+elif st.session_state.current_page == "Predictions":
+    st.title("🔮 Predictions & Forecasting")
+    st.write("AI-powered revenue and business forecasts")
+    st.info("📈 Predictions dashboard will be rebuilith proper architecture")
