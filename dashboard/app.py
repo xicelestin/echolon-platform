@@ -378,27 +378,18 @@ for idx, insight in enumerate(insights, 1):
                                     st.info(f"Action: {insight['action']}")
                     if idx < len(insights):
                             st.divider()
-# SECTION 5: RECOMMENDED     # =======================================================================    st.subheader("✅ Recommended Ac    st.caption("AI-powered suggestions to improve your business")
-actions = [
-            "📦 Reorder Product X by Friday to avoid stockout (9 days remaining)",
-            "📊 Reduce ad spend on Campaign B (-15% conversion vs average)",             
-         "🎯 Focus promotions on weekdays (+18% performance vs weekends)"
-        ]
-for idx, action in enumerate(actions, 1):
-        st.info(f"**Action {idx}:** {action}")    
-    st.markdown("---")  # SECTION 6: DATA FRESHNESS & STATUS
-    
+    # SECTION 5: RECOMMENDED
+    st.subheader("✅ Recommended Actions")
+    st.caption("AI-powered suggestions to improve your business")
+    actions = [
+        "📦 Reorder Product X by Friday to avoid stockout (9 days remaining)",
+        "📊 Reduce ad spend on Campaign B (-15% conversion vs average)",
+        "🎯 Focus promotions on weekdays (+18% performance vs weekends)"
+    ]
+    for idx, action in enumerate(actions, 1):
+        st.info(f"**Action {idx}:** {action}")
+    st.markdown("---")
+
+    # SECTION 6: DATA FRESHNESS & STATUS
     current_time = datetime.now().strftime("%I:%M %p")
-        st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
-elif st.session_state.current_page == "Analytics":
-    st.title("🔍 Analytics")
-    st.write("Advanced business analytics and insights")
-    st.info("📊 Analytics dashboard will be rebuilt with proper architecture")            
-
-# Analytics Page with comprehensive charts and metrics
-
-    # =====================================
-# ====================
-    elif st.session_state.current_page == "Predictions":                st.title("🔮 Predictions & Forecasting")
-    st.write("AI-powered revenue and business forecasts")
-    st.info("📈 Predictions dashboard will be rebuilith proper architecture")
+    st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
