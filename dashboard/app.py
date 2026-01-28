@@ -382,9 +382,7 @@ st.subheader("✅ Recommended Actions")
                         "📈 Reduce ad spend on Campaign B (-15% conversion vs average)",
                 "🏷️ Focus promotions on weekdays (+18% performance vs weekends)"
         ]
-            st.markdown("---")
-
-    # SECTION 6: DATA FRESHNESS & STATUS
+            
     current_time = datetime.now().strftime("%I:%M %p")
     st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
 
