@@ -377,7 +377,7 @@ for idx, insight in enumerate(insights, 1):
                             if st.button("👁️ View", key=f"insight_{idx}"):
                                     st.info(f"Action: {insight['action']}")
     # SECTION 5: RECOMMENDED
-    st.subheader("✅ Recommended Actions")
+st.subheader("✅ Recommended Actions")
         st.caption("AI-powered suggestions to improve your business")
         actions = [
                 "🎧 Reorder Product X by Friday to avoid stockout (9 days remaining)",
