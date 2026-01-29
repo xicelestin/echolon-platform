@@ -377,11 +377,7 @@ for idx, insight in enumerate(insights, 1):
                             if st.button("👁️ View", key=f"insight_{idx}"):
                                     st.info(f"Action: {insight['action']}")
     # SECTION 5: RECOMMENDED
-st.subheader("✅ Recommended Actions")
-        st.caption("AI-powered suggestions to improve your business")                        "📈 Reduce ad spend on Campaign B (-15% conversion vs average)",
-                "🏷️ Focus promotions on weekdays (+18% performance vs weekends)"
-        ]
-            
+st.subheader("✅ Recommended Actions")            
     current_time = datetime.now().strftime("%I:%M %p")
     st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
 
