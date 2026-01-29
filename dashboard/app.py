@@ -376,11 +376,6 @@ for idx, insight in enumerate(insights, 1):
                     with col_insight2:
                             if st.button("👁️ View", key=f"insight_{idx}"):
                                     st.info(f"Action: {insight['action']}")
-    # SECTION 5: RECOMMENDED
-st.subheader("✅ Recommended Actions")            
-    current_time = datetime.now().strftime("%I:%M %p")
-    st.caption(f"📅 Last updated: {current_time} | Data sources: ✅ Connected | Status: Live")
-
 elif st.session_state.current_page == "Analytics":
     st.title("🔍 Analytics")
     st.write("Advanced business analytics and insights")
