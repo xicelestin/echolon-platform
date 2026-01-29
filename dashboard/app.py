@@ -376,7 +376,7 @@ for idx, insight in enumerate(insights, 1):
                     with col_insight2:
                             if st.button("👁️ View", key=f"insight_{idx}"):
                                     st.info(f"Action: {insight['action']}")
-elif st.session_state.current_page == "Analytics":
+if st.session_state.current_page == "Analytics":
     st.title("🔍 Analytics")
     st.write("Advanced business analytics and insights")
     st.info("📊 Analytics dashboard will be rebuilt with proper architecture")
