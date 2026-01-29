@@ -378,8 +378,7 @@ for idx, insight in enumerate(insights, 1):
                                     st.info(f"Action: {insight['action']}")
     # SECTION 5: RECOMMENDED
 st.subheader("✅ Recommended Actions")
-    st.caption("AI-powered suggestions to improve your business")
-                        "📈 Reduce ad spend on Campaign B (-15% conversion vs average)",
+        st.caption("AI-powered suggestions to improve your business")                        "📈 Reduce ad spend on Campaign B (-15% conversion vs average)",
                 "🏷️ Focus promotions on weekdays (+18% performance vs weekends)"
         ]
             
