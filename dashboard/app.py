@@ -385,3 +385,53 @@ elif st.session_state.current_page == "Predictions":
     st.title("🔮 Predictions & Forecasting")
     st.write("AI-powered revenue and business forecasts")
     st.info("📈 Predictions dashboard will be rebuilith proper architecture")
+
+elif st.session_state.current_page == "Recommendations":
+    st.title("💡 Recommendations")
+    st.write("AI-powered recommendations")
+    st.info("📋 Recommendations dashboard coming soon")
+
+elif st.session_state.current_page == "What-If Analysis":
+    st.title("📝 What-If Analysis")
+    st.write("Scenario planning and analysis")
+    st.info("🔍 What-If Analysis dashboard coming soon")
+
+elif st.session_state.current_page == "Inventory":
+    st.title("📦 Inventory")
+    st.write("Inventory management and tracking")
+    st.info("📊 Inventory dashboard coming soon")
+
+elif st.session_state.current_page == "Customer Insights":
+    render_customer_insights_page(data, kpis)
+
+elif st.session_state.current_page == "Inventory & Demand":
+    render_inventory_demand_page(data, kpis)
+
+elif st.session_state.current_page == "Anomalies & Alerts":
+    render_anomalies_alerts_page(data, kpis)
+
+elif st.session_state.current_page == "Inventory Optimization":
+    st.title("📋 Inventory Optimization")
+    st.write("Optimize inventory levels")
+    st.info("🎯 Inventory Optimization dashboard coming soon")
+
+elif st.session_state.current_page == "Margin Analysis":
+    render_margin_analysis_page(data, kpis)
+
+elif st.session_state.current_page == "Smart Alerts":
+    render_smart_alerts_page(data, kpis)
+
+elif st.session_state.current_page == "Cohort Analysis":
+    render_cohort_analysis_page(data, kpis)
+
+elif st.session_state.current_page == "Customer LTV":
+    render_customer_ltv_page(data, kpis)
+
+elif st.session_state.current_page == "Revenue Attribution":
+    render_revenue_attribution_page(data, kpis)
+
+elif st.session_state.current_page == "Competitive Benchmark":
+    render_competitive_benchmark_page(data, kpis)
+
+elif st.session_state.current_page == "Data Sources":
+    render_data_sources_page(data, kpis)
