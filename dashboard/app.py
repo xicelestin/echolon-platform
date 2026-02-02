@@ -425,4 +425,4 @@ elif st.session_state.current_page == "Revenue Attribution":
 elif st.session_state.current_page == "Competitive Benchmark":
     render_competitive_benchmark_page(data, kpis, format_currency, format_percentage, format_multiplier)
 elif st.session_state.current_page == "Data Sources":
-    render_data_sources_page(data, kpis, format_currency, format_percentage, format_multiplier)
+    render_data_sources_page()
