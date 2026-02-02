@@ -402,36 +402,27 @@ elif st.session_state.current_page == "Inventory":
     st.info("📊 Inventory dashboard coming soon")
 
 elif st.session_state.current_page == "Customer Insights":
-    render_customer_insights_page(data, kpis)
-
+    render_customer_insights_page(data, kpis, format_currency, format_percentage, format_multiplier)
 elif st.session_state.current_page == "Inventory & Demand":
-    render_inventory_demand_page(data, kpis)
-
+    render_inventory_demand_page(data, kpis, format_currency, format_percentage, format_multiplier)
 elif st.session_state.current_page == "Anomalies & Alerts":
-    render_anomalies_alerts_page(data, kpis)
-
+    render_anomalies_alerts_page(data, kpis, format_currency, format_percentage, format_multiplier)
 elif st.session_state.current_page == "Inventory Optimization":
     st.title("📋 Inventory Optimization")
     st.write("Optimize inventory levels")
     st.info("🎯 Inventory Optimization dashboard coming soon")
 
 elif st.session_state.current_page == "Margin Analysis":
-    render_margin_analysis_page(data, kpis)
-
+    render_margin_analysis_page(data, kpis, format_currency, format_percentage, format_multiplier)
 elif st.session_state.current_page == "Smart Alerts":
-    render_smart_alerts_page(data, kpis)
-
+    render_smart_alerts_page(data, kpis, format_currency, format_percentage, format_multiplier)
 elif st.session_state.current_page == "Cohort Analysis":
-    render_cohort_analysis_page(data, kpis)
-
+    render_cohort_analysis_page(data, kpis, format_currency, format_percentage, format_multiplier)
 elif st.session_state.current_page == "Customer LTV":
-    render_customer_ltv_page(data, kpis)
-
+      render_customer_ltv_page(data, kpis, format_currency, format_percentage, format_multiplier)
 elif st.session_state.current_page == "Revenue Attribution":
-    render_revenue_attribution_page(data, kpis)
-
+    render_revenue_attribution_page(data, kpis, format_currency, format_percentage, format_multiplier)
 elif st.session_state.current_page == "Competitive Benchmark":
-    render_competitive_benchmark_page(data, kpis)
-
+    render_competitive_benchmark_page(data, kpis, format_currency, format_percentage, format_multiplier)
 elif st.session_state.current_page == "Data Sources":
-    render_data_sources_page(data, kpis)
+    render_data_sources_page(data, kpis, format_currency, format_percentage, format_multiplier)
