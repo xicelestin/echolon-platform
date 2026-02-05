@@ -76,8 +76,7 @@ def render_whatif_page():
     """, unsafe_allow_html=True)
 
         # Scenario Presets Section
-        render_scenario_presets()
-
+    # render_scenario_presets()  # Temporarily commented out due to indentation error
     # Divider
     st.markdown("""<div style='margin:24px 0;border-top:1px solid #374151;'></div>""", unsafe_allow_html=True)
     st.markdown("<h3 style='font-size:18px;font-weight:600;margin-top:16px;'>Or Customize Manually</h3>", unsafe_allow_html=True)
