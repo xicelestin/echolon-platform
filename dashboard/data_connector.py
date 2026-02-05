@@ -318,7 +318,8 @@ class DataConnector:
                     'cohort': cohort,
                     'period': period,
                     'week': i,
-                    'retention': max(0.5, 1.0 - (i * 0.08)})
+                    'retention': max(0.5, 1.0 - (i * 0.08)))
+                            })
         
         return {
             'cohort_data': pd.DataFrame(data),
