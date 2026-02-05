@@ -113,7 +113,6 @@ def render_scenario_presets():
     """Render What-If scenario preset selector."""
     st.markdown("### 🎯 Quick Scenario Presets")
     st.caption("Load pre-configured scenarios to quickly test different strategies")
-    
     col1, col2 = st.columns([2, 1])
     
     with col1:
