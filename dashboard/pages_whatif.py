@@ -4,8 +4,7 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 from advanced_components import WhatIfAnalysis
-from enhancement_features import render_scenario_presets, SCENARIO_PRESETS
-
+from enhancement_features import SCENARIO_PRESETS  # render_scenario_presets temporarily removed due to indentation error
 def generate_scenario_insights(scenarios, revenue_growth, churn_rate, cac_change):
     """Generate AI-powered insights based on scenario analysis"""
     insights = []
