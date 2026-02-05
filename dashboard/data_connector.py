@@ -325,3 +325,13 @@ class DataConnector:
             'cohort_data': pd.DataFrame(data),
             'periods': periods
         }
+
+# Singleton instance
+_connector_instance = None
+
+def get_connector() -> DataConnector:
+    """Get or create the singleton DataConnector instance."""
+    global _connector_instance
+    if _connector_instance is None:
+        _connector_instance = DataConnector()
+    return _connector_instance
