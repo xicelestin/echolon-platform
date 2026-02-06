@@ -76,55 +76,12 @@ p = st.session_state.current_page
 args = (data, kpis, format_currency, format_percentage, format_multiplier)
 
 if p == "Dashboard": st.title("Dashboard")
+            pass  # Dashboard content will be added here
 elif p == "Analytics": render_analytics_page(*args)
 elif p == "Predictions": render_predictions_page()
 elif p == "Recommendations": render_recommendations_page()
 elif p == "What-If Analysis": render_whatif_page()
         
-    # Key Metrics
-    st.markdown("### 📊 Key Business Metrics")
-            col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        total_revenue = data['revenue'].sum()
-        st.metric("Total Revenue", format_currency(total_revenue, 1), "+12.5%")
-    
-    with col2:
-        total_orders = data['orders'].sum()
-        st.metric("Total Orders", format_number(total_orders), "+8.3%")
-    
-    with col3:
-        total_customers = data['customers'].sum()
-        st.metric("Total Customers", format_number(total_customers), "+15.2%")
-    
-    with col4:
-        avg_profit_margin = data['profit_margin'].mean()
-        st.metric("Avg Profit Margin", format_percentage(avg_profit_margin), "+2.1%")
-    
-    st.markdown("---")
-    
-    # Revenue Trend
-    st.markdown("### 📈 Revenue Trend (Last 90 Days)")
-    recent_data = data.tail(90)
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=recent_data['date'], y=recent_data['revenue'], mode='lines', name='Revenue', line=dict(color='#1f77b4', width=2)))
-    fig.update_layout(height=300, showlegend=False, hovermode='x unified')
-    st.plotly_chart(fig, use_container_width=True)
-    
-    st.markdown("---")
-    
-    # Quick Actions
-    st.markdown("### 🎯 Quick Actions")
-    col_a, col_b, col_c = st.columns(3)
-    
-    with col_a:
-        st.info("💡 **View Recommendations**\n\nGet AI-powered insights to grow your business")
-    
-    with col_b:
-        st.success("📊 **Analytics**\n\nDeep dive into performance trends")
-    
-    with col_c:
-        st.warning("⚠️ **Alerts**\n\nCheck for anomalies and alerts")
     elif p == "Inventory": render_inventory_page(*args)elif p == "Inventory Optimization": render_inventory_optimization_page(data, kpis, format_currency, format_percentage, format_number)
 elif p == "Customer Insights": render_customer_insights_page(*args)
 elif p == "Inventory & Demand": render_inventory_demand_page(*args)
