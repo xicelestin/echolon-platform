@@ -75,21 +75,6 @@ with st.sidebar:
 p = st.session_state.current_page
 args = (data, kpis, format_currency, format_percentage, format_multiplier)
 
-if p == "Dashboard": st.title("Dashboard")
-            pass  # Dashboard content will be added here
-elif p == "Analytics": render_analytics_page(*args)
-elif p == "Predictions": render_predictions_page()
-elif p == "Recommendations": render_recommendations_page()
-elif p == "What-If Analysis": render_whatif_page()
-        
-    elif p == "Inventory": render_inventory_page(*args)elif p == "Inventory Optimization": render_inventory_optimization_page(data, kpis, format_currency, format_percentage, format_number)
-elif p == "Customer Insights": render_customer_insights_page(*args)
-elif p == "Inventory & Demand": render_inventory_demand_page(*args)
-elif p == "Anomalies & Alerts": render_anomalies_alerts_page(*args)
-elif p == "Margin Analysis": render_margin_analysis_page(*args)
-elif p == "Smart Alerts": render_smart_alerts_page(*args)
-elif p == "Cohort Analysis": render_cohort_analysis_page(*args)
-elif p == "Customer LTV": render_customer_ltv_page(*args)
-elif p == "Revenue Attribution": render_revenue_attribution_page(*args)
-elif p == "Competitive Benchmark": render_competitive_benchmark_page(*args)
-elif p == "Data Sources": render_data_sources_page()
+    if p == "Dashboard":
+        st.title("Dashboard")
+        # Add Dashboard content here
