@@ -26,7 +26,8 @@ from pages_anomalies_alerts import render_anomalies_alerts_page
 from pages_analytics import render_analytics_page
 from pages_predictions import render_predictions_page
 from pages_recommendations import render_recommendations_page
-from pages_whatif import render_whatif_page  # Temporarily commented - has IndentationErrorfrom pages_inventory_optimization import render_inventory_optimization_page
+from pages_whatif import render_whatif_page  # Temporarily commented - has IndentationErro
+from pages_inventory_optimization import render_inventory_optimization_page
 
 from auth import require_authentication, render_user_info
 if not require_authentication():
