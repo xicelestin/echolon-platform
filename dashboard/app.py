@@ -26,8 +26,7 @@ from pages_anomalies_alerts import render_anomalies_alerts_page
 from pages_analytics import render_analytics_page
 from pages_predictions import render_predictions_page
 from pages_recommendations import render_recommendations_page
-# from pages_whatif import render_whatif_page  # Temporarily commented - has IndentationErrorfrom pages_inventory_ops import render_inventory_page
-from pages_inventory_optimization import render_inventory_optimization_page
+from pages_whatif import render_whatif_page  # Temporarily commented - has IndentationErrorfrom pages_inventory_optimization import render_inventory_optimization_page
 
 from auth import require_authentication, render_user_info
 if not require_authentication():
@@ -84,7 +83,7 @@ elif p == "What-If Analysis": render_whatif_page()
         
     # Key Metrics
     st.markdown("### 📊 Key Business Metrics")
-    col1, col2, col3, col4 = st.columns(4)
+            col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         total_revenue = data['revenue'].sum()
@@ -126,8 +125,7 @@ elif p == "What-If Analysis": render_whatif_page()
     
     with col_c:
         st.warning("⚠️ **Alerts**\n\nCheck for anomalies and alerts")
-elif p == "Inventory": render_inventory_page()
-elif p == "Inventory Optimization": render_inventory_optimization_page(data, kpis, format_currency, format_percentage, format_number)
+    elif p == "Inventory": render_inventory_page(*args)elif p == "Inventory Optimization": render_inventory_optimization_page(data, kpis, format_currency, format_percentage, format_number)
 elif p == "Customer Insights": render_customer_insights_page(*args)
 elif p == "Inventory & Demand": render_inventory_demand_page(*args)
 elif p == "Anomalies & Alerts": render_anomalies_alerts_page(*args)
