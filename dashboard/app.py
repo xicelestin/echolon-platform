@@ -26,7 +26,7 @@ from pages_anomalies_alerts import render_anomalies_alerts_page
 from pages_analytics import render_analytics_page
 from pages_predictions import render_predictions_page
 from pages_recommendations import render_recommendations_page
-from pages_whatif import render_whatif_page  # Temporarily commented - has IndentationErro
+# from pages_whatif import render_whatif_page  # Temporarily commented - has IndentationErro
 from pages_inventory_optimization import render_inventory_optimization_page
 
 from auth import require_authentication, render_user_info
@@ -68,7 +68,7 @@ kpis = {'total_revenue': data['revenue'].sum(), 'roas': data['roas'].mean()}
 
 with st.sidebar:
     st.title("Echolon AI")
-    for p in ["Dashboard", "Analytics", "Predictions", "Recommendations", "What-If Analysis", "Inventory", "Customer Insights", "Inventory & Demand", "Anomalies & Alerts", "Inventory Optimization", "Margin Analysis", "Smart Alerts", "Cohort Analysis", "Customer LTV", "Revenue Attribution", "Competitive Benchmark", "Data Sources"]:
+    for p in ["Dashboard", "Analytics", "Predictions", "Recommendations", "Inventory", "Customer Insights", "Inventory & Demand", "Anomalies & Alerts", "Inventory Optimization", "Margin Analysis", "Smart Alerts", "Cohort Analysis", "Customer LTV", "Revenue Attribution", "Competitive Benchmark", "Data Sources"]:
         if st.button(p, use_container_width=True):
             st.session_state.current_page = p
             st.rerun()
