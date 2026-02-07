@@ -76,5 +76,6 @@ with st.sidebar:
 p = st.session_state.current_page
 args = (data, kpis, format_currency, format_percentage, format_multiplier)
 
-    if p == "Dashboard":        st.title("Dashboard")
+    if p == "Dashboard":  
+                st.title("Dashboard")
         # Add Dashboard content here
