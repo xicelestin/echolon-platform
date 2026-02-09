@@ -83,9 +83,9 @@ if p == "Dashboard":
 elif p == "Analytics":
     render_analytics_page(*args)
 elif p == "Predictions":
-    render_predictions_page(*args)
+    render_predictions_page()
 elif p == "Recommendations":
-    render_recommendations_page(*args)
+    render_recommendations_page()
 elif p == "Inventory":
     st.title("Inventory")
     st.write("Inventory page content coming soon...")
