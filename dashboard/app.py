@@ -82,8 +82,7 @@ if p == "Dashboard":
         
     
     # Demo Data Banner
-    st.info("📊 Demo Data | Last updated: " + data['date'].max().strftime('%Y-%m-%d'))
-    
+        st.info("📊 Demo Data | Last updated: " + data['date'].max().strftime('%Y-%m-%d'))    
     # Executive Summary
     st.subheader("📈 Executive Summary")
     
