@@ -80,3 +80,34 @@ args = (data, kpis, format_currency, format_percentage, format_multiplier)
 if p == "Dashboard":         
         st.title("Dashboard")
         # Add Dashboard content here
+elif p == "Analytics":
+    render_analytics_page(*args)
+elif p == "Predictions":
+    render_predictions_page(*args)
+elif p == "Recommendations":
+    render_recommendations_page(*args)
+elif p == "Inventory":
+    st.title("Inventory")
+    st.write("Inventory page content coming soon...")
+elif p == "Customer Insights":
+    render_customer_insights_page(*args)
+elif p == "Inventory & Demand":
+    render_inventory_demand_page(*args)
+elif p == "Anomalies & Alerts":
+    render_anomalies_alerts_page(*args)
+elif p == "Inventory Optimization":
+    render_inventory_optimization_page(*args)
+elif p == "Margin Analysis":
+    render_margin_analysis_page(*args)
+elif p == "Smart Alerts":
+    render_smart_alerts_page(*args)
+elif p == "Cohort Analysis":
+    render_cohort_analysis_page(*args)
+elif p == "Customer LTV":
+    render_customer_ltv_page(*args)
+elif p == "Revenue Attribution":
+    render_revenue_attribution_page(*args)
+elif p == "Competitive Benchmark":
+    render_competitive_benchmark_page(*args)
+elif p == "Data Sources":
+    render_data_sources_page(*args)
