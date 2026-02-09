@@ -110,4 +110,4 @@ elif p == "Revenue Attribution":
 elif p == "Competitive Benchmark":
     render_competitive_benchmark_page(*args)
 elif p == "Data Sources":
-    render_data_sources_page(*args)
+    render_data_sources_page()
