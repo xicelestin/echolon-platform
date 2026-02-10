@@ -85,8 +85,8 @@ if p == "Dashboard":
         st.info("📊 Demo Data | Last updated: " + data['date'].max().strftime('%Y-%m-%d'))    
     # Executive Summary
         st.subheader("📊 Executive Summary")    
-    # Key Metrics Grid
-    col1, col2, col3, col4 = st.columns(4)
+            # Key Metrics Grid
+            col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         total_rev = data['revenue'].sum()
