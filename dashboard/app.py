@@ -92,15 +92,15 @@ if p == "Dashboard":
                 total_rev = data['revenue'].sum()
                 st.metric("Total Revenue", format_currency(total_rev), "↑ 12.3%")
     
-    with col2:
+        with col2:
                 total_profit = data['profit'].sum()
                 st.metric("Total Profit", format_currency(total_profit), "↑ 8.5%")
     
-    with col3:
+        with col3:
                 avg_margin = data['profit_margin'].mean()
                 st.metric("Avg Margin", format_percentage(avg_margin), "✓ Healthy")
     
-    with col4:
+        with col4:
                 avg_roas = data['roas'].mean()
                 st.metric("Avg ROAS", format_multiplier(avg_roas), "↑ 15.2%")
     
