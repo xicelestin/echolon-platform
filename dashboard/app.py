@@ -89,20 +89,20 @@ if p == "Dashboard":
         col1, col2, col3, col4 = st.columns(4)
     
         with col1:
-        total_rev = data['revenue'].sum()
-        st.metric("Total Revenue", format_currency(total_rev), "↑ 12.3%")
+                total_rev = data['revenue'].sum()
+                st.metric("Total Revenue", format_currency(total_rev), "↑ 12.3%")
     
     with col2:
-        total_profit = data['profit'].sum()
-        st.metric("Total Profit", format_currency(total_profit), "↑ 8.5%")
+                total_profit = data['profit'].sum()
+                st.metric("Total Profit", format_currency(total_profit), "↑ 8.5%")
     
     with col3:
-        avg_margin = data['profit_margin'].mean()
-        st.metric("Avg Margin", format_percentage(avg_margin), "✓ Healthy")
+                avg_margin = data['profit_margin'].mean()
+                st.metric("Avg Margin", format_percentage(avg_margin), "✓ Healthy")
     
     with col4:
-        avg_roas = data['roas'].mean()
-        st.metric("Avg ROAS", format_multiplier(avg_roas), "↑ 15.2%")
+                avg_roas = data['roas'].mean()
+                st.metric("Avg ROAS", format_multiplier(avg_roas), "↑ 15.2%")
     
     st.markdown("---")
     
