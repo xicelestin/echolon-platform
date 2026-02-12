@@ -88,7 +88,7 @@ if p == "Dashboard":
     # Key Metrics Grid
         col1, col2, col3, col4 = st.columns(4)
     
-    with col1:
+        with col1:
         total_rev = data['revenue'].sum()
         st.metric("Total Revenue", format_currency(total_rev), "↑ 12.3%")
     
