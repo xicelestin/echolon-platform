@@ -104,10 +104,10 @@ if p == "Dashboard":
                 avg_roas = data['roas'].mean()
                 st.metric("Avg ROAS", format_multiplier(avg_roas), "↑ 15.2%")
     
-    st.markdown("---")
+        st.markdown("---")
     
     # Quick Insights & Alerts
-    st.subheader("⚡ Quick Insights & Priority Actions")
+        st.subheader("⚡ Quick Insights & Priority Actions")
     
     col1, col2 = st.columns(2)
     
