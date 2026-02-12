@@ -109,34 +109,34 @@ if p == "Dashboard":
     # Quick Insights & Alerts
         st.subheader("⚡ Quick Insights & Priority Actions")
     
-    col1, col2 = st.columns(2)
+        col1, col2 = st.columns(2)
     
-    with col1:
-        st.markdown("### 🎯 Top Opportunities")
-        st.success("✅ **Software Category:** 85% margin - Scale marketing investment")
-        st.info("💡 **High-LTV Customers:** 32% generate 58% of revenue - Implement tiered pricing")
-        st.warning("⚠️ **Electronics Margin:** Only 15% - Consider 10-15% price increase")
+        with col1:
+                st.markdown("### 🎯 Top Opportunities")
+                st.success("✅ **Software Category:** 85% margin - Scale marketing investment")
+                st.info("💡 **High-LTV Customers:** 32% generate 58% of revenue - Implement tiered pricing")
+                st.warning("⚠️ **Electronics Margin:** Only 15% - Consider 10-15% price increase")
     
-    with col2:
-        st.markdown("### 📊 Key Trends")
-        recent_revenue = data.tail(30)['revenue'].mean()
-        older_revenue = data.head(30)['revenue'].mean()
-        trend = ((recent_revenue - older_revenue) / older_revenue) * 100
-        st.metric("30-Day Revenue Trend", format_currency(recent_revenue), f"{trend:+.1f}%")
+        with col2:
+                st.markdown("### 📊 Key Trends")
+                recent_revenue = data.tail(30)['revenue'].mean()
+                older_revenue = data.head(30)['revenue'].mean()
+                trend = ((recent_revenue - older_revenue) / older_revenue) * 100
+                st.metric("30-Day Revenue Trend", format_currency(recent_revenue), f"{trend:+.1f}%")
         
-        st.markdown(f"""  
-        - **Revenue Growth:** {trend:+.1f}% vs. previous period
-        - **Profit Margin:** Stable at 40%
-        - **Customer Acquisition:** {int(data['customers'].sum())} total customers
-        - **Inventory Health:** {int(data['inventory_units'].mean())} avg units
-        """)
+                st.markdown(f"""  
+                - **Revenue Growth:** {trend:+.1f}% vs. previous period
+                - **Profit Margin:** Stable at 40%
+                - **Customer Acquisition:** {int(data['customers'].sum())} total customers
+                - **Inventory Health:** {int(data['inventory_units'].mean())} avg units
+                """)
     
-    st.markdown("---")
+        st.markdown("---")
     
     # Quick Stats
-    st.subheader("📋 Business Health Score")
-    health_score = calculate_business_health_score(data, kpis)
-    display_business_health_score(health_score)
+        st.subheader("📋 Business Health Score")
+        health_score = calculate_business_health_score(data, kpis)
+        display_business_health_score(health_score)
 elif p == "Analytics":
     render_analytics_page(*args)
 elif p == "Predictions":
