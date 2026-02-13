@@ -1,4 +1,4 @@
-"""AI Predictions page with advanced forecasting."""
+"""AI Predictions page with advanced forecasting - uses real business data."""
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -6,13 +6,23 @@ from datetime import datetime, timedelta
 from advanced_components import PredictionMetrics
 from enhancement_features import show_model_transparency_panel
 
-def render_predictions_page():
-    """Render the comprehensive AI Predictions page."""
-    st.markdown("""<div style='margin-bottom:30px'><h1 style='font-size:32px; font-weight:700; margin-bottom:5px'>AI Predictions</h1><p style='color:#9CA3AF; font-size:16px'>Forecast future trends with confidence intervals and trend analysis.</p></div>""", unsafe_allow_html=True)
-    
-    # Data upload notification
+def render_predictions_page(data=None, kpis=None, format_currency=None, format_percentage=None, format_multiplier=None):
+    """Render the comprehensive AI Predictions page - uses real data when available."""
+    if data is None:
+        data = st.session_state.get('demo_data')
+    if data is None or (hasattr(data, 'empty') and data.empty):
+        st.warning("Load data from Dashboard or Data Sources to get personalized forecasts.")
+        return
+
+    has_live = bool(st.session_state.get('connected_sources'))
+    banner_color = "#10B981" if has_live else "#F59E0B"
+    banner_text = "🟢 Live Data" if has_live else "📊 Demo Data"
+    last_date = pd.to_datetime(data['date']).max().strftime('%Y-%m-%d') if 'date' in data.columns else 'N/A'
+
+    st.markdown("""<div style='margin-bottom:30px'><h1 style='font-size:32px; font-weight:700; margin-bottom:5px'>AI Predictions</h1><p style='color:#9CA3AF; font-size:16px'>Forecast future trends from your business data with confidence intervals.</p></div>""", unsafe_allow_html=True)
+
     st.markdown(
-        f"""<div style='background:#F59E0B;color:#1F2937;border-radius:8px;padding:12px 16px;font-size:15px;margin-bottom:24px;'><b>📊 Demo Data</b> | Last updated: {datetime.now().strftime('%H:%M on %Y-%m-%d')}</div>""",
+        f"""<div style='background:{banner_color};color:#1F2937;border-radius:8px;padding:12px 16px;font-size:15px;margin-bottom:24px;'><b>{banner_text}</b> | Based on your data through {last_date}</div>""",
         unsafe_allow_html=True
     )
     
@@ -48,15 +58,18 @@ def render_predictions_page():
     # Generate Predictions Button
     st.markdown("""<div style='margin-bottom:20px; margin-top:10px;'></div>""", unsafe_allow_html=True)
     
+    # Map metric to data column
+    metric_col_map = {'Revenue': 'revenue', 'Customer Count': 'customers', 'Inventory': 'inventory_units'}
+    col = metric_col_map.get(metric, 'revenue')
+    historical_values = data[col].copy() if col in data.columns else data['revenue'].copy()
+    window_map = {'1 Month': 1, '3 Months': 3, '6 Months': 6, '12 Months': 12}
+    periods = window_map.get(window, 12)
+
     if st.button("🔮 Generate Predictions", type="primary", use_container_width=True):
-        with st.spinner("Generating advanced forecast with confidence intervals..."):
-            # Generate mock historical data
-            historical_values = pd.Series(np.random.normal(100000, 15000, 30))
-            
-            # Generate forecast
+        with st.spinner("Generating forecast from your data..."):
             forecast_data = PredictionMetrics.generate_forecast_with_ci(
                 historical_values,
-                periods=12
+                periods=periods
             )
             
             # Display forecast chart
@@ -73,19 +86,21 @@ def render_predictions_page():
             st.markdown("""<div style='margin-top:30px; margin-bottom:20px'><h3 style='font-size:18px; font-weight:600;'>📋 Forecast Interpretation</h3></div>""", unsafe_allow_html=True)
             
             # Calculate metrics for display
-            current_value = historical_values.iloc[-1]
-            forecast_end = forecast_data['forecast'][-1]
-            change_pct = ((forecast_end - current_value) / current_value) * 100
+            current_value = float(historical_values.iloc[-1])
+            forecast_end = float(forecast_data['forecast'][-1])
+            change_pct = ((forecast_end - current_value) / current_value) * 100 if current_value != 0 else 0
             trend_strength = "Strong" if abs(change_pct) > 10 else "Moderate" if abs(change_pct) > 5 else "Weak"
             trend_dir = "upward" if change_pct > 0 else "downward"
-            
+            val_fmt = f"${current_value:,.0f}" if metric == "Revenue" else f"{current_value:,.0f}"
+            end_fmt = f"${forecast_end:,.0f}" if metric == "Revenue" else f"{forecast_end:,.0f}"
+
             interpretation = f"""
-            Based on the historical data and current market trends, the forecast indicates a **{trend_strength.lower()} {trend_dir} trend** 
-            for {metric.lower()}. 
-            
+            Based on your historical data, the forecast indicates a **{trend_strength.lower()} {trend_dir} trend**
+            for {metric.lower()}.
+
             **Key Findings:**
-            - Current {metric.lower()}: **${current_value:,.0f}** (baseline)
-            - Forecasted {metric.lower()} (end of {window}): **${forecast_end:,.0f}**
+            - Current {metric.lower()}: **{val_fmt}** (baseline)
+            - Forecasted {metric.lower()} (end of {window}): **{end_fmt}**
             - Expected change: **{change_pct:+.1f}%**
             - Confidence interval: **{confidence}**
             - Trend direction: **{forecast_data['trend_direction']}**
@@ -107,7 +122,7 @@ def render_predictions_page():
                 st.markdown(f"""
                 <div style='background:#1F2937;border-radius:8px;padding:16px;border:1px solid #374151;'>
                     <p style='color:#9CA3AF; font-size:12px; margin:0;'>Current Value</p>
-                    <h3 style='color:#10B981; font-size:24px; font-weight:700; margin:8px 0 0 0;'>${current_value:,.0f}</h3>
+                    <h3 style='color:#10B981; font-size:24px; font-weight:700; margin:8px 0 0 0;'>{val_fmt}</h3>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -115,7 +130,7 @@ def render_predictions_page():
                 st.markdown(f"""
                 <div style='background:#1F2937;border-radius:8px;padding:16px;border:1px solid #374151;'>
                     <p style='color:#9CA3AF; font-size:12px; margin:0;'>Forecasted Value</p>
-                    <h3 style='color:#3B82F6; font-size:24px; font-weight:700; margin:8px 0 0 0;'>${forecast_end:,.0f}</h3>
+                    <h3 style='color:#3B82F6; font-size:24px; font-weight:700; margin:8px 0 0 0;'>{end_fmt}</h3>
                 </div>
                 """, unsafe_allow_html=True)
             

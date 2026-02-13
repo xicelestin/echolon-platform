@@ -377,6 +377,14 @@ def render_csv_upload_section():
                         
                         # Store in session state
                         st.session_state.uploaded_data = processed_df
+                        if 'connected_sources' not in st.session_state:
+                            st.session_state.connected_sources = {}
+                        st.session_state.connected_sources['csv'] = {
+                            'name': 'CSV Upload',
+                            'connected_at': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                            'last_sync': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                            'status': 'active'
+                        }
                         
                         # Add to history
                         st.session_state.upload_history.append({
@@ -414,6 +422,13 @@ def render_data_sources_page_enhanced():
     """Enhanced main function with tabs for better UX"""
     st.title("📂 Data Sources")
     st.markdown("### Connect and manage your business data")
+    
+    # Live data badge + Connect in 2 min callout
+    has_connected = bool(st.session_state.get('connected_sources'))
+    if has_connected:
+        st.success("🟢 **Live Data** — Your dashboard is using connected data sources.")
+    else:
+        st.info("⚡ **Connect in 2 minutes** — Shopify, QuickBooks, or CSV upload. Get real insights from your data.")
     
     # Create tabs for better organization
     tab1, tab2, tab3 = st.tabs(["📊 Quick Upload", "🔗 Integrations", "📋 History"])

@@ -1,16 +1,26 @@
-metric,industry_avg,top_quartile,best_in_class,unit,description
-Profit Margin,35.0,45.0,55.0,%,Net profit as percentage of revenue
-ROAS,4.0,6.0,8.0,x,Return on advertising spend
-Customer Retention,75.0,85.0,90.0,%,Percentage of customers retained year-over-year
-Conversion Rate,3.5,5.0,7.0,%,Percentage of visitors who make a purchase
-LTV/CAC Ratio,3.0,5.0,7.0,x,Lifetime value to customer acquisition cost ratio
-Gross Margin,50.0,60.0,70.0,%,Gross profit as percentage of revenue
-Customer Satisfaction,75.0,85.0,95.0,%,Net Promoter Score or CSAT equivalent
-Average Order Value,75.0,125.0,200.0,$,Average transaction size
-Cart Abandonment Rate,70.0,60.0,45.0,%,Percentage of carts not completed (lower is better)
-Email Open Rate,15.0,25.0,35.0,%,Marketing email open rate
-Click-Through Rate,2.0,4.0,6.0,%,Marketing email/ad click-through rate
-Churn Rate,25.0,15.0,10.0,%,Percentage of customers lost annually (lower is better)
-Monthly Recurring Revenue Growth,5.0,10.0,20.0,%,MRR growth rate for SaaS businesses
-Customer Acquisition Cost,50.0,35.0,20.0,$,Cost to acquire one new customer (lower is better)
-Payback Period,18.0,12.0,6.0,months,Time to recover customer acquisition cost (lower is better)
+metric,industry,industry_avg,top_quartile,best_in_class,unit,description
+Profit Margin,ecommerce,30,40,50,%,Net profit as percentage of revenue
+ROAS,ecommerce,3.5,5,7,x,Return on advertising spend
+Customer Retention,ecommerce,65,78,88,%,Customers retained year-over-year
+Conversion Rate,ecommerce,2.5,4,6,%,Visitors who make a purchase
+LTV/CAC Ratio,ecommerce,2.5,4,6,x,Lifetime value to acquisition cost
+Profit Margin,saas,60,75,85,%,Net profit as percentage of revenue
+ROAS,saas,4,6,10,x,Return on advertising spend
+Customer Retention,saas,85,92,96,%,Annual retention rate
+Conversion Rate,saas,3,5,8,%,Trial to paid conversion
+LTV/CAC Ratio,saas,3,5,8,x,Lifetime value to acquisition cost
+Profit Margin,restaurant,8,12,18,%,Net profit as percentage of revenue
+ROAS,restaurant,2.5,4,5,x,Return on marketing spend
+Customer Retention,restaurant,40,55,70,%,Repeat customer rate
+Conversion Rate,restaurant,N/A,N/A,N/A,%,Walk-in / reservation conversion
+LTV/CAC Ratio,restaurant,2,3,4,x,Lifetime value to acquisition cost
+Profit Margin,services,20,30,40,%,Net profit as percentage of revenue
+ROAS,services,3,5,7,x,Return on marketing spend
+Customer Retention,services,70,82,90,%,Client retention rate
+Conversion Rate,services,15,25,35,%,Lead to client conversion
+LTV/CAC Ratio,services,3,5,7,x,Lifetime value to acquisition cost
+Profit Margin,general,35,45,55,%,Net profit as percentage of revenue
+ROAS,general,4,6,8,x,Return on advertising spend
+Customer Retention,general,75,85,92,%,Year-over-year retention
+Conversion Rate,general,3.5,5,7,%,Conversion rate
+LTV/CAC Ratio,general,3,5,7,x,Lifetime value to acquisition cost

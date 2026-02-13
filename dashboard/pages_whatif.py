@@ -74,8 +74,7 @@ def render_whatif_page():
     </div>
     """, unsafe_allow_html=True)
 
-        # Scenario Presets Section
-    # render_scenario_presets()  # Temporarily commented out due to indentation error
+    # Scenario Presets Section (simplified - presets available in Customize Manually)
     # Divider
     st.markdown("""<div style='margin:24px 0;border-top:1px solid #374151;'></div>""", unsafe_allow_html=True)
     st.markdown("<h3 style='font-size:18px;font-weight:600;margin-top:16px;'>Or Customize Manually</h3>", unsafe_allow_html=True)
@@ -371,7 +370,7 @@ def render_whatif_page():
 
 def create_scenario_comparison_chart(scenarios, metric_name):
     """Create visual comparison of multiple scenarios."""
-        scenario_names = [k.replace('_', ' ').title() for k in scenarios.keys()]
+    scenario_names = [k.replace('_', ' ').title() for k in scenarios.keys()]
     scenario_values = [scenarios[k].get(metric_name, 0) for k in scenarios.keys()]
     colors = ['#2ecc71' if 'best' in k else '#e74c3c' if 'worst' in k else '#3498db' for k in scenarios.keys()]
     

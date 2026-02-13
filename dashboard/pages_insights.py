@@ -1,13 +1,11 @@
-"""Sales Distribution & Key Metrics Page."""
+"""Sales Distribution & Key Metrics Page - Data-driven from actual business data."""
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 from datetime import datetime, timedelta
-from advanced_components import SalesInsights
-from premium_enhancements import detect_anomalies, render_alert, predict_churn, cohort_table, benchmark_chart
-from enhancement_features import show_benchmark_comparison
+from utils import calculate_key_metrics, calculate_period_comparison
 
 def create_kpi_card(icon, title, value, delta, delta_pct_color, help_text):
     """Create a professional KPI card."""
@@ -25,25 +23,44 @@ def create_kpi_card(icon, title, value, delta, delta_pct_color, help_text):
     </div>
     '''
 
-def render_insights_page():
-    """Render the Sales Insights & Key Metrics page."""
-    st.markdown("""<div style='margin-bottom:30px'><h1 style='font-size:36px;font-weight:700;margin-bottom:5px'>Sales Insights & Key Metrics</h1><p style='color:#9CA3AF;font-size:16px;margin:0'>Comprehensive business performance analysis</p></div>""", unsafe_allow_html=True)
-    
-    st.markdown(f"""<div style='background:#065F46;color:#D1FAE5;border-radius:8px;padding:12px 16px;font-size:15px;margin-bottom:24px;'><b>✓ Live Data</b> | Last updated: {datetime.now().strftime('%H:%M on %Y-%m-%d')}</div>""", unsafe_allow_html=True)
-    
-    # Generate mock data
-    np.random.seed(42)
-    revenue_data = np.random.normal(500000, 50000, 30)
-    
-    # KPI Calculations
-    total_revenue = revenue_data.sum()
-    active_customers = 2340
-    avg_order_value = 127.50
-    ltv = 3450
-    cac = 45
-    ltv_cac_ratio = ltv / cac
-    mrr_growth = 8.2
-    churn_rate = 2.1
+def render_insights_page(data=None, kpis=None, format_currency=None, format_percentage=None, format_number=None):
+    """Render the Sales Insights & Key Metrics page - uses real data when provided."""
+    if data is None:
+        data = st.session_state.get('demo_data')
+    if data is None or (hasattr(data, 'empty') and data.empty):
+        st.warning("Load data from Dashboard or Data Sources to see insights.")
+        return
+
+    fmt_cur = format_currency or (lambda v, d=0: f"${v:,.0f}" if v < 1e6 else f"${v/1e6:.1f}M")
+    fmt_pct = format_percentage or (lambda v, d=1: f"{v:.1f}%")
+
+    metrics = calculate_key_metrics(data)
+    total_revenue = data['revenue'].sum() if 'revenue' in data.columns else 0
+    total_orders = data['orders'].sum() if 'orders' in data.columns else 0
+    active_customers = int(data['customers'].iloc[-1]) if 'customers' in data.columns else int(total_orders * 0.5)
+    avg_order_value = (total_revenue / total_orders) if total_orders > 0 else 50
+    ltv = metrics.get('ltv', avg_order_value * 12)
+    cac = metrics.get('cac', 45)
+    ltv_cac_ratio = (ltv / cac) if cac > 0 else 0
+    rev_growth = metrics.get('revenue_growth', 8)
+    churn_rate = metrics.get('churn_rate', 2.1)
+
+    # Period comparison for deltas
+    if len(data) >= 60 and 'revenue' in data.columns:
+        curr_rev = data.tail(30)['revenue'].sum()
+        prev_rev = data.iloc[-60:-30]['revenue'].sum()
+        rev_comp = calculate_period_comparison(curr_rev, prev_rev)
+        rev_delta = rev_comp['formatted_change']
+        rev_delta_color = '#10B981' if rev_comp['direction'] == 'up' else '#EF4444'
+    else:
+        rev_delta, rev_delta_color = '↑ 8%', '#10B981'
+
+    st.markdown("""<div style='margin-bottom:30px'><h1 style='font-size:36px;font-weight:700;margin-bottom:5px'>Sales Insights & Key Metrics</h1><p style='color:#9CA3AF;font-size:16px;margin:0'>Comprehensive business performance from your data</p></div>""", unsafe_allow_html=True)
+
+    has_live = bool(st.session_state.get('connected_sources'))
+    banner = "🟢 Live Data" if has_live else "📊 Demo Data"
+    last_date = pd.to_datetime(data['date']).max().strftime('%Y-%m-%d') if 'date' in data.columns else 'N/A'
+    st.markdown(f"""<div style='background:#065F46;color:#D1FAE5;border-radius:8px;padding:12px 16px;font-size:15px;margin-bottom:24px;'><b>{banner}</b> | Through {last_date}</div>""", unsafe_allow_html=True)
     
     # Display KPI Cards in 4 columns
     st.markdown("""<div style='margin-bottom:24px'><h3 style='font-size:20px;font-weight:600;margin-bottom:16px;'>Key Performance Indicators</h3></div>""", unsafe_allow_html=True)
@@ -52,8 +69,8 @@ def render_insights_page():
     
     with col1:
         st.markdown(create_kpi_card(
-            '💰', 'Total Revenue', f'${total_revenue/1000:.0f}K',
-            '↑ 8.2%', '#10B981', 'Total revenue this period'
+            '💰', 'Total Revenue', fmt_cur(total_revenue),
+            rev_delta, rev_delta_color, 'Total revenue this period'
         ), unsafe_allow_html=True)
     
     with col2:
@@ -64,14 +81,14 @@ def render_insights_page():
     
     with col3:
         st.markdown(create_kpi_card(
-            '🛍️', 'Average Order Value', f'${avg_order_value:.2f}',
-            '↓ 2.1%', '#EF4444', 'Mean transaction value'
+            '🛍️', 'Average Order Value', fmt_cur(avg_order_value, 2),
+            '—', '#9CA3AF', 'Mean transaction value'
         ), unsafe_allow_html=True)
     
     with col4:
         st.markdown(create_kpi_card(
-            '💎', 'Customer LTV', f'${ltv:,.0f}',
-            '↑ 12.3%', '#10B981', 'Lifetime value per customer'
+            '💎', 'Customer LTV', fmt_cur(ltv),
+            f'↑ {rev_growth:.1f}%', '#10B981', 'Lifetime value per customer'
         ), unsafe_allow_html=True)
     
     # Second row of KPIs
@@ -95,20 +112,20 @@ def render_insights_page():
     
     with col7:
         st.markdown(create_kpi_card(
-            '📈', 'MRR Growth', f'{mrr_growth:.1f}%',
-            '↑ 2.1%', '#10B981', 'Monthly recurring revenue growth'
+            '📈', 'Revenue Growth', fmt_pct(rev_growth),
+            'vs prior period', '#10B981', 'Revenue growth rate'
         ), unsafe_allow_html=True)
     
     with col8:
         st.markdown(create_kpi_card(
-            '⚠️', 'Churn Rate', f'{churn_rate:.1f}%',
-            '↓ 0.3%', '#10B981', 'Monthly customer churn'
+            '⚠️', 'Churn Rate', fmt_pct(churn_rate),
+            '—', '#9CA3AF', 'Monthly customer churn (est.)'
         ), unsafe_allow_html=True)
     
     # Divider
     st.markdown("""<div style='margin:32px 0;border-top:1px solid #374151;'></div>""", unsafe_allow_html=True)
 
-        # Export Insights Report
+    # Export Insights Report
     if st.button("📥 Export Insights Report"):
         report = f"""
 ECHOLON AI - BUSINESS INSIGHTS REPORT
@@ -116,14 +133,14 @@ Generated: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}
 
 KEY PERFORMANCE INDICATORS:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Revenue: ${total_revenue:,.0f}
+Revenue: {fmt_cur(total_revenue)}
 Active Customers: {active_customers:,}
-Average Order Value: ${avg_order_value:.2f}
-Customer LTV: ${ltv:,.0f}
-CAC: ${cac:.0f}
+Average Order Value: {fmt_cur(avg_order_value, 2)}
+Customer LTV: {fmt_cur(ltv)}
+CAC: {fmt_cur(cac)}
 LTV/CAC Ratio: {ltv_cac_ratio:.1f}x
-MRR Growth: {mrr_growth:.1f}%
-Churn Rate: {churn_rate:.1f}%
+Revenue Growth: {fmt_pct(rev_growth)}
+Churn Rate: {fmt_pct(churn_rate)}
 
 This report provides a comprehensive overview of your business metrics.
 For detailed analysis, please visit the Insights page in the Echolon platform.
@@ -237,6 +254,10 @@ For detailed analysis, please visit the Insights page in the Echolon platform.
     
     st.dataframe(action_items, use_container_width=True, hide_index=True)
 
-    # Add benchmark comparison feature
-    st.markdown("""<div style='margin:32px 0;border-top:1px solid #374151;'></div>""", unsafe_allow_html=True)
-    show_benchmark_comparison()
+    # Benchmark comparison (optional)
+    try:
+        from enhancement_features import show_benchmark_comparison
+        st.markdown("""<div style='margin:32px 0;border-top:1px solid #374151;'></div>""", unsafe_allow_html=True)
+        show_benchmark_comparison()
+    except Exception:
+        pass
