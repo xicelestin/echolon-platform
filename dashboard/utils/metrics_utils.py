@@ -107,6 +107,13 @@ def calculate_business_health_score(metrics: Dict[str, float], weights: Optional
         weights = default_weights    
     # Normalize each metric to 0-100 scale
     def normalize_growth(value, excellent=20, good=10, poor=-10):
+                # Ensure value is scalar
+        if hasattr(value, 'iloc'):
+            value = float(value.iloc[0]) if len(value) > 0 else 0
+        elif hasattr(value, '__iter__') and not isinstance(value, str):
+            value = float(list(value)[0]) if len(list(value)) > 0 else 0
+        value = float(value)
+
         if value >= excellent:
             return 100
         elif value >= good:
@@ -120,6 +127,13 @@ def calculate_business_health_score(metrics: Dict[str, float], weights: Optional
     
     def normalize_margin(value, excellent=40, good=20):
         if value >= excellent:
+                    # Ensure value is scalar
+        if hasattr(value, 'iloc'):
+            value = float(value.iloc[0]) if len(value) > 0 else 0
+        elif hasattr(value, '__iter__') and not isinstance(value, str):
+            value = float(list(value)[0]) if len(list(value)) > 0 else 0
+        value = float(value)
+
             return 100
         elif value >= good:
             return 70 + ((value - good) / (excellent - good)) * 30
@@ -129,6 +143,13 @@ def calculate_business_health_score(metrics: Dict[str, float], weights: Optional
             return max(0, value * 5)
     
     def normalize_positive(value, excellent=1.5, good=1.0):
+                # Ensure value is scalar
+        if hasattr(value, 'iloc'):
+            value = float(value.iloc[0]) if len(value) > 0 else 0
+        elif hasattr(value, '__iter__') and not isinstance(value, str):
+            value = float(list(value)[0]) if len(list(value)) > 0 else 0
+        value = float(value)
+
         if value >= excellent:
             return 100
         elif value >= good:
