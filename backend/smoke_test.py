@@ -97,14 +97,13 @@ def test_csv_upload_invalid_file():
 
 def test_csv_upload_missing_columns():
     """Test that CSV without required columns is rejected."""
-    # Create CSV without required columns
     csv_content = "id,name\n1,test\n"
     response = client.post(
         "/api/v1/upload_csv",
         files={"file": ("test.csv", csv_content.encode())}
     )
     assert response.status_code == 400
-    assert "must contain columns" in response.json()["detail"]
+    assert "date" in response.json()["detail"].lower()
     print("✓ Missing columns rejected")
 
 def test_csv_upload_valid():

@@ -79,25 +79,25 @@ def render_margin_analysis_page(data, kpis, format_currency, format_percentage, 
     
     st.markdown("---")
     
-    # Margin by Category (Simulated Product Categories)
+    # Margin by Category (real data when category exists, else simulated)
     st.subheader("📊 Margin by Product Category")
     
-    categories = ['Electronics', 'Software', 'Services', 'Consulting', 'Support']
-    margins_by_category = {
-        'Electronics': 15,
-        'Software': 85,
-        'Services': 45,
-        'Consulting': 65,
-        'Support': 55
-    }
-    
-    revenue_by_category = {
-        'Electronics': total_revenue * 0.30,
-        'Software': total_revenue * 0.25,
-        'Services': total_revenue * 0.20,
-        'Consulting': total_revenue * 0.15,
-        'Support': total_revenue * 0.10
-    }
+    if 'category' in data.columns:
+        cat_agg = data.groupby('category')['revenue'].sum().reset_index()
+        if 'profit' in data.columns:
+            cat_profit = data.groupby('category')['profit'].sum().reset_index()
+            cat_agg = cat_agg.merge(cat_profit, on='category')
+            cat_agg['margin_pct'] = (cat_agg['profit'] / cat_agg['revenue'] * 100).round(1)
+        else:
+            margin = data['profit_margin'].mean() if 'profit_margin' in data.columns else 40
+            cat_agg['margin_pct'] = margin
+        categories = cat_agg['category'].tolist()
+        margins_by_category = dict(zip(cat_agg['category'], cat_agg['margin_pct']))
+        revenue_by_category = dict(zip(cat_agg['category'], cat_agg['revenue']))
+    else:
+        categories = ['Electronics', 'Software', 'Services', 'Consulting', 'Support']
+        margins_by_category = {'Electronics': 15, 'Software': 85, 'Services': 45, 'Consulting': 65, 'Support': 55}
+        revenue_by_category = {c: total_revenue * (0.30 if c == 'Electronics' else 0.25 if c == 'Software' else 0.20 if c == 'Services' else 0.15 if c == 'Consulting' else 0.10) for c in categories}
     
     margin_df = pd.DataFrame({
         'Category': list(margins_by_category.keys()),

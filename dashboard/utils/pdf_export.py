@@ -129,6 +129,62 @@ def generate_investor_report_pdf(
     return buffer.getvalue()
 
 
+def generate_excel_report(
+    data: pd.DataFrame,
+    kpis: Dict,
+    health_score: Dict,
+    company_name: str = "Your Business"
+) -> Optional[bytes]:
+    """Generate Excel business report. No external deps beyond pandas+openpyxl."""
+    try:
+        import io
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            total_rev = kpis.get('total_revenue', data['revenue'].sum() if 'revenue' in data.columns else 0)
+            margin = data['profit_margin'].mean() if 'profit_margin' in data.columns else 40
+            summary = pd.DataFrame([
+                ['Company', company_name],
+                ['Report Date', datetime.now().strftime('%Y-%m-%d')],
+                ['Total Revenue', f"${total_rev:,.0f}"],
+                ['Profit Margin', f"{margin:.1f}%"],
+                ['Health Score', f"{health_score.get('score', 0)}/100"],
+            ], columns=['Metric', 'Value'])
+            summary.to_excel(writer, sheet_name='Summary', index=False)
+            if 'date' in data.columns and 'revenue' in data.columns:
+                monthly = data.copy()
+                monthly['date'] = pd.to_datetime(monthly['date'])
+                monthly['month'] = monthly['date'].dt.to_period('M').astype(str)
+                agg = monthly.groupby('month')['revenue'].sum().reset_index()
+                agg.to_excel(writer, sheet_name='Revenue by Month', index=False)
+            data.head(500).to_excel(writer, sheet_name='Raw Data', index=False)
+        return output.getvalue()
+    except Exception:
+        return None
+
+
+def create_excel_download_button(
+    data: pd.DataFrame,
+    kpis: Dict,
+    health_score: Dict,
+    company_name: str = "Your Business",
+    key: str = "excel_export"
+):
+    """Create Streamlit download button for Excel report."""
+    import streamlit as st
+    excel_bytes = generate_excel_report(data, kpis, health_score, company_name)
+    if excel_bytes:
+        st.download_button(
+            label="📊 Download Report (Excel)",
+            data=excel_bytes,
+            file_name=f"echolon_report_{datetime.now().strftime('%Y%m%d')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key=key,
+            use_container_width=True
+        )
+    else:
+        st.warning("Excel export requires `pip install openpyxl`.")
+
+
 def create_pdf_download_button(
     data: pd.DataFrame,
     kpis: Dict,

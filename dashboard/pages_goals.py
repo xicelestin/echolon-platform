@@ -7,7 +7,7 @@ from utils import get_goal_progress, calculate_key_metrics
 def render_goals_page(data=None, kpis=None, format_currency=None, format_percentage=None):
     """Render the Goals & Target Tracking page."""
     if data is None:
-        data = st.session_state.get('demo_data')
+        data = st.session_state.get('current_data') or st.session_state.get('uploaded_data')
     if format_currency is None:
         format_currency = lambda v, d=0: f"${v:,.0f}" if v < 1e6 else f"${v/1e6:.1f}M"
     if format_percentage is None:
@@ -75,7 +75,7 @@ def render_goals_page(data=None, kpis=None, format_currency=None, format_percent
             st.caption(progress['message'])
 
     st.markdown("---")
-    st.subheader("📋 Summary")
+    st.subheader("📋 Goals vs Actuals")
     achieved = sum([
         1 if goals['revenue']['current'] >= rev_target else 0,
         1 if goals['profit_margin']['current'] >= margin_target else 0,
@@ -83,3 +83,22 @@ def render_goals_page(data=None, kpis=None, format_currency=None, format_percent
         1 if goals['roas']['current'] >= roas_target else 0
     ])
     st.info(f"You're on track with **{achieved}/4** goals. Keep pushing!")
+    
+    # Gap summary
+    gaps = []
+    if goals['revenue']['current'] < rev_target:
+        gaps.append(f"Revenue: {format_currency(rev_target - goals['revenue']['current'])} to go")
+    if goals['profit_margin']['current'] < margin_target:
+        gaps.append(f"Margin: {margin_target - goals['profit_margin']['current']:.1f} pts to go")
+    if goals['customers']['current'] < cust_target:
+        gaps.append(f"Customers: {int(cust_target - goals['customers']['current']):,} to go")
+    if goals['roas']['current'] < roas_target:
+        gaps.append(f"ROAS: {roas_target - goals['roas']['current']:.1f}x to go")
+    if gaps:
+        st.caption("Gaps: " + " | ".join(gaps))
+
+    # Sync goal targets from inputs back to session state (for persistence)
+    st.session_state.goals['revenue']['target'] = rev_target
+    st.session_state.goals['profit_margin']['target'] = margin_target
+    st.session_state.goals['customers']['target'] = cust_target
+    st.session_state.goals['roas']['target'] = roas_target

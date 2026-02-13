@@ -252,6 +252,28 @@ class WhatIfAnalysis:
     """Scenario planning and what-if analysis."""
     
     @staticmethod
+    def generate_scenarios(
+        revenue_growth: float = 15,
+        churn_rate: float = 3,
+        cac_change: float = 0,
+        ltv_multiplier: float = 1.0,
+        opex_growth: float = 5,
+        market_expansion: float = 20,
+        base_revenue: float = 500000
+    ) -> Dict:
+        """Generate best/expected/worst case scenarios. base_revenue from your data when available."""
+        best_rev = base_revenue * (1 + revenue_growth / 100 * 1.2) ** 12
+        expected_rev = base_revenue * (1 + revenue_growth / 100 * 0.6) ** 12
+        worst_rev = base_revenue * (1 + revenue_growth / 100 * 0.2) ** 12
+        months_to_profit = 12 / max(1, revenue_growth / 10) if revenue_growth > 0 else 24
+        return {
+            'best_case': {'revenue': best_rev, 'growth': revenue_growth * 1.2},
+            'expected': {'revenue': expected_rev, 'growth': revenue_growth * 0.6},
+            'worst_case': {'revenue': worst_rev, 'growth': revenue_growth * 0.2},
+            'profitability_months': months_to_profit
+        }
+    
+    @staticmethod
     def project_scenario(
         baseline: Dict,
         scenario: Dict,

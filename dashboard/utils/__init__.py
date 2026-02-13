@@ -31,6 +31,17 @@ from .metrics_utils import (
     format_percentage,
     get_trend_indicator
 )
+from .driver_analysis import get_change_explanation, analyze_revenue_drivers
+from .data_patterns import analyze_data_patterns
+from .alerts import get_metric_alerts
+from .personalized_insights import (
+    generate_personalized_insights,
+    generate_action_items,
+    get_top_priority_this_week,
+    get_what_changed,
+    get_quick_wins,
+    get_progress_callouts,
+)
 
 __all__ = [
 #         'DataValidator',
@@ -52,7 +63,17 @@ __all__ = [
     'get_goal_progress',
     'format_currency',
     'format_percentage',
-    'get_trend_indicator'
+    'get_trend_indicator',
+    'generate_personalized_insights',
+    'generate_action_items',
+    'get_top_priority_this_week',
+    'get_what_changed',
+    'get_quick_wins',
+    'get_progress_callouts',
+    'get_change_explanation',
+    'analyze_revenue_drivers',
+    'analyze_data_patterns',
+    'get_metric_alerts',
 ]
 
 __version__ = '1.0.0'

@@ -4,7 +4,8 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from typing import Dict, Any, Tuple
-from utils import calculate_business_health_score, calculate_key_metrics
+from utils import calculate_business_health_score, calculate_key_metrics, get_change_explanation, get_metric_alerts
+from utils.data_patterns import analyze_data_patterns
 
 
 def compute_cash_flow_metrics(data: pd.DataFrame) -> Dict[str, Any]:
@@ -48,64 +49,113 @@ def compute_cash_flow_metrics(data: pd.DataFrame) -> Dict[str, Any]:
     }
 
 
-def get_top_opportunities(data: pd.DataFrame, metrics: Dict, kpis: Dict) -> list:
-    """Identify top 3 opportunities from data."""
+def get_top_opportunities(data: pd.DataFrame, metrics: Dict, kpis: Dict, patterns: Dict = None) -> list:
+    """Identify top opportunities from data and detected patterns."""
     opportunities = []
-    
-    # Revenue growth opportunity
-    rev_growth = metrics.get('revenue_growth', 0)
-    if rev_growth < 10 and rev_growth >= 0:
+    patterns = patterns or {}
+
+    # Pattern-based: dimension shifts (channel, category, product - whatever exists in data)
+    dim_shifts = patterns.get('dimension_shifts', []) or patterns.get('channel_shifts', [])
+    growing = [c for c in dim_shifts if c.get('change_pct', 0) > 15]
+    declining = [c for c in dim_shifts if c.get('change_pct', 0) < -15]
+    if growing and not declining:
+        s = growing[0]
+        name = s.get('segment_name') or s.get('channel', '')
+        if name:
+            opportunities.append({
+                'title': f'Scale {name} — Up {s["change_pct"]:.0f}%',
+                'impact': f'{name} grew {s["change_pct"]:.0f}% vs prior 30 days and is now {s["share_now"]:.0f}% of revenue.',
+                'priority': 'high',
+                'action': f'Increase investment in {name} — it\'s your growth driver'
+            })
+    elif declining:
+        s = declining[0]
+        name = s.get('segment_name') or s.get('channel', '')
+        if name:
+            opportunities.append({
+                'title': f'Address {name} Decline',
+                'impact': f'{name} down {abs(s["change_pct"]):.0f}% vs prior period.',
+                'priority': 'high',
+                'action': f'Review what changed in {name} — pricing, inventory, or competition'
+            })
+
+    # Pattern-based: seasonality (specific)
+    seasonality = patterns.get('seasonality', [])
+    peak = next((s for s in seasonality if s.get('direction') == 'above'), None)
+    if peak and len(opportunities) < 3:
         opportunities.append({
-            'title': 'Accelerate Revenue Growth',
-            'impact': f'Your {rev_growth:.1f}% growth is below 10% target. Marketing optimization could add 5-15%',
-            'priority': 'high',
-            'action': 'Review top-performing channels and increase spend'
-        })
-    elif rev_growth < 0:
-        opportunities.append({
-            'title': 'Reverse Revenue Decline',
-            'impact': f'Revenue down {abs(rev_growth):.1f}%. Immediate attention needed.',
-            'priority': 'critical',
-            'action': 'Audit churn drivers and customer acquisition'
-        })
-    
-    # Margin opportunity
-    margin = data['profit_margin'].mean() if 'profit_margin' in data.columns else 40
-    if margin < 30:
-        opportunities.append({
-            'title': 'Improve Profit Margins',
-            'impact': f'At {margin:.1f}%, you\'re leaving money on the table. Target 35%+',
-            'priority': 'high',
-            'action': 'Review pricing and cost structure'
-        })
-    
-    # ROAS opportunity
-    roas = data['roas'].mean() if 'roas' in data.columns else 3
-    if roas < 4:
-        opportunities.append({
-            'title': 'Optimize Marketing ROI',
-            'impact': f'ROAS of {roas:.1f}x is below 4x benchmark. Reallocate ad spend.',
+            'title': f'Plan for {peak["period"]} Peak',
+            'impact': peak['message'],
             'priority': 'medium',
-            'action': 'Pause underperformers, scale winners'
+            'action': f'Stock inventory and staff for next {peak["period"]} — historically {peak["multiplier"]}x your average'
         })
-    
-    # Customer growth
-    cust_growth = metrics.get('customer_growth', 0)
-    if cust_growth < 5 and 'customers' in data.columns:
+
+    # Pattern-based: low-margin winners (specific)
+    low_margin = patterns.get('low_margin_winners', [])
+    if low_margin and len(opportunities) < 3:
+        lm = low_margin[0]
         opportunities.append({
-            'title': 'Boost Customer Acquisition',
-            'impact': f'Customer growth at {cust_growth:.1f}%. Room to scale.',
-            'priority': 'medium',
-            'action': 'Test new acquisition channels'
+            'title': f'Improve Margin on {lm["category"]}',
+            'impact': lm['message'],
+            'priority': 'high',
+            'action': f'Raise prices or reduce costs on {lm["category"]} — high volume, thin margin'
         })
-    
+
+    # Fallback: metric-based (when no dimension patterns - use generic language)
+    if len(opportunities) < 2:
+        rev_growth = metrics.get('revenue_growth', 0)
+        if rev_growth < 10 and rev_growth >= 0:
+            opportunities.append({
+                'title': 'Accelerate Revenue Growth',
+                'impact': f'Your {rev_growth:.1f}% growth is below 10% target.',
+                'priority': 'high',
+                'action': 'Review what\'s driving revenue and increase investment there'
+            })
+        elif rev_growth < 0:
+            opportunities.append({
+                'title': 'Reverse Revenue Decline',
+                'impact': f'Revenue down {abs(rev_growth):.1f}%. Immediate attention needed.',
+                'priority': 'critical',
+                'action': 'Audit churn drivers and customer acquisition'
+            })
+
+        margin = data['profit_margin'].mean() if 'profit_margin' in data.columns else 40
+        if margin < 30 and not any('margin' in o['title'].lower() for o in opportunities):
+            opportunities.append({
+                'title': 'Improve Profit Margins',
+                'impact': f'At {margin:.1f}%, target 35%+',
+                'priority': 'high',
+                'action': 'Review pricing and cost structure'
+            })
+
+        roas = data['roas'].mean() if 'roas' in data.columns else 3
+        if roas < 4 and len(opportunities) < 3:
+            opportunities.append({
+                'title': 'Optimize Marketing ROI',
+                'impact': f'ROAS of {roas:.1f}x is below 4x benchmark.',
+                'priority': 'medium',
+                'action': 'Pause underperformers, scale winners'
+            })
+
     return opportunities[:3]
 
 
-def get_top_risks(data: pd.DataFrame, cash_metrics: Dict, metrics: Dict) -> list:
-    """Identify top 3 risks from data."""
+def get_top_risks(data: pd.DataFrame, cash_metrics: Dict, metrics: Dict, patterns: Dict = None) -> list:
+    """Identify top 3 risks from data and patterns."""
     risks = []
-    
+    patterns = patterns or {}
+
+    # Pattern-based: revenue anomalies (specific)
+    anomalies = patterns.get('anomalies', [])
+    drops = [a for a in anomalies if a.get('type') == 'drop']
+    if drops:
+        a = drops[0]
+        risks.append({
+            'title': f'Revenue Drop on {a["date"]}',
+            'severity': 'high',
+            'detail': a['message']
+        })
+
     if cash_metrics.get('cash_health') == 'critical':
         risks.append({
             'title': 'Low Cash Runway',
@@ -162,8 +212,10 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
     }
     health_score = calculate_business_health_score(health_metrics)
     cash_metrics = compute_cash_flow_metrics(data)
-    opportunities = get_top_opportunities(data, metrics, kpis)
-    risks = get_top_risks(data, cash_metrics, metrics)
+    pattern_analysis = analyze_data_patterns(data)
+    patterns = pattern_analysis.get('patterns', {}) if pattern_analysis.get('has_data') else {}
+    opportunities = get_top_opportunities(data, metrics, kpis, patterns)
+    risks = get_top_risks(data, cash_metrics, metrics, patterns)
     this_week = get_this_week_action(opportunities, risks)
     
     # === HERO: Health Score + Cash Flow ===
@@ -200,6 +252,46 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
         """, unsafe_allow_html=True)
     
     st.markdown("---")
+    
+    # === Alerts when metrics deteriorate ===
+    metric_alerts = get_metric_alerts(data, metrics)
+    if metric_alerts:
+        st.subheader("⚠️ Alerts")
+        for a in metric_alerts[:3]:
+            if a['severity'] == 'critical':
+                st.error(f"**{a['title']}** — {a['message']}")
+            else:
+                st.warning(f"**{a['title']}** — {a['message']}")
+        st.markdown("---")
+    
+    # === Key Patterns (from your data - uses actual segment names) ===
+    dim_shifts = patterns.get('dimension_shifts', []) or patterns.get('channel_shifts', [])
+    if patterns and (dim_shifts or patterns.get('seasonality') or patterns.get('top_categories')):
+        st.subheader("📊 Patterns in Your Data")
+        st.markdown("*Detected from your actual numbers — no generic templates.*")
+        if dim_shifts:
+            for c in dim_shifts[:3]:
+                name = c.get('segment_name') or c.get('channel', '')
+                if name:
+                    st.markdown(f"- **{name}**: {c['message']}")
+        if patterns.get('seasonality'):
+            for s in patterns['seasonality'][:2]:
+                st.markdown(f"- **{s['period']}**: {s['message']}")
+        if patterns.get('top_categories') and not patterns.get('channel_shifts'):
+            for cat in patterns['top_categories'][:3]:
+                st.markdown(f"- **{cat['category']}**: {cat['message']}")
+        st.markdown("---")
+
+    # === What Changed and Why (driver analysis) ===
+    change_explanation = get_change_explanation(data)
+    if change_explanation.get('has_explanation') or change_explanation.get('summary'):
+        st.subheader("📈 What Changed and Why")
+        st.markdown("*Echolon identifies the underlying drivers so you don't have to investigate manually.*")
+        if change_explanation.get('summary'):
+            st.info(change_explanation['summary'])
+        for d in change_explanation.get('drivers', [])[:4]:
+            st.markdown(f"- {d['explanation']}")
+        st.markdown("---")
     
     # === Top Opportunities ===
     st.subheader("🎯 Top Opportunities")

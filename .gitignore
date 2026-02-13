@@ -224,6 +224,9 @@ backend/app/services/ml/models_store/*.pkl
 backend/sample.csv
 dashboard/sample_data.csv
 
+# Per-user persisted data (stored locally, not in git)
+dashboard/data/user_data/
+
 # Local environment overrides
 .env.local
 .env.*.local

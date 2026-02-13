@@ -15,7 +15,7 @@ def _init_action_tracking():
 def render_recommendations_page(data=None, kpis=None, format_currency=None, format_percentage=None, format_multiplier=None):
     """Render the AI Recommendations page with data-driven insights."""
     if data is None:
-        data = st.session_state.get('demo_data')
+        data = st.session_state.get('current_data') or st.session_state.get('uploaded_data')
     if data is None or (hasattr(data, 'empty') and data.empty):
         st.warning("Load data from Dashboard or Data Sources to get personalized recommendations.")
         return

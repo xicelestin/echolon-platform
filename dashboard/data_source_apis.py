@@ -188,28 +188,33 @@ def fetch_shopify_data(credentials: Dict[str, Any]) -> Optional[pd.DataFrame]:
 
 # ==================== STRIPE INTEGRATION ====================
 
-def fetch_stripe_data(credentials: Dict[str, Any]) -> Optional[pd.DataFrame]:
+def fetch_stripe_data(credentials: Dict[str, Any], silent: bool = False) -> Optional[pd.DataFrame]:
     """
     Fetch payment data from Stripe using the Stripe API.
     
     Args:
         credentials: Dict containing 'api_key'
+        silent: If True, suppress st.error/warning (for background sync)
         
     Returns:
         DataFrame with Stripe transaction data or None if error
     """
+    def _warn(msg):
+        if not silent:
+            st.warning(msg)
+    def _err(msg):
+        if not silent:
+            st.error(msg)
     try:
         import stripe
         
         api_key = credentials.get('api_key')
         
         if not api_key:
-            # Try to get from Streamlit secrets
             if 'stripe' in st.secrets:
                 api_key = st.secrets['stripe'].get('api_key')
-        
         if not api_key:
-            st.warning("Stripe API key not provided or configured in secrets.")
+            _warn("Stripe API key not provided or configured in secrets.")
             return None
         
         stripe.api_key = api_key
@@ -236,7 +241,8 @@ def fetch_stripe_data(credentials: Dict[str, Any]) -> Optional[pd.DataFrame]:
                 })
         
         if not processed_data:
-            st.info("No charges found in Stripe.")
+            if not silent:
+                st.info("No charges found in Stripe.")
             return None
         
         df = pd.DataFrame(processed_data)
@@ -253,10 +259,10 @@ def fetch_stripe_data(credentials: Dict[str, Any]) -> Optional[pd.DataFrame]:
         return daily_data
         
     except ImportError:
-        st.error("Stripe library not installed. Run: pip install stripe")
+        _err("Stripe library not installed. Run: pip install stripe")
         return None
     except Exception as e:
-        st.error(f"Error fetching Stripe data: {str(e)}")
+        _err(f"Error fetching Stripe data: {str(e)}")
         return None
 
 # ==================== QUICKBOOKS INTEGRATION ====================
@@ -340,28 +346,37 @@ def fetch_quickbooks_data(credentials: Dict[str, Any]) -> Optional[pd.DataFrame]
 
 # ==================== MAIN API ROUTER ====================
 
-def fetch_data_from_api(source_key: str, credentials: Dict[str, Any] = None) -> Optional[pd.DataFrame]:
+def fetch_data_from_api(source_key: str, credentials: Dict[str, Any] = None, silent: bool = False) -> Optional[pd.DataFrame]:
     """
     Main router function to fetch data from different APIs.
     
     Args:
         source_key: The data source type ('google_sheets', 'shopify', 'stripe', 'quickbooks')
         credentials: Optional credentials dict
+        silent: If True, suppress st.error/warning (for background sync)
         
     Returns:
         DataFrame with fetched data or None if error
     """
     if credentials is None:
         credentials = {}
+
+    def _err(msg):
+        if not silent:
+            st.error(msg)
+
+    def _warn(msg):
+        if not silent:
+            st.warning(msg)
     
     if source_key == 'google_sheets':
         return fetch_google_sheets_data(credentials)
     elif source_key == 'shopify':
         return fetch_shopify_data(credentials)
     elif source_key == 'stripe':
-        return fetch_stripe_data(credentials)
+        return fetch_stripe_data(credentials, silent=silent)
     elif source_key == 'quickbooks':
         return fetch_quickbooks_data(credentials)
     else:
-        st.error(f"Unknown data source: {source_key}")
+        _err(f"Unknown data source: {source_key}")
         return None

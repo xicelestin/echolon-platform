@@ -5,7 +5,19 @@ import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 from datetime import datetime, timedelta
-from utils import calculate_key_metrics, calculate_period_comparison
+from utils import (
+    calculate_key_metrics,
+    calculate_period_comparison,
+    generate_personalized_insights,
+    generate_action_items,
+    get_top_priority_this_week,
+    get_what_changed,
+    get_quick_wins,
+    get_progress_callouts,
+    get_change_explanation,
+)
+from utils.data_patterns import analyze_data_patterns
+from utils.data_model import detect_and_map_columns
 
 def create_kpi_card(icon, title, value, delta, delta_pct_color, help_text):
     """Create a professional KPI card."""
@@ -26,7 +38,7 @@ def create_kpi_card(icon, title, value, delta, delta_pct_color, help_text):
 def render_insights_page(data=None, kpis=None, format_currency=None, format_percentage=None, format_number=None):
     """Render the Sales Insights & Key Metrics page - uses real data when provided."""
     if data is None:
-        data = st.session_state.get('demo_data')
+        data = st.session_state.get('current_data') or st.session_state.get('uploaded_data')
     if data is None or (hasattr(data, 'empty') and data.empty):
         st.warning("Load data from Dashboard or Data Sources to see insights.")
         return
@@ -62,6 +74,20 @@ def render_insights_page(data=None, kpis=None, format_currency=None, format_perc
     last_date = pd.to_datetime(data['date']).max().strftime('%Y-%m-%d') if 'date' in data.columns else 'N/A'
     st.markdown(f"""<div style='background:#065F46;color:#D1FAE5;border-radius:8px;padding:12px 16px;font-size:15px;margin-bottom:24px;'><b>{banner}</b> | Through {last_date}</div>""", unsafe_allow_html=True)
     
+    industry = st.session_state.get('industry', 'ecommerce')
+    
+    # Top Priority This Week - single clear recommendation
+    top_priority = get_top_priority_this_week(data, metrics, industry)
+    if top_priority:
+        st.markdown(f"""
+        <div style='background:linear-gradient(135deg,#1E3A5F 0%,#0F172A 100%);border:1px solid #3B82F6;border-radius:12px;padding:20px 24px;margin-bottom:24px;'>
+            <p style='color:#93C5FD;font-size:12px;margin:0 0 8px 0;text-transform:uppercase;letter-spacing:0.5px;'>🎯 Top Priority This Week</p>
+            <h3 style='color:#F3F4F6;font-size:20px;font-weight:700;margin:0 0 10px 0;'>{top_priority['title']}</h3>
+            <p style='color:#D1D5DB;font-size:15px;margin:0 0 8px 0;'>{top_priority['action']}</p>
+            <p style='color:#10B981;font-size:14px;margin:0;font-weight:600;'>Impact: {top_priority['impact']}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
     # Display KPI Cards in 4 columns
     st.markdown("""<div style='margin-bottom:24px'><h3 style='font-size:20px;font-weight:600;margin-bottom:16px;'>Key Performance Indicators</h3></div>""", unsafe_allow_html=True)
     
@@ -74,9 +100,18 @@ def render_insights_page(data=None, kpis=None, format_currency=None, format_perc
         ), unsafe_allow_html=True)
     
     with col2:
+        cust_delta = '—'
+        cust_delta_color = '#9CA3AF'
+        if 'customers' in data.columns and len(data) >= 60:
+            curr_cust = data.tail(30)['customers'].iloc[-1] if 'customers' in data.columns else 0
+            prev_cust = data.iloc[-60:-30]['customers'].iloc[-1] if len(data) >= 60 else curr_cust
+            if prev_cust > 0:
+                cust_pct = ((curr_cust - prev_cust) / prev_cust) * 100
+                cust_delta = f"{'↑' if cust_pct >= 0 else '↓'} {abs(cust_pct):.1f}%"
+                cust_delta_color = '#10B981' if cust_pct >= 0 else '#EF4444'
         st.markdown(create_kpi_card(
             '👥', 'Active Customers', f'{active_customers:,}',
-            '↑ 12.5%', '#10B981', 'Active customer count'
+            cust_delta, cust_delta_color, 'Active customer count'
         ), unsafe_allow_html=True)
     
     with col3:
@@ -152,107 +187,189 @@ For detailed analysis, please visit the Insights page in the Echolon platform.
             mime="text/plain"
         )
     
-    # Breakdown Analysis
+    # Breakdown Analysis - use real data when available
     st.markdown("""<div style='margin-bottom:20px'><h3 style='font-size:20px;font-weight:600;'>Sales Breakdown Analysis</h3></div>""", unsafe_allow_html=True)
     
     col_left, col_right = st.columns(2)
     
     with col_left:
-        st.markdown("""<div style='margin-bottom:16px'><h4 style='font-size:16px;font-weight:600;'>By Product Category</h4></div>""", unsafe_allow_html=True)
+        st.markdown("""<div style='margin-bottom:16px'><h4 style='font-size:16px;font-weight:600;'>Revenue by Month</h4></div>""", unsafe_allow_html=True)
         
-        categories = pd.DataFrame({
-            'Category': ['Electronics', 'Home & Garden', 'Apparel', 'Sports', 'Books'],
-            'Revenue': [125000, 98000, 87000, 65000, 45000],
-            'Units Sold': [450, 320, 580, 290, 620]
-        })
-        
-        fig_cat = px.bar(
-            categories, x='Revenue', y='Category', orientation='h',
-            color='Revenue', color_continuous_scale='Blues',
-            title='Revenue by Category'
-        )
-        fig_cat.update_layout(height=300, template='plotly_dark', showlegend=False)
+        if 'date' in data.columns and 'revenue' in data.columns:
+            monthly = data.copy()
+            monthly['date'] = pd.to_datetime(monthly['date'])
+            monthly['month'] = monthly['date'].dt.to_period('M').astype(str)
+            agg = monthly.groupby('month')['revenue'].sum().reset_index()
+            fig_cat = px.bar(agg, x='month', y='revenue', title='Revenue by Month')
+            fig_cat.update_layout(height=300, template='plotly_dark', xaxis_tickangle=-45)
+        else:
+            fig_cat = px.bar(x=['N/A'], y=[0], title='Revenue by Month')
+            fig_cat.update_layout(height=300, template='plotly_dark')
         st.plotly_chart(fig_cat, use_container_width=True)
     
     with col_right:
-        st.markdown("""<div style='margin-bottom:16px'><h4 style='font-size:16px;font-weight:600;'>By Sales Channel</h4></div>""", unsafe_allow_html=True)
-        
-        channels = pd.DataFrame({
-            'Channel': ['Online Store', 'Mobile App', 'Wholesale', 'Retail Partners', 'B2B'],
-            'Revenue': [210000, 142000, 98000, 32000, 18000]
-        })
-        
-        fig_channel = px.pie(
-            channels, values='Revenue', names='Channel',
-            title='Revenue Distribution by Channel',
-            color_discrete_sequence=['#3B82F6', '#06B6D4', '#8B5CF6', '#EC4899', '#F59E0B']
-        )
+        # Use dimension breakdown when available (channel, sales_channel, category, etc.)
+        dim_col = mapping.get('channel') or mapping.get('category') or ('channel' if 'channel' in data.columns else ('category' if 'category' in data.columns else None))
+        if dim_col and dim_col in data.columns and 'revenue' in data.columns:
+            label = 'Channel' if dim_col in ('channel', 'sales_channel', 'source', 'platform') else 'Category'
+            st.markdown(f"""<div style='margin-bottom:16px'><h4 style='font-size:16px;font-weight:600;'>Revenue by {label}</h4></div>""", unsafe_allow_html=True)
+            ch_agg = data.groupby(dim_col)['revenue'].sum().reset_index()
+            ch_agg = ch_agg.sort_values('revenue', ascending=False)
+            fig_channel = px.pie(
+                ch_agg, values='revenue', names=dim_col,
+                title='Revenue by Channel (your data)',
+                color_discrete_sequence=px.colors.qualitative.Set3
+            )
+        elif 'revenue' in data.columns and 'marketing_spend' in data.columns:
+            st.markdown("""<div style='margin-bottom:16px'><h4 style='font-size:16px;font-weight:600;'>Revenue vs Marketing Spend</h4></div>""", unsafe_allow_html=True)
+            channels = pd.DataFrame({
+                'Metric': ['Revenue', 'Marketing Spend'],
+                'Value': [data['revenue'].sum(), data['marketing_spend'].sum()]
+            })
+            fig_channel = px.pie(
+                channels, values='Value', names='Metric',
+                title='Revenue vs Marketing Investment',
+                color_discrete_sequence=['#10B981', '#F59E0B']
+            )
+        else:
+            st.markdown("""<div style='margin-bottom:16px'><h4 style='font-size:16px;font-weight:600;'>Revenue</h4></div>""", unsafe_allow_html=True)
+            fig_channel = px.pie(values=[1], names=['Revenue'], title='Revenue')
         fig_channel.update_layout(height=300, template='plotly_dark')
         st.plotly_chart(fig_channel, use_container_width=True)
     
-    # Regional Analysis
-    st.markdown("""<div style='margin:24px 0 16px 0;border-top:1px solid #374151;padding-top:24px;'><h4 style='font-size:16px;font-weight:600;margin-bottom:16px;'>Regional Performance</h4></div>""", unsafe_allow_html=True)
+    # Revenue Trend (real data)
+    st.markdown("""<div style='margin:24px 0 16px 0;border-top:1px solid #374151;padding-top:24px;'><h4 style='font-size:16px;font-weight:600;margin-bottom:16px;'>Revenue Trend Over Time</h4></div>""", unsafe_allow_html=True)
     
-    regions = pd.DataFrame({
-        'Region': ['North America', 'Europe', 'Asia Pacific', 'Latin America', 'Middle East & Africa'],
-        'Revenue': [250000, 145000, 85000, 35000, 15000],
-        'Growth %': [8.5, 12.3, 15.8, 5.2, 3.1],
-        'Customers': [1050, 650, 480, 120, 40]
-    })
-    
-    fig_regional = go.Figure()
-    fig_regional.add_trace(go.Bar(
-        x=regions['Region'], y=regions['Revenue'],
-        name='Revenue', marker_color='#3B82F6'
-    ))
-    fig_regional.update_layout(
-        title='Revenue by Region',
-        xaxis_title='Region', yaxis_title='Revenue ($)',
-        height=350, template='plotly_dark'
-    )
+    if 'date' in data.columns and 'revenue' in data.columns:
+        chart_data = data[['date', 'revenue']].copy()
+        chart_data['date'] = pd.to_datetime(chart_data['date'])
+        fig_regional = px.area(chart_data, x='date', y='revenue', title='Revenue Over Time')
+    else:
+        fig_regional = go.Figure()
+        fig_regional.add_annotation(text="No date/revenue data", x=0.5, y=0.5, showarrow=False)
+    fig_regional.update_layout(height=350, template='plotly_dark')
     st.plotly_chart(fig_regional, use_container_width=True)
+
+    # Dimension performance: current vs prior period (when channel/category exists)
+    dim_col = mapping.get('channel') or mapping.get('category') or ('channel' if 'channel' in data.columns else ('category' if 'category' in data.columns else None))
+    if dim_col and dim_col in data.columns and 'revenue' in data.columns and len(data) >= 60:
+        label = 'Channel' if dim_col in ('channel', 'sales_channel', 'source', 'platform') else 'Category'
+        st.markdown(f"""<div style='margin:24px 0 16px 0;'><h4 style='font-size:16px;font-weight:600;'>{label} Performance: Current vs Prior 30 Days</h4></div>""", unsafe_allow_html=True)
+        df_ch = data.copy()
+        df_ch['date'] = pd.to_datetime(df_ch['date'])
+        cutoff = df_ch['date'].max() - timedelta(days=30)
+        curr = df_ch[df_ch['date'] >= cutoff].groupby(dim_col)['revenue'].sum()
+        prev = df_ch[(df_ch['date'] >= cutoff - timedelta(days=30)) & (df_ch['date'] < cutoff)].groupby(dim_col)['revenue'].sum()
+        comp = pd.DataFrame({'Current': curr, 'Prior': prev}).fillna(0)
+        comp = comp.sort_values('Current', ascending=True)
+        fig_ch = go.Figure()
+        fig_ch.add_trace(go.Bar(name='Current 30d', y=comp.index, x=comp['Current'], orientation='h', marker_color='#10B981'))
+        fig_ch.add_trace(go.Bar(name='Prior 30d', y=comp.index, x=comp['Prior'], orientation='h', marker_color='#6B7280'))
+        fig_ch.update_layout(barmode='group', height=300, template='plotly_dark', xaxis_title='Revenue')
+        st.plotly_chart(fig_ch, use_container_width=True)
     
-    # Insights Section
-    st.markdown("""<div style='margin:32px 0 16px 0;border-top:1px solid #374151;padding-top:24px;'><h3 style='font-size:20px;font-weight:600;margin-bottom:16px;'>📊 Key Insights & Recommendations</h3></div>""", unsafe_allow_html=True)
+    # Product/Category margins (when category exists)
+    if 'category' in data.columns and 'revenue' in data.columns:
+        st.markdown("""<div style='margin:24px 0 16px 0;'><h4 style='font-size:16px;font-weight:600;'>Margin by Category</h4></div>""", unsafe_allow_html=True)
+        cat_data = data.groupby('category')['revenue'].sum().reset_index()
+        if 'profit' in data.columns:
+            cat_profit = data.groupby('category')['profit'].sum().reset_index()
+            cat_data = cat_data.merge(cat_profit, on='category')
+            cat_data['margin_pct'] = (cat_data['profit'] / cat_data['revenue'] * 100).round(1)
+        else:
+            margin = data['profit_margin'].mean() if 'profit_margin' in data.columns else 40
+            cat_data['margin_pct'] = margin
+        cat_data = cat_data.sort_values('revenue', ascending=False).head(10)
+        fig_cat = px.bar(cat_data, x='category', y='margin_pct', title='Profit Margin by Category',
+                         color='margin_pct', color_continuous_scale='RdYlGn')
+        fig_cat.update_layout(height=280, template='plotly_dark', xaxis_tickangle=-45)
+        st.plotly_chart(fig_cat, use_container_width=True)
+        low_margin = cat_data[cat_data['margin_pct'] < 25]
+        if not low_margin.empty:
+            st.markdown(f"**Low-margin categories:** {', '.join(low_margin['category'].tolist())} — consider pricing or cost review.")
     
-    insight_cols = st.columns(2)
+    # What Changed and Why - period-over-period + driver analysis
+    what_changed = get_what_changed(data, metrics)
+    change_explanation = get_change_explanation(data, metrics)
     
-    with insight_cols[0]:
-        st.markdown("""
-        ### ✅ What's Performing Well
-        
-        - **Asia Pacific Growth**: 15.8% YoY growth outpacing other regions
-        - **LTV Improvement**: 12.3% increase driven by repeat purchases
-        - **CAC Efficiency**: Down 5.2% while maintaining customer quality
-        - **Customer Retention**: Churn down to 2.1%, industry benchmark is 3.5%
-        """)
+    if what_changed or change_explanation.get('has_explanation'):
+        st.markdown("""<div style='margin:32px 0 16px 0;border-top:1px solid #374151;padding-top:24px;'><h3 style='font-size:20px;font-weight:600;margin-bottom:16px;'>📈 What Changed and Why</h3></div>""", unsafe_allow_html=True)
+        st.caption("Echolon identifies underlying drivers — no manual investigation needed.")
+        if what_changed:
+            for c in what_changed:
+                st.markdown(f"- **{c['metric']}**: {c['message']}")
+        if change_explanation.get('has_explanation') and change_explanation.get('drivers'):
+            st.markdown("**Drivers:**")
+            for d in change_explanation['drivers'][:4]:
+                st.markdown(f"  - {d['explanation']}")
+        elif change_explanation.get('summary'):
+            st.info(change_explanation['summary'])
+        st.markdown("")
     
-    with insight_cols[1]:
-        st.markdown("""
-        ### ⚠️ Areas for Attention
-        
-        - **AOV Decline**: 2.1% decrease suggests pricing pressure
-        - **Regional Disparity**: MENA regions underperforming (+3.1% vs +15.8%)
-        - **Channel Consolidation**: B2B channel only 2.8% of revenue
-        - **Wholesale Growth**: Opportunity to expand wholesale partnerships
-        """)
+    # Progress callouts (positive improvements)
+    progress = get_progress_callouts(data, metrics)
+    if progress:
+        st.markdown("""<div style='margin-bottom:16px;'><h4 style='font-size:16px;font-weight:600;'>✅ Progress This Period</h4></div>""", unsafe_allow_html=True)
+        for p in progress:
+            st.success(p)
+        st.markdown("")
     
-    # Action Items
-    st.markdown("""<div style='margin:24px 0 16px 0;'><h4 style='font-size:16px;font-weight:600;margin-bottom:16px;'>💡 Recommended Actions</h4></div>""", unsafe_allow_html=True)
+    # Quick Wins - under 2 hours
+    quick_wins = get_quick_wins(data, metrics, industry)
+    if quick_wins:
+        st.markdown("""<div style='margin:24px 0 16px 0;'><h3 style='font-size:20px;font-weight:600;margin-bottom:16px;'>⚡ Quick Wins (Under 2 Hours)</h3></div>""", unsafe_allow_html=True)
+        for w in quick_wins:
+            st.markdown(f"**{w['action']}** — {w['impact']} *({w['time']})*")
+        st.markdown("")
     
-    action_items = pd.DataFrame({
-        'Priority': ['🔴 High', '🔴 High', '🟡 Medium', '🟡 Medium'],
-        'Action': [
-            'Expand Asia Pacific operations',
-            'Investigate AOV decline with pricing review',
-            'Scale B2B channel with dedicated team',
-            'Implement MENA region marketing push'
-        ],
-        'Expected Impact': ['+$50K revenue', '+$20K revenue', '+$15K revenue', '+$8K revenue'],
-        'Timeline': ['90 days', '30 days', '60 days', '45 days']
-    })
+    # Pattern analysis (data-driven, no LLM)
+    pattern_analysis = analyze_data_patterns(data)
+    patterns = pattern_analysis.get('patterns', {}) if pattern_analysis.get('has_data') else {}
+    mapping = detect_and_map_columns(data) if data is not None else {}
+
+    # Key Patterns section (uses actual segment names from data)
+    dim_shifts = patterns.get('dimension_shifts', []) or patterns.get('channel_shifts', [])
+    if patterns and (dim_shifts or patterns.get('top_categories') or patterns.get('seasonality')):
+        st.markdown("""<div style='margin:32px 0 16px 0;border-top:1px solid #374151;padding-top:24px;'><h3 style='font-size:20px;font-weight:600;margin-bottom:16px;'>📊 Patterns in Your Data</h3></div>""", unsafe_allow_html=True)
+        st.caption("Detected from your actual numbers — no generic templates.")
+        if dim_shifts:
+            for c in dim_shifts[:4]:
+                name = c.get('segment_name') or c.get('channel', '')
+                if name:
+                    st.markdown(f"- **{name}**: {c['message']}")
+        if patterns.get('top_categories'):
+            for cat in patterns['top_categories'][:3]:
+                st.markdown(f"- **{cat['category']}**: {cat['message']}")
+        if patterns.get('seasonality'):
+            for s in patterns['seasonality'][:2]:
+                st.markdown(f"- **{s['period']}**: {s['message']}")
+        st.markdown("")
+
+    # Personalized Insights - uses patterns when available for specificity
+    st.markdown("""<div style='margin:24px 0 16px 0;'><h3 style='font-size:20px;font-weight:600;margin-bottom:16px;'>📊 Personalized Insights for Your Business</h3></div>""", unsafe_allow_html=True)
     
-    st.dataframe(action_items, use_container_width=True, hide_index=True)
+    insights = generate_personalized_insights(data, metrics, industry, patterns)
+    
+    if insights:
+        for ins in insights:
+            border = '#10B981' if ins['type'] == 'positive' else '#EF4444' if ins['type'] == 'critical' else '#F59E0B'
+            st.markdown(f"""
+            <div style="border-left:4px solid {border};padding:14px 16px;margin:10px 0;background:#1F2937;border-radius:6px;">
+                <h4 style="margin:0 0 8px 0;color:#F3F4F6;">{ins['icon']} {ins['title']}</h4>
+                <p style="margin:6px 0;color:#D1D5DB;font-size:14px;">{ins['message']}</p>
+                <p style="margin:6px 0;color:#9CA3AF;font-size:13px;"><b>→ Action:</b> {ins['action']}</p>
+                <p style="margin:4px 0 0 0;color:#6B7280;font-size:12px;">{ins.get('impact', '')}</p>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.info("Upload more data (revenue, orders, customers, marketing spend) to get personalized insights.")
+    
+    # Data-driven Action Items (uses patterns when available)
+    st.markdown("""<div style='margin:24px 0 16px 0;'><h4 style='font-size:16px;font-weight:600;margin-bottom:16px;'>💡 Recommended Actions (from your data)</h4></div>""", unsafe_allow_html=True)
+    
+    actions = generate_action_items(data, metrics, industry, patterns)
+    action_df = pd.DataFrame(actions)
+    st.dataframe(action_df, use_container_width=True, hide_index=True)
 
     # Benchmark comparison (optional)
     try:

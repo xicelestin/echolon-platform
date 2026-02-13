@@ -7,6 +7,8 @@ import pandas as pd
 from datetime import datetime
 import io
 from data_source_apis import fetch_data_from_api
+from auth import get_current_user
+from utils.user_data_storage import save_user_data
 
 # ==================== DATA SOURCE CONFIGURATIONS ====================
 DATA_SOURCES = {
@@ -77,7 +79,10 @@ def render_source_card(source_key, source_info):
             if source_info.get('coming_soon'):
                 st.info("🚀 Coming Soon")
             elif is_connected:
-                st.success(f"✅ Connected - Last sync: {st.session_state.connected_sources[source_key]['last_sync']}")
+                from utils.sync_utils import format_last_sync_ago
+                last = st.session_state.connected_sources[source_key].get('last_sync', '')
+                ago = format_last_sync_ago(last)
+                st.success(f"✅ Connected — Last synced {ago}")
             else:
                 st.caption(f"Data: {', '.join(source_info['fields'])}")
         
@@ -92,11 +97,60 @@ def render_source_card(source_key, source_info):
             elif source_key == 'csv':
                 if st.button("Upload CSV", key=f"connect_{source_key}", type="primary"):
                     st.session_state.show_csv_upload = True
+            elif source_key == 'stripe':
+                # Stripe: API key input (ready when user has key)
+                with st.expander("Connect with API Key", expanded=False):
+                    api_key = st.text_input(
+                        "Stripe Secret Key",
+                        type="password",
+                        placeholder="sk_live_... or sk_test_...",
+                        key="stripe_key_input",
+                        help="Get from Stripe Dashboard → Developers → API keys"
+                    )
+                    if st.button("Connect with Key", key="stripe_connect_btn"):
+                        if api_key:
+                            connect_source_with_credentials(source_key, {'api_key': api_key})
+                        else:
+                            st.warning("Enter your Stripe secret key.")
             else:
                 if st.button("Connect", key=f"connect_{source_key}", type="primary"):
                     connect_source(source_key, source_info)
         
         st.markdown("---")
+
+def connect_source_with_credentials(source_key, credentials):
+    """Connect using provided credentials (e.g. Stripe API key)."""
+    # Persist API keys per user (for Stripe sync, reconnect after refresh)
+    if "api_keys" not in st.session_state:
+        st.session_state.api_keys = {}
+    if "api_key" in credentials:
+        st.session_state.api_keys[source_key] = credentials["api_key"]
+    with st.spinner(f"Connecting to {DATA_SOURCES.get(source_key, {}).get('name', source_key)}..."):
+        st.session_state.connected_sources[source_key] = {
+            'name': DATA_SOURCES[source_key]['name'],
+            'connected_at': datetime.now().strftime("%Y-%m-%d %H:%M"),
+            'last_sync': datetime.now().strftime("%Y-%m-%d %H:%M"),
+            'status': 'active'
+        }
+        try:
+            data_df = fetch_data_from_api(source_key, credentials)
+            if data_df is not None and not data_df.empty:
+                st.session_state.uploaded_data = data_df
+                st.session_state.upload_history.append({
+                    'filename': f"{DATA_SOURCES[source_key]['name']}_data",
+                    'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    'rows': len(data_df),
+                    'columns': len(data_df.columns),
+                    'source': source_key
+                })
+                save_user_data(get_current_user())
+                st.success(f"✅ Connected! Loaded {len(data_df)} rows from {DATA_SOURCES[source_key]['name']}.")
+            else:
+                st.warning("Connected but no data returned. Check your API key and account.")
+        except Exception as e:
+            st.error(f"Connection failed: {str(e)}")
+        st.rerun()
+
 
 def connect_source(source_key, source_info):
     """Initiate OAuth connection and fetch data from source"""
@@ -125,7 +179,7 @@ def connect_source(source_key, source_info):
                     'columns': len(data_df.columns),
                     'source': source_key
                 })
-                
+                save_user_data(get_current_user())
                 st.success(f"✅ Successfully connected to {source_info['name']} and loaded {len(data_df)} rows!")
                 st.info("💡 Navigate to Dashboard to see your data insights")
             else:
@@ -137,27 +191,14 @@ def connect_source(source_key, source_info):
         st.rerun()
 
 def fetch_data_from_source(source_key, source_info):
-
-        """Fetch actual data from the connected source using real APIs.
-    
-    Args:
-        source_key: The data source identifier
-        source_info: Dictionary with source configuration
-    
-    Returns:
-        DataFrame with fetched data or None if error
-    """
-    # Try to fetch from real API first
-        try:
-                    api_data = fetch_data_from_api(source_key)
-        
-                    if api_data is not None and not api_data.empty:
-                                return api_data
-        except Exception as e:
-                        st.warning(f"Could not fetch from API: {str(e)}. Using demo data.")
-    
-    # Fallback to demo data if API fails or credentials not configured
-        return generate_demo_data_fallback(source_key)
+    """Fetch actual data from the connected source using real APIs."""
+    try:
+        api_data = fetch_data_from_api(source_key)
+        if api_data is not None and not api_data.empty:
+            return api_data
+    except Exception as e:
+        st.warning(f"Could not fetch from API: {str(e)}. Using demo data.")
+    return generate_demo_data_fallback(source_key)
 
 
 
@@ -169,16 +210,20 @@ def render_data_sources_page():
 def sync_data_source(source_key):
     """Re-sync data from a connected source"""
     with st.spinner(f"Syncing {source_key}..."):
-        # In production, fetch fresh data from API
-        # For MVP, we'll regenerate demo data
         source_info = DATA_SOURCES.get(source_key, {})
-        
+        # Use stored API key for Stripe sync (persisted per user)
+        credentials = {}
+        if source_key == "stripe":
+            key = st.session_state.get("api_keys", {}).get("stripe")
+            if key:
+                credentials = {"api_key": key}
         try:
-            data_df = fetch_data_from_source(source_key, source_info)
+            data_df = fetch_data_from_api(source_key, credentials) if credentials else fetch_data_from_source(source_key, source_info)
             
             if data_df is not None and not data_df.empty:
                 st.session_state.uploaded_data = data_df
                 st.session_state.connected_sources[source_key]['last_sync'] = datetime.now().strftime("%Y-%m-%d %H:%M")
+                save_user_data(get_current_user())
                 st.success(f"✅ Successfully synced {len(data_df)} rows from {source_info['name']}!")
             else:
                 st.warning("Sync completed but no new data was found.")
@@ -238,6 +283,10 @@ def generate_demo_data_fallback(source_key):
     
     return data
 
+# CSV upload limits (match backend)
+MAX_CSV_MB = 10
+MAX_CSV_ROWS = 100_000
+
 # ==================== ENHANCED CSV UPLOAD HANDLER ====================
 def render_csv_upload_section():
     """Enhanced CSV upload with drag-drop, validation, preview, and column mapping"""
@@ -248,7 +297,7 @@ def render_csv_upload_section():
     uploaded_file = st.file_uploader(
         "Drag and drop your CSV file here or click to browse",
         type=['csv'],
-        help="Supported: CSV files up to 200MB. Required columns: date, revenue, orders"
+        help=f"Max {MAX_CSV_MB}MB, {MAX_CSV_ROWS:,} rows. Required: date, revenue, orders"
     )
     
     if uploaded_file is not None:
@@ -257,24 +306,30 @@ def render_csv_upload_section():
             progress_bar = st.progress(0)
             status_text = st.empty()
             
-            # Step 1: Reading file
+            # Step 1: Read and validate size
             status_text.text("📖 Reading file...")
             progress_bar.progress(0.2)
+            contents = uploaded_file.read()
+            if len(contents) > MAX_CSV_MB * 1024 * 1024:
+                st.error(f"❌ File too large. Maximum size: {MAX_CSV_MB}MB")
+                return
+            uploaded_file.seek(0)
             df = pd.read_csv(uploaded_file)
             
             # Step 2: Validation
             status_text.text("✅ Validating data...")
             progress_bar.progress(0.4)
             
-            # Data validation
             validation_errors = []
             validation_warnings = []
             
             if df.empty:
                 validation_errors.append("File is empty")
             
-            if len(df) > 100000:
-                validation_warnings.append(f"Large dataset ({len(df)} rows) - processing may take time")
+            if len(df) > MAX_CSV_ROWS:
+                validation_errors.append(f"Too many rows ({len(df):,}). Maximum: {MAX_CSV_ROWS:,}. Consider sampling.")
+            elif len(df) > 50_000:
+                validation_warnings.append(f"Large dataset ({len(df):,} rows) - processing may take a moment")
             
             # Display preview
             status_text.text("📊 Preparing preview...")
@@ -327,6 +382,21 @@ def render_csv_upload_section():
                     help="Column containing cost of goods sold"
                 )
             
+            st.caption("Optional: Add these for driver analysis (what changed and why)")
+            col_map3, col_map4 = st.columns(2)
+            with col_map3:
+                channel_col = st.selectbox(
+                    "Channel Column (Optional)",
+                    options=[''] + list(df.columns),
+                    help="Sales channel: Online, POS, Wholesale, etc."
+                )
+            with col_map4:
+                category_col = st.selectbox(
+                    "Product Category Column (Optional)",
+                    options=[''] + list(df.columns),
+                    help="Product category for driver analysis"
+                )
+            
             # Validation of required mappings
             status_text.text("🔍 Checking column mappings...")
             progress_bar.progress(0.8)
@@ -370,6 +440,11 @@ def render_csv_upload_section():
                         else:
                             processed_df['cost'] = processed_df['revenue'] * 0.6  # Estimate
                         
+                        if channel_col:
+                            processed_df['channel'] = df[channel_col].astype(str)
+                        if category_col:
+                            processed_df['category'] = df[category_col].astype(str)
+                        
                         # Calculate derived metrics
                         processed_df['profit'] = processed_df['revenue'] - processed_df['cost']
                         processed_df['profit_margin'] = (processed_df['profit'] / processed_df['revenue'] * 100).round(2)
@@ -394,7 +469,7 @@ def render_csv_upload_section():
                             'columns': len(processed_df.columns),
                             'source': 'csv_upload'
                         })
-                        
+                        save_user_data(get_current_user())
                         st.success(f"✅ Successfully processed {len(processed_df):,} rows!")
                         st.info("💡 Navigate to Dashboard to see your insights")
                         st.balloons()

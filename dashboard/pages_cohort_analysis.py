@@ -105,7 +105,7 @@ def render_cohort_analysis_page(data, kpis, format_currency, format_percentage, 
     st.markdown("Track customer groups by signup date and analyze retention patterns")
     
     # Use the provided data or check for session state
-    df = data if data is not None else st.session_state.get('demo_data')
+    df = data if data is not None else st.session_state.get('current_data') or st.session_state.get('uploaded_data')
     
     if df is not None:
         cohort_df = generate_cohort_data(df)

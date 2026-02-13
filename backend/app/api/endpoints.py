@@ -1,5 +1,6 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
-from typing import List
+import os
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Header
+from typing import List, Optional
 import pandas as pd
 import io
 from app.schemas import schemas
@@ -21,16 +22,42 @@ except ImportError as e:
 
 router = APIRouter()
 
+# Max upload size: 10MB, max rows: 100k (configurable via env)
+MAX_CSV_BYTES = int(os.getenv("MAX_CSV_BYTES", 10 * 1024 * 1024))
+MAX_CSV_ROWS = int(os.getenv("MAX_CSV_ROWS", 100_000))
+
+
+def _get_user_id(authorization: Optional[str] = Header(None)) -> int:
+    """Get user_id from auth context. Defaults to 1 when auth not configured."""
+    # TODO: Integrate with auth_routes get_current_user when backend auth is wired
+    if authorization and "bearer " in authorization.lower():
+        try:
+            from auth import verify_token
+            payload = verify_token(authorization.split()[1])
+            if payload and "user_id" in payload:
+                return int(payload["user_id"]) if str(payload["user_id"]).isdigit() else 1
+        except Exception:
+            pass
+    return int(os.getenv("DEFAULT_USER_ID", "1"))
+
+
 @router.post("/upload_csv")
-async def upload_csv(file: UploadFile = File(...), session: Session = Depends(get_db)):
+async def upload_csv(
+    file: UploadFile = File(...),
+    session: Session = Depends(get_db),
+    authorization: Optional[str] = Header(None),
+):
     """Upload CSV file with business data. Accepts any CSV with a date column."""
-    # Validate file extension
-    if not file.filename.endswith('.csv'):
+    if not file.filename or not file.filename.lower().endswith('.csv'):
         raise HTTPException(status_code=400, detail="Only CSV files are accepted")
-    
+
     try:
-        # Read file contents
         contents = await file.read()
+        if len(contents) > MAX_CSV_BYTES:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File too large. Max size: {MAX_CSV_BYTES // (1024*1024)}MB",
+            )
         
         # Parse CSV
         df = pd.read_csv(io.BytesIO(contents))
@@ -66,9 +93,15 @@ async def upload_csv(file: UploadFile = File(...), session: Session = Depends(ge
             else:
                 data_records = df.to_dict('records')
         
-        # Store in database
+        if len(df) > MAX_CSV_ROWS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Too many rows. Max: {MAX_CSV_ROWS:,}. Consider sampling your data.",
+            )
+
+        user_id = _get_user_id(authorization)
         business_data = BusinessData(
-            user_id=1,  # TODO: Get from auth context
+            user_id=user_id,
             filename=file.filename,
             data=data_records,
             data_type='timeseries'

@@ -21,6 +21,17 @@ This document describes all environment variables used by the Echolon AI backend
 
 ## Optional Variables
 
+### ALLOWED_ORIGINS
+- **Description**: CORS allowed origins (comma-separated). Use `*` for dev only.
+- **Example**: `ALLOWED_ORIGINS=http://localhost:8501,https://app.echolon.ai`
+
+### MAX_CSV_BYTES, MAX_CSV_ROWS
+- **Description**: CSV upload limits (default: 10MB, 100k rows)
+- **Example**: `MAX_CSV_BYTES=10485760` `MAX_CSV_ROWS=100000`
+
+### DEFAULT_USER_ID
+- **Description**: Fallback user_id when auth not configured (default: 1)
+
 ### DATABASE_URL
 - **Description**: PostgreSQL database connection string
 - **Format**: `postgresql://user:password@host:port/database`

@@ -137,21 +137,22 @@ def generate_data_driven_recommendations(data: pd.DataFrame, industry: str = 'ec
             'cost_benefit': 'Low effort | High margin'
         })
     
-    # Innovation
-    recs.append({
-        'category': 'innovation',
-        'title': 'Add Subscription Option',
-        'impact': f'+{format_currency_short(total_revenue * 0.15)} recurring revenue (15% of customers)',
-        'why': '35% of SMB customers buy monthly. Subscriptions increase LTV 6-8x and improve predictability.',
-        'steps': [
-            'Design monthly/annual tiers',
-            'Build auto-renewal flow',
-            'Offer 10% discount for annual',
-            'Migrate 20-30% of repeat buyers'
-        ],
-        'confidence': 78,
-        'cost_benefit': '~$15-25K build | 6-12 month payback'
-    })
+    # Innovation - only when business is ready (revenue scale + repeat potential)
+    if total_revenue > 100000 and cust_count > 200 and churn < 4:
+        recs.append({
+            'category': 'innovation',
+            'title': 'Add Subscription Option',
+            'impact': f'+{format_currency_short(total_revenue * 0.12)} recurring revenue (12% of customers)',
+            'why': f'At {cust_count} customers and {churn:.1f}% churn, you have repeat buyers. Subscriptions increase LTV 6-8x.',
+            'steps': [
+                'Design monthly/annual tiers',
+                'Build auto-renewal flow',
+                'Offer 10% discount for annual',
+                'Migrate 20-30% of repeat buyers'
+            ],
+            'confidence': 78,
+            'cost_benefit': '~$15-25K build | 6-12 month payback'
+        })
     
     return recs[:6]  # Top 6
 

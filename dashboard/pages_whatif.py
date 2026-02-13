@@ -56,8 +56,10 @@ def generate_scenario_insights(scenarios, revenue_growth, churn_rate, cac_change
     
     return insights
 
-def render_whatif_page():
-    """Render What-If Scenario Planner page"""
+def render_whatif_page(data=None, kpis=None, format_currency=None, format_percentage=None, format_multiplier=None):
+    """Render What-If Scenario Planner page — uses your data for baseline when available."""
+    if data is None:
+        data = st.session_state.get('current_data') or st.session_state.get('uploaded_data')
     
     # Page header
     st.markdown("""
@@ -123,14 +125,18 @@ def render_whatif_page():
             help="New market penetration rate"
         )
     
-    # Generate scenarios
+    # Generate scenarios — use your data for baseline when available
+    base_revenue = 500000
+    if data is not None and not data.empty and 'revenue' in data.columns:
+        base_revenue = data['revenue'].sum()  # Your actual revenue (period sum) as baseline
     scenarios = WhatIfAnalysis.generate_scenarios(
         revenue_growth=revenue_growth,
         churn_rate=churn_rate,
         cac_change=cac_change,
         ltv_multiplier=ltv_multiplier,
         opex_growth=opex_growth,
-        market_expansion=market_expansion
+        market_expansion=market_expansion,
+        base_revenue=base_revenue
     )
     
     # Scenario comparison metrics
@@ -188,11 +194,13 @@ def render_whatif_page():
     st.markdown("<h3 style='margin-top: 32px; margin-bottom: 20px; color: #ffffff;'>Revenue Projection</h3>", unsafe_allow_html=True)
     
     months = np.arange(1, 13)
-    base_revenue = 50000
+    # Monthly baseline from your data period (e.g. 90 days -> base/3)
+    n_months = max(1, len(data) / 30) if data is not None and len(data) > 0 else 12
+    monthly_base = (base_revenue / n_months) if base_revenue else 50000
     
-    best_projection = [base_revenue * (1 + revenue_growth/100 * 0.8) ** m for m in months]
-    expected_projection = [base_revenue * (1 + revenue_growth/100 * 0.5) ** m for m in months]
-    worst_projection = [base_revenue * (1 + revenue_growth/100 * 0.2) ** m for m in months]
+    best_projection = [monthly_base * (1 + revenue_growth/100 * 0.8) ** (m/12) for m in months]
+    expected_projection = [monthly_base * (1 + revenue_growth/100 * 0.5) ** (m/12) for m in months]
+    worst_projection = [monthly_base * (1 + revenue_growth/100 * 0.2) ** (m/12) for m in months]
     
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=months, y=best_projection, mode='lines+markers',

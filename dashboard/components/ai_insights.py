@@ -6,25 +6,34 @@ import numpy as np
 from datetime import datetime, timedelta
 import io
 
-def generate_ai_insights(data, kpis):
+def generate_ai_insights(data, kpis=None):
     """
-    Generate AI-powered insights from business data
-    Returns a list of actionable insights for business owners
+    Generate AI-powered insights from business data.
+    Uses personalized_insights engine for real, actionable feedback.
     """
-    insights = []
+    try:
+        from utils import calculate_key_metrics, generate_personalized_insights
+        metrics = calculate_key_metrics(data) if data is not None else {}
+        if kpis:
+            metrics.update(kpis)
+        return generate_personalized_insights(data, metrics)
+    except Exception:
+        pass
     
+    # Fallback if personalized_insights unavailable
+    insights = []
     if data is None or data.empty:
         return insights
     
     # Revenue trend analysis
     if 'revenue' in data.columns:
-        revenue_trend = kpis.get('revenue_growth', 0)
+        revenue_trend = (kpis or {}).get('revenue_growth', 0)
         if revenue_trend > 5:
             insights.append({
                 'type': 'positive',
                 'icon': '📈',
                 'title': 'Strong Revenue Growth',
-                'message': f"Revenue increased by {revenue_trend:.1f}% compared to the previous period. This is excellent growth!",
+                'message': f"Revenue increased by {revenue_trend:.1f}% compared to the previous period.",
                 'action': 'Consider increasing marketing spend to capitalize on this momentum.'
             })
         elif revenue_trend < -5:
@@ -34,14 +43,6 @@ def generate_ai_insights(data, kpis):
                 'title': 'Revenue Decline Detected',
                 'message': f"Revenue decreased by {abs(revenue_trend):.1f}% compared to the previous period.",
                 'action': 'Review marketing campaigns and consider customer retention strategies.'
-            })
-        else:
-            insights.append({
-                'type': 'info',
-                'icon': '📊',
-                'title': 'Stable Revenue',
-                'message': f"Revenue is relatively stable with {revenue_trend:+.1f}% change.",
-                'action': 'Focus on customer acquisition to drive growth.'
             })
     
     # Customer analysis
@@ -60,7 +61,7 @@ def generate_ai_insights(data, kpis):
     
     # Order value analysis
     if 'revenue' in data.columns and 'orders' in data.columns:
-        avg_order_value = kpis.get('avg_order_value', 0)
+        avg_order_value = (kpis or {}).get('avg_order_value', data['revenue'].sum() / data['orders'].sum() if data['orders'].sum() > 0 else 0)
         if avg_order_value > 0:
             insights.append({
                 'type': 'info',
@@ -72,7 +73,7 @@ def generate_ai_insights(data, kpis):
     
     # Profit margin analysis
     if 'profit_margin' in data.columns:
-        avg_margin = kpis.get('avg_profit_margin', 0)
+        avg_margin = (kpis or {}).get('avg_profit_margin', data['profit_margin'].mean())
         if avg_margin > 30:
             insights.append({
                 'type': 'positive',
@@ -105,7 +106,8 @@ def generate_ai_insights(data, kpis):
 
 def display_insights_panel(insights):
     """
-    Display AI insights in an attractive panel format
+    Display AI insights in an attractive panel format.
+    Supports personalized insights with impact field.
     """
     st.markdown("### 💡 AI-Powered Insights")
     
@@ -115,12 +117,17 @@ def display_insights_panel(insights):
     
     for insight in insights:
         # Choose color based on insight type
-        if insight['type'] == 'positive':
+        itype = insight.get('type', 'info')
+        if itype == 'positive':
             border_color = "#28a745"
-        elif insight['type'] == 'warning':
-            border_color = "#ffc107"
+        elif itype in ('warning', 'critical'):
+            border_color = "#ffc107" if itype == 'warning' else "#dc3545"
+        elif itype == 'opportunity':
+            border_color = "#17a2b8"
         else:
             border_color = "#17a2b8"
+        
+        impact_line = f"<p style='margin: 4px 0 0 0; color: #6c757d; font-size: 12px;'>{insight.get('impact', '')}</p>" if insight.get('impact') else ""
         
         st.markdown(
             f"""
@@ -131,9 +138,10 @@ def display_insights_panel(insights):
                 background-color: rgba(255, 255, 255, 0.05);
                 border-radius: 4px;
             ">
-                <h4 style="margin: 0 0 10px 0;">{insight['icon']} {insight['title']}</h4>
+                <h4 style="margin: 0 0 10px 0;">{insight.get('icon', '💡')} {insight['title']}</h4>
                 <p style="margin: 5px 0; color: #ddd;">{insight['message']}</p>
                 <p style="margin: 5px 0; color: #aaa; font-style: italic;">💼 Recommended Action: {insight['action']}</p>
+                {impact_line}
             </div>
             """,
             unsafe_allow_html=True

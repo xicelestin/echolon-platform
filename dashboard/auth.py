@@ -11,9 +11,13 @@ Usage:
         st.stop()
 """
 
+import os
 import streamlit as st
 import hashlib
 import hmac
+
+# In production, set ECHOLON_PRODUCTION=true to disable demo credentials
+IS_PRODUCTION = os.getenv("ECHOLON_PRODUCTION", "").lower() in ("true", "1", "yes")
 
 
 def hash_password(password: str) -> str:
@@ -24,10 +28,9 @@ def hash_password(password: str) -> str:
 def check_password(username: str, password: str) -> bool:
     """Verify username and password against stored credentials."""
     
-    # Demo credentials (for development/pilot customers)
-    # Remove this section in production
-    if username == "demo" and password == "demo123":
-        st.warning("⚠️ Using demo credentials. Configure secrets for production.")
+    # Demo credentials disabled in production (set ECHOLON_PRODUCTION=true)
+    if not IS_PRODUCTION and username == "demo" and password == "demo123":
+        st.warning("⚠️ Using demo credentials. Set ECHOLON_PRODUCTION=true to disable.")
         return True
     
     # Try to get credentials from Streamlit secrets
@@ -99,30 +102,40 @@ def render_login_page():
                     if check_password(username, password):
                         st.session_state.authenticated = True
                         st.session_state.username = username
-                        st.success(f"✅ Welcome, {username}!")
+                        # Load any saved data for this account
+                        from utils.user_data_storage import load_user_data
+                        if load_user_data(username):
+                            st.success(f"✅ Welcome back, {username}! Your data has been restored.")
+                        else:
+                            st.success(f"✅ Welcome, {username}!")
                         st.rerun()
                     else:
                         st.error("❌ Invalid username or password")
                 else:
                     st.warning("⚠️ Please enter both username and password")
         
-        # Demo credentials hint (remove in production)
-        with st.expander("💡 Demo Access"):
-            st.info("""
-            **Demo Credentials:**
-            - Username: `demo`
-            - Password: `demo123`
-            
-            *For pilot customers: Contact your account manager for credentials.*
-            """)
+        # Demo credentials hint (hidden in production)
+        if not IS_PRODUCTION:
+            with st.expander("💡 Demo Access"):
+                st.info("""
+                **Demo Credentials:**
+                - Username: `demo`
+                - Password: `demo123`
+                
+                *Set ECHOLON_PRODUCTION=true to disable in production.*
+                """)
         
         st.markdown('</div>', unsafe_allow_html=True)
 
 
 def logout():
-    """Logout current user"""
+    """Logout current user and clear session data (data stays saved on disk for next login)."""
     st.session_state.authenticated = False
     st.session_state.username = None
+    # Clear user-specific session data so next user doesn't see it
+    for key in ("uploaded_data", "connected_sources", "upload_history", "goals", "current_data"):
+        if key in st.session_state:
+            del st.session_state[key]
     st.rerun()
 
 
