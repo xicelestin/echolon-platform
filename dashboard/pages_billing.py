@@ -42,14 +42,14 @@ def render_billing_page():
     col1, col2, col3 = st.columns(3)
     with col1:
         with st.container(border=True):
-            st.markdown("**Free** — \\$0")
+            st.markdown("**Free** — $0")
             st.caption("Executive Briefing, 1 source, 30 days")
             if tier != "free":
                 st.button("Downgrade", key="downgrade_free", disabled=True, help="Contact support")
     
     with col2:
         with st.container(border=True):
-            st.markdown("**Starter** — \\$49/mo · \\$39/mo annual")
+            st.markdown("**Starter** — $49/mo · $39/mo annual")
             st.caption("Dashboard, Analytics, Insights, 90 days")
             if tier == "free":
                 sub_col1, sub_col2 = st.columns(2)
@@ -64,7 +64,7 @@ def render_billing_page():
     
     with col3:
         with st.container(border=True):
-            st.markdown("**Growth** — \\$99/mo · \\$79/mo annual")
+            st.markdown("**Growth** — $99/mo · $79/mo annual")
             st.caption("All features, unlimited sources, 12 months")
             has_paid_subscription = st.session_state.get("stripe_subscription_status") == "active"
             if tier != "growth":

@@ -119,7 +119,11 @@ try:
             days_map = {'Last 7 Days': 7, 'Last 30 Days': 30, 'Last 90 Days': 90, 'Last 12 Months': 365}
             days = days_map.get(date_range, 90)
             start_date = end_date - timedelta(days=days)
-            data = data[(data['date'] >= start_date) & (data['date'] <= end_date)].copy()
+            filtered = data[(data['date'] >= start_date) & (data['date'] <= end_date)].copy()
+            if len(filtered) > 0:
+                data = filtered
+            # else: keep full data if filter would be empty
+        st.session_state.current_data = data  # Update with filtered data
     roas_val = float(data['roas'].mean()) if 'roas' in data.columns and len(data) > 0 else 3.0
     if pd.isna(roas_val):
         roas_val = 3.0
