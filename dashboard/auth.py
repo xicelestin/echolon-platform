@@ -76,6 +76,53 @@ def check_password(username: str, password: str) -> bool:
         # If secrets not configured, deny access
         return False
 
+def render_landing_page():
+    """Render landing page with value prop, features, and pricing."""
+    st.markdown("""
+    <div style="text-align:center;padding:4rem 2rem;background:linear-gradient(135deg,#1e3a5f 0%,#0f172a 100%);border-radius:20px;margin-bottom:2rem;border:1px solid rgba(59,130,246,0.3);">
+        <h1 style="font-size:2.5rem;color:white;margin:0 0 0.5rem 0;">🎯 Echolon AI</h1>
+        <p style="font-size:1.2rem;color:#93c5fd;margin:0;">Business intelligence that tells you what to do next</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.subheader("Why Echolon?")
+    st.markdown("Get a 30-second briefing, actionable insights, and cash flow visibility — no analyst needed.")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        with st.container(border=True):
+            st.markdown("**📋 Executive Briefing**")
+            st.caption("Your business at a glance. Do This Week, cash flow, and top opportunities — in 30 seconds.")
+    with col2:
+        with st.container(border=True):
+            st.markdown("**📊 Data-Driven Insights**")
+            st.caption("Real patterns from your data. Channel shifts, seasonality, and margin opportunities.")
+    with col3:
+        with st.container(border=True):
+            st.markdown("**🔗 Connect Your Data**")
+            st.caption("CSV, Stripe, Shopify. Map what you have — no data team required.")
+    
+    st.subheader("Pricing")
+    st.markdown("""
+    <div style="background:linear-gradient(135deg,#059669 0%,#047857 100%);padding:2rem;border-radius:16px;text-align:center;margin:1rem 0;border:1px solid #10b981;">
+        <p style="font-size:2.5rem;font-weight:700;color:white;margin:0;">$50</p>
+        <p style="color:rgba(255,255,255,0.95);font-size:1rem;margin:0 0 1rem 0;">per month</p>
+        <p style="color:rgba(255,255,255,0.95);text-align:left;max-width:400px;margin:0 auto;font-size:0.95rem;">
+            ✓ Executive Briefing & Dashboard<br>
+            ✓ Predictions, What-If, Recommendations<br>
+            ✓ Connect CSV, Stripe, Shopify<br>
+            ✓ Export PDF, Excel, Weekly Digest<br>
+            ✓ Industry benchmarks & alerts
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    if st.button("🚀 Get Started", type="primary", use_container_width=True):
+        st.session_state.auth_view = "login"
+        st.rerun()
+
+
 def render_login_page():
     """Render professional login page"""
     
@@ -203,10 +250,18 @@ def require_authentication() -> bool:
         st.session_state.authenticated = False
     if 'username' not in st.session_state:
         st.session_state.username = None
+    if 'auth_view' not in st.session_state:
+        st.session_state.auth_view = "landing"
     
-    # If not authenticated, show login page
+    # If not authenticated, show landing or login
     if not st.session_state.authenticated:
-        render_login_page()
+        if st.session_state.auth_view == "landing":
+            render_landing_page()
+        else:
+            if st.button("← Back", key="auth_back"):
+                st.session_state.auth_view = "landing"
+                st.rerun()
+            render_login_page()
         return False
     
     return True

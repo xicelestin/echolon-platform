@@ -123,18 +123,46 @@ try:
     kpis = {'total_revenue': float(data['revenue'].sum()) if 'revenue' in data.columns else 0, 'roas': roas_val}
 except Exception as e:
     st.error("❌ Failed to load data. Please try again or upload fresh data from Data Sources.")
-    st.exception(e)
+    with st.expander("Technical details"):
+        st.exception(e)
     st.stop()
 
-# Mobile-responsive CSS
+# Global design system - spacing, typography, hierarchy
 st.markdown("""
 <style>
-@media (max-width: 768px) {
-    .stMetric { min-width: 120px; }
-    [data-testid="stSidebar"] { width: 100% !important; }
-    .block-container { padding: 1rem !important; }
-    .stColumns > div { flex: 1 1 100% !important; min-width: 100% !important; }
-}
+    /* Base spacing and typography */
+    .block-container { padding: 2rem 2.5rem 3rem !important; max-width: 1400px; }
+    h1 { font-size: 1.75rem !important; font-weight: 700 !important; margin-bottom: 0.5rem !important; }
+    h2 { font-size: 1.35rem !important; font-weight: 600 !important; margin-top: 2rem !important; margin-bottom: 1rem !important; }
+    h3 { font-size: 1.1rem !important; font-weight: 600 !important; margin-top: 1.5rem !important; }
+    
+    /* Section spacing */
+    [data-testid="stVerticalBlock"] > div { margin-bottom: 0.5rem; }
+    hr { margin: 2rem 0 !important; border-color: rgba(255,255,255,0.1) !important; }
+    
+    /* Metric cards - cleaner look */
+    [data-testid="stMetric"] { 
+        background: rgba(31, 41, 55, 0.5); 
+        padding: 1rem 1.25rem; 
+        border-radius: 12px; 
+        border: 1px solid rgba(55, 65, 81, 0.8);
+    }
+    [data-testid="stMetric"] label { font-size: 0.8rem !important; opacity: 0.9; }
+    [data-testid="stMetric"] [data-testid="stMetricValue"] { font-size: 1.25rem !important; font-weight: 700; }
+    
+    /* Buttons */
+    .stButton > button { border-radius: 8px; font-weight: 500; transition: opacity 0.2s; }
+    .stButton > button:hover { opacity: 0.9; }
+    
+    /* Expanders */
+    [data-testid="stExpander"] { border-radius: 12px; border: 1px solid rgba(55, 65, 81, 0.6); }
+    
+    @media (max-width: 768px) {
+        .block-container { padding: 1rem !important; }
+        .stMetric { min-width: 120px; }
+        [data-testid="stSidebar"] { width: 100% !important; }
+        .stColumns > div { flex: 1 1 100% !important; min-width: 100% !important; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -178,6 +206,7 @@ with st.sidebar:
         st.caption("Based on your last 60 days of data.")
     st.markdown("---")
     st.caption("Main")
+    st.markdown("<div style='margin-bottom: 0.5rem;'></div>", unsafe_allow_html=True)
     for p in ["Executive Briefing", "Dashboard", "Analytics", "Insights", "Predictions", "Recommendations", "Goals", "Data Sources"]:
         if st.button(p, use_container_width=True):
             st.session_state.current_page = p
@@ -285,17 +314,17 @@ try:
         top_priority = get_top_priority_this_week(data, dash_metrics, industry)
         if top_priority:
             st.markdown(f"""
-            <div style='background:linear-gradient(135deg,#1E3A5F 0%,#0F172A 100%);border:1px solid #3B82F6;border-radius:10px;padding:16px 20px;margin-bottom:20px;'>
-                <p style='color:#93C5FD;font-size:11px;margin:0 0 6px 0;text-transform:uppercase;'>🎯 Top Priority This Week</p>
-                <p style='color:#F3F4F6;font-size:17px;font-weight:700;margin:0 0 6px 0;'>{top_priority['title']}</p>
-                <p style='color:#D1D5DB;font-size:14px;margin:0;'>{top_priority['action'][:120]}{'...' if len(top_priority['action']) > 120 else ''}</p>
-                <p style='color:#10B981;font-size:13px;margin:8px 0 0 0;font-weight:600;'>Impact: {top_priority['impact']}</p>
+            <div style='background:linear-gradient(135deg,#1E3A5F 0%,#0F172A 100%);border:1px solid rgba(59,130,246,0.5);border-radius:16px;padding:24px 28px;margin:0 0 2rem 0;box-shadow:0 4px 6px -1px rgba(0,0,0,0.2);'>
+                <p style='color:#93C5FD;font-size:11px;margin:0 0 10px 0;text-transform:uppercase;letter-spacing:0.5px;'>🎯 Top Priority This Week</p>
+                <p style='color:#F3F4F6;font-size:1.4rem;font-weight:700;margin:0 0 8px 0;line-height:1.4;'>{top_priority['title']}</p>
+                <p style='color:#D1D5DB;font-size:0.95rem;margin:0;line-height:1.5;'>{top_priority['action'][:120]}{'...' if len(top_priority['action']) > 120 else ''}</p>
+                <p style='color:#10B981;font-size:0.9rem;margin:1rem 0 0 0;font-weight:600;'>Impact: {top_priority['impact']}</p>
             </div>
             """, unsafe_allow_html=True)
         
         # Executive Summary
+        st.markdown("<div style='margin-top: 2rem;'></div>", unsafe_allow_html=True)
         st.subheader("📊 Executive Summary")
-        # Key Metrics Grid
         col1, col2, col3, col4 = st.columns(4)
     
         with col1:
@@ -442,8 +471,10 @@ try:
     else:
         st.info("Select a page from the sidebar.")
 except Exception as e:
-    st.error(f"❌ Error loading page: {str(e)}")
-    st.info("Try refreshing the page or loading data from Data Sources. If the problem persists, check the console.")
+    st.error("❌ Something went wrong loading this page.")
+    st.info("Try refreshing the page or going to **Data Sources** to reload your data. If the problem persists, contact support.")
+    with st.expander("Technical details"):
+        st.exception(e)
 
 # Persist user data when we have uploaded data (keeps preferences & goals with account)
 if st.session_state.get("uploaded_data") is not None:

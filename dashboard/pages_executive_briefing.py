@@ -199,8 +199,9 @@ def get_this_week_action(opportunities: list, risks: list) -> str:
 
 def render_executive_briefing_page(data, kpis, format_currency, format_percentage, format_multiplier):
     """Render the Executive Briefing - 30-second view. Leads with what to do today."""
+    st.markdown("<div style='margin-bottom: 1.5rem;'>", unsafe_allow_html=True)
     st.title("📋 Executive Briefing")
-    st.markdown("### Your business at a glance — *30 seconds*")
+    st.caption("Your business at a glance — 30 seconds")
     
     # Compute metrics
     metrics = calculate_key_metrics(data)
@@ -221,10 +222,10 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
     
     # === HERO: Do This Week (lead with action) ===
     st.markdown(f"""
-    <div style="background:linear-gradient(135deg,#059669 0%,#047857 100%);border-radius:16px;padding:28px 32px;margin-bottom:24px;border:1px solid #10B981;">
-        <p style="color:rgba(255,255,255,0.9);font-size:12px;margin:0 0 8px 0;text-transform:uppercase;letter-spacing:0.5px;">📌 Do This Week</p>
-        <p style="color:white;font-size:22px;font-weight:700;margin:0;line-height:1.4;">{this_week}</p>
-        <p style="color:rgba(255,255,255,0.85);font-size:14px;margin:12px 0 0 0;">Based on your data — revenue, margins, and trends.</p>
+    <div style="background:linear-gradient(135deg,#059669 0%,#047857 100%);border-radius:16px;padding:32px 36px;margin:0 0 2rem 0;border:1px solid rgba(16,185,129,0.5);box-shadow:0 4px 6px -1px rgba(0,0,0,0.2);">
+        <p style="color:rgba(255,255,255,0.9);font-size:11px;margin:0 0 10px 0;text-transform:uppercase;letter-spacing:1px;">📌 Do This Week</p>
+        <p style="color:white;font-size:1.4rem;font-weight:700;margin:0;line-height:1.5;">{this_week}</p>
+        <p style="color:rgba(255,255,255,0.85);font-size:0.9rem;margin:1rem 0 0 0;">Based on your data — revenue, margins, and trends.</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -241,38 +242,38 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
         surplus = inflow - outflow
         st.metric("📊 Net Cash Flow", format_currency(surplus), "Surplus" if surplus >= 0 else "Deficit")
     
-    st.markdown("---")
+    st.markdown("<div style='margin: 2rem 0;'></div>", unsafe_allow_html=True)
     
     # === HERO: Health Score + Cash Flow ===
     col1, col2, col3 = st.columns([1, 1, 1])
+    runway = cash_metrics.get('runway_months', 12)
+    health_emoji = {'healthy': '🟢', 'moderate': '🟡', 'caution': '🟠', 'critical': '🔴'}.get(cash_metrics.get('cash_health', 'moderate'), '🟡')
     
     with col1:
         st.markdown(f"""
-        <div style="text-align:center;padding:24px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:16px;">
-            <h2 style="color:white;margin:0;font-size:48px;">{health_score['score']}</h2>
+        <div style="text-align:center;padding:28px 24px;background:linear-gradient(135deg,#2563EB 0%,#1D4ED8 100%);border-radius:16px;border:1px solid rgba(59,130,246,0.5);box-shadow:0 4px 6px -1px rgba(0,0,0,0.2);">
+            <h2 style="color:white;margin:0;font-size:2.5rem;font-weight:700;">{health_score['score']}</h2>
             <p style="color:rgba(255,255,255,0.9);margin:4px 0 0 0;">{health_score['status']}</p>
             <p style="color:rgba(255,255,255,0.8);font-size:14px;">Business Health</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
-        runway = cash_metrics.get('runway_months', 12)
-        health_emoji = {'healthy': '🟢', 'moderate': '🟡', 'caution': '🟠', 'critical': '🔴'}.get(cash_metrics.get('cash_health', 'moderate'), '🟡')
         st.markdown(f"""
-        <div style="text-align:center;padding:24px;background:#1f2937;border-radius:16px;border:1px solid #374151;">
-            <h2 style="color:white;margin:0;font-size:36px;">{health_emoji} {runway:.0f}+ mo</h2>
-            <p style="color:#9ca3af;margin:4px 0 0 0;">Cash Runway</p>
-            <p style="color:#6b7280;font-size:12px;margin-top:8px;">Est. reserve ÷ burn</p>
+        <div style="text-align:center;padding:28px 24px;background:#1f2937;border-radius:16px;border:1px solid #374151;box-shadow:0 4px 6px -1px rgba(0,0,0,0.2);">
+            <h2 style="color:white;margin:0;font-size:2rem;font-weight:700;">{health_emoji} {runway:.0f}+ mo</h2>
+            <p style="color:#9ca3af;margin:8px 0 0 0;">Cash Runway</p>
+            <p style="color:#6b7280;font-size:0.75rem;margin-top:6px;">Est. reserve ÷ burn</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col3:
         monthly_rev = cash_metrics.get('monthly_inflow', 0)
         st.markdown(f"""
-        <div style="text-align:center;padding:24px;background:#1f2937;border-radius:16px;border:1px solid #374151;">
-            <h2 style="color:white;margin:0;font-size:28px;">{format_currency(monthly_rev)}</h2>
-            <p style="color:#9ca3af;margin:4px 0 0 0;">Avg Monthly Revenue</p>
-            <p style="color:#6b7280;font-size:12px;margin-top:8px;">Last 12 months</p>
+        <div style="text-align:center;padding:28px 24px;background:#1f2937;border-radius:16px;border:1px solid #374151;box-shadow:0 4px 6px -1px rgba(0,0,0,0.2);">
+            <h2 style="color:white;margin:0;font-size:1.75rem;font-weight:700;">{format_currency(monthly_rev)}</h2>
+            <p style="color:#9ca3af;margin:8px 0 0 0;">Avg Monthly Revenue</p>
+            <p style="color:#6b7280;font-size:0.75rem;margin-top:6px;">Last 12 months</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -301,34 +302,32 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
                 st.warning(f"**{a['title']}** — {a['message']}")
         st.markdown("---")
     
-    # === Key Patterns (from your data - uses actual segment names) ===
+    # === Key Patterns (collapsible) ===
     dim_shifts = patterns.get('dimension_shifts', []) or patterns.get('channel_shifts', [])
     if patterns and (dim_shifts or patterns.get('seasonality') or patterns.get('top_categories')):
-        st.subheader("📊 Patterns in Your Data")
-        st.markdown("*Detected from your actual numbers — no generic templates.*")
-        if dim_shifts:
-            for c in dim_shifts[:3]:
-                name = c.get('segment_name') or c.get('channel', '')
-                if name:
-                    st.markdown(f"- **{name}**: {c['message']}")
-        if patterns.get('seasonality'):
-            for s in patterns['seasonality'][:2]:
-                st.markdown(f"- **{s['period']}**: {s['message']}")
-        if patterns.get('top_categories') and not patterns.get('channel_shifts'):
-            for cat in patterns['top_categories'][:3]:
-                st.markdown(f"- **{cat['category']}**: {cat['message']}")
-        st.markdown("---")
+        with st.expander("📊 Patterns in Your Data", expanded=False):
+            st.caption("Detected from your actual numbers — no generic templates.")
+            if dim_shifts:
+                for c in dim_shifts[:3]:
+                    name = c.get('segment_name') or c.get('channel', '')
+                    if name:
+                        st.markdown(f"- **{name}**: {c['message']}")
+            if patterns.get('seasonality'):
+                for s in patterns['seasonality'][:2]:
+                    st.markdown(f"- **{s['period']}**: {s['message']}")
+            if patterns.get('top_categories') and not patterns.get('channel_shifts'):
+                for cat in patterns['top_categories'][:3]:
+                    st.markdown(f"- **{cat['category']}**: {cat['message']}")
 
-    # === What Changed and Why (driver analysis) ===
+    # === What Changed and Why (collapsible) ===
     change_explanation = get_change_explanation(data)
     if change_explanation.get('has_explanation') or change_explanation.get('summary'):
-        st.subheader("📈 What Changed and Why")
-        st.markdown("*Echolon identifies the underlying drivers so you don't have to investigate manually.*")
-        if change_explanation.get('summary'):
-            st.info(change_explanation['summary'])
-        for d in change_explanation.get('drivers', [])[:4]:
-            st.markdown(f"- {d['explanation']}")
-        st.markdown("---")
+        with st.expander("📈 What Changed and Why", expanded=False):
+            st.caption("Echolon identifies the underlying drivers so you don't have to investigate manually.")
+            if change_explanation.get('summary'):
+                st.info(change_explanation['summary'])
+            for d in change_explanation.get('drivers', [])[:4]:
+                st.markdown(f"- {d['explanation']}")
     
     # === Top Opportunities (with "why") ===
     st.subheader("🎯 Top Opportunities")
@@ -342,21 +341,11 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
             with col_r:
                 st.metric("Priority", opp['priority'].title(), "")
     
-    st.markdown("---")
-    
     # === Top Risks ===
     if risks:
         st.subheader("⚠️ Top Risks")
         for risk in risks:
             st.warning(f"**{risk['title']}** — {risk['detail']}")
-    
-    st.markdown("---")
-    
-    # === This Week's Action ===
-    st.subheader("📌 Do This Week")
-    st.success(f"**{this_week}**")
-    
-    st.markdown("---")
     
     # === Cash Flow Detail ===
     with st.expander("💵 Cash Flow & Runway Details", expanded=False):

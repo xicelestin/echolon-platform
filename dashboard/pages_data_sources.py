@@ -510,8 +510,9 @@ def render_csv_upload_section():
                         st.balloons()
             
         except Exception as e:
-            st.error(f"❌ Error processing file: {str(e)}")
-            st.exception(e)
+            st.error("❌ Error processing file. Check your CSV format and column mapping.")
+            with st.expander("Technical details"):
+                st.exception(e)
     
     else:
         # Show instructions when no file uploaded
