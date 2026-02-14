@@ -25,23 +25,23 @@ DATA_SOURCES = {
         'icon': '🛍️',
         'description': 'E-commerce platform data',
         'fields': ['orders', 'customers', 'products', 'revenue'],
-        'oauth_url': 'https://shopify.com/oauth',  # Placeholder
-        'coming_soon': False
+        'oauth_url': 'https://shopify.com/oauth',
+        'coming_soon': True
     },
     'quickbooks': {
         'name': 'QuickBooks Online',
         'icon': '💼',
         'description': 'Accounting & financial data',
         'fields': ['revenue', 'expenses', 'invoices', 'customers'],
-        'oauth_url': 'https://quickbooks.intuit.com/oauth',  # Placeholder
-        'coming_soon': False
+        'oauth_url': 'https://quickbooks.intuit.com/oauth',
+        'coming_soon': True
     },
     'google_sheets': {
         'name': 'Google Sheets',
         'icon': '📊',
         'description': 'Spreadsheet data sync',
         'fields': ['custom data'],
-        'oauth_url': 'https://accounts.google.com/oauth',  # Placeholder
+        'oauth_url': 'https://accounts.google.com/oauth',
         'coming_soon': False
     },
     'stripe': {

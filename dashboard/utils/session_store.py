@@ -43,8 +43,16 @@ def _save_sessions(sessions: dict) -> None:
 def create_session(username: str) -> str:
     """Create a new session for username. Returns the session token."""
     token = secrets.token_urlsafe(32)
-    sessions = _load_sessions()
     expiry = time.time() + (SESSION_EXPIRY_DAYS * 24 * 3600)
+    # Try Supabase first
+    try:
+        from .supabase_storage import save_session_supabase
+        if save_session_supabase(token, username, expiry):
+            return token
+    except Exception:
+        pass
+    # Fallback to file
+    sessions = _load_sessions()
     sessions[token] = {"username": username, "expiry": expiry}
     _save_sessions(sessions)
     return token
@@ -54,6 +62,15 @@ def validate_session(token: str) -> Optional[str]:
     """Validate token. Returns username if valid, None otherwise."""
     if not token:
         return None
+    # Try Supabase first
+    try:
+        from .supabase_storage import get_session_supabase
+        username = get_session_supabase(token)
+        if username:
+            return username
+    except Exception:
+        pass
+    # Fallback to file
     sessions = _load_sessions()
     if token not in sessions:
         return None
@@ -67,6 +84,11 @@ def validate_session(token: str) -> Optional[str]:
 
 def destroy_session(token: str) -> None:
     """Remove a session token."""
+    try:
+        from .supabase_storage import delete_session_supabase
+        delete_session_supabase(token)
+    except Exception:
+        pass
     sessions = _load_sessions()
     if token in sessions:
         del sessions[token]

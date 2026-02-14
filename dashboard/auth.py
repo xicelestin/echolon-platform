@@ -46,6 +46,9 @@ def _clear_query_params():
 
 # In production, set ECHOLON_PRODUCTION=true to disable demo credentials
 IS_PRODUCTION = os.getenv("ECHOLON_PRODUCTION", "").lower() in ("true", "1", "yes")
+# On Streamlit Cloud, STREAMLIT_SERVER_BASE_URL is set - treat as production
+if os.environ.get("STREAMLIT_SERVER_BASE_URL", "").startswith("https://"):
+    IS_PRODUCTION = True
 
 
 def hash_password(password: str) -> str:
@@ -79,45 +82,100 @@ def check_password(username: str, password: str) -> bool:
 def render_landing_page():
     """Render landing page with value prop, features, and pricing."""
     st.markdown("""
-    <div style="text-align:center;padding:4rem 2rem;background:linear-gradient(135deg,#1e3a5f 0%,#0f172a 100%);border-radius:20px;margin-bottom:2rem;border:1px solid rgba(59,130,246,0.3);">
-        <h1 style="font-size:2.5rem;color:white;margin:0 0 0.5rem 0;">🎯 Echolon AI</h1>
-        <p style="font-size:1.2rem;color:#93c5fd;margin:0;">Business intelligence that tells you what to do next</p>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <div style="font-family:'DM Sans',sans-serif;text-align:center;padding:4.5rem 2.5rem;background:linear-gradient(135deg,#0f172a 0%,#1e293b 40%,#0f172a 100%);border-radius:24px;margin-bottom:2.5rem;border:1px solid rgba(16,185,129,0.25);box-shadow:0 25px 50px -12px rgba(0,0,0,0.4);position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(16,185,129,0.5),transparent);opacity:0.8;"></div>
+        <h1 style="font-size:3rem;font-weight:700;color:white;margin:0 0 0.75rem 0;letter-spacing:-0.03em;">Echolon AI</h1>
+        <p style="font-size:1.35rem;color:#34d399;margin:0 0 1.5rem 0;font-weight:500;">Business intelligence that tells you what to do next</p>
+        <p style="font-size:0.95rem;color:rgba(148,163,184,0.9);margin:0;max-width:500px;margin:0 auto;">30-second briefings. Actionable insights. No analyst needed.</p>
     </div>
     """, unsafe_allow_html=True)
     
-    st.subheader("Why Echolon?")
-    st.markdown("Get a 30-second briefing, actionable insights, and cash flow visibility — no analyst needed.")
+    st.markdown("""
+    <h2 style="font-family:'DM Sans',sans-serif;font-size:1.5rem;font-weight:600;color:#e2e8f0;margin-bottom:0.5rem;">Why Echolon?</h2>
+    <p style="color:#94a3b8;font-size:1rem;margin-bottom:1.5rem;">Get a 30-second briefing, actionable insights, and cash flow visibility — no analyst needed.</p>
+    """, unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        with st.container(border=True):
-            st.markdown("**📋 Executive Briefing**")
-            st.caption("Your business at a glance. Do This Week, cash flow, and top opportunities — in 30 seconds.")
+        st.markdown("""
+        <div style="font-family:'DM Sans',sans-serif;background:linear-gradient(180deg,rgba(30,41,59,0.9) 0%,rgba(15,23,42,0.95) 100%);padding:1.75rem;border-radius:16px;border:1px solid rgba(148,163,184,0.15);transition:all 0.2s;height:100%;">
+            <p style="font-size:2rem;margin:0 0 0.75rem 0;">📋</p>
+            <p style="font-size:1.1rem;font-weight:600;color:#f8fafc;margin:0 0 0.5rem 0;">Executive Briefing</p>
+            <p style="font-size:0.9rem;color:#94a3b8;margin:0;line-height:1.5;">Your business at a glance. Do This Week, cash flow, and top opportunities — in 30 seconds.</p>
+        </div>
+        """, unsafe_allow_html=True)
     with col2:
-        with st.container(border=True):
-            st.markdown("**📊 Data-Driven Insights**")
-            st.caption("Real patterns from your data. Channel shifts, seasonality, and margin opportunities.")
+        st.markdown("""
+        <div style="font-family:'DM Sans',sans-serif;background:linear-gradient(180deg,rgba(30,41,59,0.9) 0%,rgba(15,23,42,0.95) 100%);padding:1.75rem;border-radius:16px;border:1px solid rgba(16,185,129,0.2);box-shadow:0 0 0 1px rgba(16,185,129,0.1);height:100%;">
+            <p style="font-size:2rem;margin:0 0 0.75rem 0;">📊</p>
+            <p style="font-size:1.1rem;font-weight:600;color:#f8fafc;margin:0 0 0.5rem 0;">Data-Driven Insights</p>
+            <p style="font-size:0.9rem;color:#94a3b8;margin:0;line-height:1.5;">Real patterns from your data. Channel shifts, seasonality, and margin opportunities.</p>
+        </div>
+        """, unsafe_allow_html=True)
     with col3:
-        with st.container(border=True):
-            st.markdown("**🔗 Connect Your Data**")
-            st.caption("CSV, Stripe, Shopify. Map what you have — no data team required.")
+        st.markdown("""
+        <div style="font-family:'DM Sans',sans-serif;background:linear-gradient(180deg,rgba(30,41,59,0.9) 0%,rgba(15,23,42,0.95) 100%);padding:1.75rem;border-radius:16px;border:1px solid rgba(148,163,184,0.15);height:100%;">
+            <p style="font-size:2rem;margin:0 0 0.75rem 0;">🔗</p>
+            <p style="font-size:1.1rem;font-weight:600;color:#f8fafc;margin:0 0 0.5rem 0;">Connect Your Data</p>
+            <p style="font-size:0.9rem;color:#94a3b8;margin:0;line-height:1.5;">CSV, Stripe, Shopify. Map what you have — no data team required.</p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    st.subheader("Pricing")
     st.markdown("""
-    <div style="background:linear-gradient(135deg,#059669 0%,#047857 100%);padding:2rem;border-radius:16px;text-align:center;margin:1rem 0;border:1px solid #10b981;">
-        <p style="font-size:2.5rem;font-weight:700;color:white;margin:0;">$50</p>
-        <p style="color:rgba(255,255,255,0.95);font-size:1rem;margin:0 0 1rem 0;">per month</p>
-        <p style="color:rgba(255,255,255,0.95);text-align:left;max-width:400px;margin:0 auto;font-size:0.95rem;">
-            ✓ Executive Briefing & Dashboard<br>
-            ✓ Predictions, What-If, Recommendations<br>
-            ✓ Connect CSV, Stripe, Shopify<br>
-            ✓ Export PDF, Excel, Weekly Digest<br>
-            ✓ Industry benchmarks & alerts
-        </p>
-    </div>
+    <h2 style="font-family:'DM Sans',sans-serif;font-size:1.5rem;font-weight:600;color:#e2e8f0;margin:2.5rem 0 0.5rem 0;">Pricing</h2>
+    <p style="color:#94a3b8;font-size:0.95rem;margin-bottom:1.5rem;">14-day free trial on any paid plan. No credit card required.</p>
     """, unsafe_allow_html=True)
     
-    st.markdown("---")
+    col_free, col_starter, col_growth = st.columns(3)
+    with col_free:
+        st.markdown("""
+        <div style="font-family:'DM Sans',sans-serif;background:linear-gradient(180deg,rgba(30,41,59,0.8) 0%,rgba(15,23,42,0.9) 100%);padding:1.75rem;border-radius:16px;border:1px solid rgba(148,163,184,0.15);height:100%;">
+            <p style="font-size:1.1rem;font-weight:600;color:#94a3b8;margin:0;">Free</p>
+            <p style="font-size:2.25rem;font-weight:700;color:#10b981;margin:0.5rem 0;">$0</p>
+            <p style="color:#64748b;font-size:0.85rem;margin:0 0 1.25rem 0;">Forever free</p>
+            <p style="color:#cbd5e1;font-size:0.9rem;margin:0;line-height:1.6;">
+                ✓ Executive Briefing<br>✓ 1 CSV upload, 30 days<br>✓ Data Sources
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Start Free", key="plan_free", use_container_width=True):
+            st.session_state.auth_view = "login"
+            st.session_state.signup_tier = "free"
+            st.rerun()
+    with col_starter:
+        st.markdown("""
+        <div style="font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#059669 0%,#047857 100%);padding:1.75rem;border-radius:16px;border:2px solid rgba(52,211,153,0.5);height:100%;position:relative;box-shadow:0 10px 40px -10px rgba(5,150,105,0.4);">
+            <span style="position:absolute;top:-10px;right:16px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:10px;font-weight:600;padding:4px 10px;border-radius:6px;letter-spacing:0.05em;">POPULAR</span>
+            <p style="font-size:1.1rem;font-weight:600;color:rgba(255,255,255,0.9);margin:0;">Starter</p>
+            <p style="font-size:2.25rem;font-weight:700;color:white;margin:0.5rem 0;">$49</p>
+            <p style="color:rgba(255,255,255,0.85);font-size:0.85rem;margin:0 0 1.25rem 0;">/mo · $39/mo annual</p>
+            <p style="color:rgba(255,255,255,0.95);font-size:0.9rem;margin:0;line-height:1.6;">
+                ✓ Briefing & Dashboard<br>✓ Analytics, Insights, Goals<br>✓ 1 source, 90 days
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Start Free Trial", key="plan_starter", type="primary", use_container_width=True):
+            st.session_state.auth_view = "login"
+            st.session_state.signup_tier = "starter"
+            st.rerun()
+    with col_growth:
+        st.markdown("""
+        <div style="font-family:'DM Sans',sans-serif;background:linear-gradient(180deg,rgba(30,41,59,0.8) 0%,rgba(15,23,42,0.9) 100%);padding:1.75rem;border-radius:16px;border:1px solid rgba(16,185,129,0.25);height:100%;">
+            <p style="font-size:1.1rem;font-weight:600;color:#94a3b8;margin:0;">Growth</p>
+            <p style="font-size:2.25rem;font-weight:700;color:#10b981;margin:0.5rem 0;">$99</p>
+            <p style="color:#64748b;font-size:0.85rem;margin:0 0 1.25rem 0;">/mo · $79/mo annual</p>
+            <p style="color:#cbd5e1;font-size:0.9rem;margin:0;line-height:1.6;">
+                ✓ Everything in Starter<br>✓ Predictions, What-If, Recs<br>✓ Unlimited sources, 12 mo
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Start Free Trial", key="plan_growth", use_container_width=True):
+            st.session_state.auth_view = "login"
+            st.session_state.signup_tier = "growth"
+            st.rerun()
+    
+    st.markdown("<div style='margin:2rem 0;'></div>", unsafe_allow_html=True)
     if st.button("🚀 Get Started", type="primary", use_container_width=True):
         st.session_state.auth_view = "login"
         st.rerun()
@@ -127,27 +185,32 @@ def render_login_page():
     """Render professional login page"""
     
     st.markdown("""
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         .login-container {
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            font-family: 'DM Sans', sans-serif;
+            max-width: 420px;
+            margin: 80px auto;
+            padding: 2.5rem;
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
         }
         .login-header {
             text-align: center;
             color: white;
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
         }
         .login-header h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
         }
         .login-header p {
-            font-size: 16px;
-            opacity: 0.9;
+            font-size: 0.95rem;
+            color: #94a3b8;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -169,7 +232,7 @@ def render_login_page():
         with st.form("login_form"):
             username = st.text_input("Username", placeholder="Enter your username")
             password = st.text_input("Password", type="password", placeholder="Enter your password")
-            
+            st.caption("Forgot password? Email support@echolon.ai for a reset link.")
             submit = st.form_submit_button("🔐 Login", use_container_width=True)
             
             if submit:
@@ -230,6 +293,21 @@ def require_authentication() -> bool:
     Returns:
         bool: True if authenticated, False if login page is shown
     """
+    # Handle Stripe checkout success (session_id in URL after payment)
+    stripe_session = _get_query_param("session_id")
+    if stripe_session and stripe_session.startswith("cs_"):
+        from utils.subscription import get_subscription_from_session
+        sub_info = get_subscription_from_session(stripe_session)
+        if sub_info and sub_info.get("status") == "active":
+            # User must be logged in to attach subscription - they'll have session
+            if st.session_state.get("authenticated"):
+                st.session_state.stripe_subscription_status = "active"
+                st.session_state.subscription_tier = sub_info.get("tier", "growth")
+            _clear_query_params()
+            if st.session_state.get("authenticated"):
+                st.success("✅ Payment successful! Your plan is now active.")
+                st.rerun()
+    
     # Check for persistent session token (survives page refresh)
     token = _get_query_param("session")
     if token:

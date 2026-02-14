@@ -102,6 +102,27 @@ def get_top_opportunities(data: pd.DataFrame, metrics: Dict, kpis: Dict, pattern
             'action': f'Raise prices or reduce costs on {lm["category"]} — high volume, thin margin'
         })
 
+    # Fallback: use top products/categories when available (even without shifts)
+    if len(opportunities) < 2:
+        top_products = patterns.get('top_products', [])
+        top_categories = patterns.get('top_categories', [])
+        if top_products and not any('product' in str(o.get('title', '')).lower() for o in opportunities):
+            p = top_products[0]
+            opportunities.append({
+                'title': f'Optimize {p["product"]}',
+                'impact': f'{p["product"]} is {p["share"]:.0f}% of revenue.',
+                'priority': 'medium',
+                'action': f'Review pricing and promotion on {p["product"]} — your top seller'
+            })
+        elif top_categories and len(opportunities) < 2:
+            c = top_categories[0]
+            opportunities.append({
+                'title': f'Focus on {c["category"]}',
+                'impact': f'{c["category"]} drives {c["share"]:.0f}% of revenue.',
+                'priority': 'medium',
+                'action': f'Scale {c["category"]} — your largest category'
+            })
+
     # Fallback: metric-based (when no dimension patterns - use generic language)
     if len(opportunities) < 2:
         rev_growth = metrics.get('revenue_growth', 0)
@@ -188,12 +209,20 @@ def get_top_risks(data: pd.DataFrame, cash_metrics: Dict, metrics: Dict, pattern
     return risks[:3]
 
 
-def get_this_week_action(opportunities: list, risks: list) -> str:
-    """Recommend single action for the week."""
+def get_this_week_action(opportunities: list, risks: list, patterns: dict = None) -> str:
+    """Recommend single action for the week. Uses product/category names when available."""
     if risks and risks[0].get('severity') == 'critical':
         return risks[0]['detail']
     if opportunities:
         return opportunities[0]['action']
+    # Fallback: use top product/category if available
+    patterns = patterns or {}
+    top_products = patterns.get('top_products', [])
+    top_categories = patterns.get('top_categories', [])
+    if top_products:
+        return f"Review {top_products[0]['product']} — your top seller ({top_products[0]['share']:.0f}% of revenue)"
+    if top_categories:
+        return f"Focus on {top_categories[0]['category']} — your largest category ({top_categories[0]['share']:.0f}% of revenue)"
     return "Review key metrics and plan next quarter's priorities."
 
 
@@ -218,14 +247,14 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
     patterns = pattern_analysis.get('patterns', {}) if pattern_analysis.get('has_data') else {}
     opportunities = get_top_opportunities(data, metrics, kpis, patterns)
     risks = get_top_risks(data, cash_metrics, metrics, patterns)
-    this_week = get_this_week_action(opportunities, risks)
+    this_week = get_this_week_action(opportunities, risks, patterns)
     
     # === HERO: Do This Week (lead with action) ===
     st.markdown(f"""
-    <div style="background:linear-gradient(135deg,#059669 0%,#047857 100%);border-radius:16px;padding:32px 36px;margin:0 0 2rem 0;border:1px solid rgba(16,185,129,0.5);box-shadow:0 4px 6px -1px rgba(0,0,0,0.2);">
-        <p style="color:rgba(255,255,255,0.9);font-size:11px;margin:0 0 10px 0;text-transform:uppercase;letter-spacing:1px;">📌 Do This Week</p>
-        <p style="color:white;font-size:1.4rem;font-weight:700;margin:0;line-height:1.5;">{this_week}</p>
-        <p style="color:rgba(255,255,255,0.85);font-size:0.9rem;margin:1rem 0 0 0;">Based on your data — revenue, margins, and trends.</p>
+    <div style="font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#059669 0%,#047857 100%);border-radius:20px;padding:2rem 2.25rem;margin:0 0 2rem 0;border:1px solid rgba(52,211,153,0.4);box-shadow:0 10px 40px -10px rgba(5,150,105,0.4);">
+        <p style="color:rgba(255,255,255,0.9);font-size:10px;margin:0 0 12px 0;text-transform:uppercase;letter-spacing:0.12em;font-weight:600;">Do This Week</p>
+        <p style="color:white;font-size:1.5rem;font-weight:700;margin:0;line-height:1.5;letter-spacing:-0.01em;">{this_week}</p>
+        <p style="color:rgba(255,255,255,0.8);font-size:0.9rem;margin:1.25rem 0 0 0;">Based on your data — revenue, margins, and trends.</p>
     </div>
     """, unsafe_allow_html=True)
     

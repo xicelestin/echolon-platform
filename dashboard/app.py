@@ -37,6 +37,7 @@ from pages_whatif import render_whatif_page
 from pages_inventory_optimization import render_inventory_optimization_page
 from pages_executive_briefing import render_executive_briefing_page, get_top_opportunities
 from pages_goals import render_goals_page
+from pages_billing import render_billing_page
 from utils.industry_utils import INDUSTRIES
 from utils.pdf_export import create_pdf_download_button, create_excel_download_button
 from utils.weekly_digest import generate_weekly_digest
@@ -127,41 +128,68 @@ except Exception as e:
         st.exception(e)
     st.stop()
 
-# Global design system - spacing, typography, hierarchy
+# Global design system - modern SaaS aesthetic
 st.markdown("""
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
 <style>
-    /* Base spacing and typography */
+    /* Typography */
+    * { font-family: 'DM Sans', system-ui, sans-serif !important; }
     .block-container { padding: 2rem 2.5rem 3rem !important; max-width: 1400px; }
-    h1 { font-size: 1.75rem !important; font-weight: 700 !important; margin-bottom: 0.5rem !important; }
-    h2 { font-size: 1.35rem !important; font-weight: 600 !important; margin-top: 2rem !important; margin-bottom: 1rem !important; }
-    h3 { font-size: 1.1rem !important; font-weight: 600 !important; margin-top: 1.5rem !important; }
+    h1 { font-size: 1.85rem !important; font-weight: 700 !important; letter-spacing: -0.02em; color: #f8fafc !important; margin-bottom: 0.5rem !important; }
+    h2 { font-size: 1.4rem !important; font-weight: 600 !important; letter-spacing: -0.01em; color: #e2e8f0 !important; margin-top: 2rem !important; margin-bottom: 1rem !important; }
+    h3 { font-size: 1.15rem !important; font-weight: 600 !important; color: #cbd5e1 !important; margin-top: 1.5rem !important; }
     
-    /* Section spacing */
-    [data-testid="stVerticalBlock"] > div { margin-bottom: 0.5rem; }
-    hr { margin: 2rem 0 !important; border-color: rgba(255,255,255,0.1) !important; }
-    
-    /* Metric cards - cleaner look */
+    /* Metric cards - elevated, subtle glow */
     [data-testid="stMetric"] { 
-        background: rgba(31, 41, 55, 0.5); 
-        padding: 1rem 1.25rem; 
-        border-radius: 12px; 
-        border: 1px solid rgba(55, 65, 81, 0.8);
+        background: linear-gradient(180deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+        padding: 1.25rem 1.5rem; 
+        border-radius: 14px; 
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+        transition: transform 0.2s, box-shadow 0.2s;
     }
-    [data-testid="stMetric"] label { font-size: 0.8rem !important; opacity: 0.9; }
-    [data-testid="stMetric"] [data-testid="stMetricValue"] { font-size: 1.25rem !important; font-weight: 700; }
+    [data-testid="stMetric"]:hover { transform: translateY(-2px); box-shadow: 0 8px 15px -3px rgba(0,0,0,0.25); }
+    [data-testid="stMetric"] label { font-size: 0.75rem !important; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8 !important; }
+    [data-testid="stMetric"] [data-testid="stMetricValue"] { font-size: 1.35rem !important; font-weight: 700 !important; color: #f8fafc !important; }
     
-    /* Buttons */
-    .stButton > button { border-radius: 8px; font-weight: 500; transition: opacity 0.2s; }
-    .stButton > button:hover { opacity: 0.9; }
+    /* Buttons - primary = emerald */
+    .stButton > button {
+        border-radius: 10px; font-weight: 600; transition: all 0.2s;
+        font-family: 'DM Sans', sans-serif !important;
+    }
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+    }
+    .stButton > button[kind="primary"]:hover {
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.45); transform: translateY(-1px);
+    }
+    .stButton > button:not([kind="primary"]) {
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        background: rgba(30, 41, 59, 0.6) !important;
+    }
+    .stButton > button:not([kind="primary"]):hover {
+        background: rgba(51, 65, 85, 0.8) !important; border-color: rgba(148, 163, 184, 0.5);
+    }
     
     /* Expanders */
-    [data-testid="stExpander"] { border-radius: 12px; border: 1px solid rgba(55, 65, 81, 0.6); }
+    [data-testid="stExpander"] { border-radius: 14px; border: 1px solid rgba(148, 163, 184, 0.2); background: rgba(30, 41, 59, 0.4); }
+    
+    /* Sidebar */
+    [data-testid="stSidebar"] { background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important; }
+    [data-testid="stSidebar"] .stMarkdown { color: #94a3b8; }
+    
+    hr { margin: 2rem 0 !important; border: none; border-top: 1px solid rgba(148, 163, 184, 0.15) !important; }
     
     @media (max-width: 768px) {
         .block-container { padding: 1rem !important; }
         .stMetric { min-width: 120px; }
         [data-testid="stSidebar"] { width: 100% !important; }
         .stColumns > div { flex: 1 1 100% !important; min-width: 100% !important; }
+        .stButton > button { min-height: 44px; padding: 12px 20px; font-size: 1rem; }
+        [data-testid="stMetric"] { padding: 1rem !important; }
+        h1 { font-size: 1.5rem !important; }
+        h2 { font-size: 1.25rem !important; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -171,20 +199,29 @@ with st.sidebar:
     st.caption("Business Intelligence")
     
     # Onboarding checklist for first-time users
+    if 'onboarding_dismissed' not in st.session_state:
+        st.session_state.onboarding_dismissed = False
     has_data = bool(st.session_state.get('connected_sources') or st.session_state.get('uploaded_data') is not None)
     has_goals = bool(st.session_state.get('goals') and any(g.get('target') for g in (st.session_state.get('goals') or {}).values()))
-    if not has_data or not has_goals:
-        with st.expander("✅ Get Started", expanded=not has_data):
-            st.markdown(f"{'✅' if has_data else '⬜'} Connect your data")
-            st.markdown(f"{'✅' if has_goals else '⬜'} Set your first goal")
-            if not has_data:
-                if st.button("📁 Add Data", key="onboard_data"):
+    onboarding_done = has_data and has_goals
+    if not st.session_state.onboarding_dismissed and not onboarding_done:
+        with st.expander("🎯 Get Started — 3 steps to your first briefing", expanded=True):
+            st.markdown("1. **Connect your data** — CSV, Stripe, or Shopify")
+            st.markdown("2. **Set your industry** — for relevant benchmarks")
+            st.markdown("3. **Set a goal** — track what matters")
+            st.markdown(f"**Progress:** {'✅' if has_data else '⬜'} Data · {'✅' if has_goals else '⬜'} Goal")
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("📁 Connect Data", key="onboard_data"):
                     st.session_state.current_page = "Data Sources"
                     st.rerun()
-            if not has_goals and has_data:
-                if st.button("🎯 Set Goals", key="onboard_goals"):
+            with col2:
+                if has_data and st.button("🎯 Set Goal", key="onboard_goals"):
                     st.session_state.current_page = "Goals"
                     st.rerun()
+            if st.button("I'll do this later", key="onboard_skip"):
+                st.session_state.onboarding_dismissed = True
+                st.rerun()
         st.markdown("---")
     
     industry_options = {k: f"{v['icon']} {v['name']}" for k, v in INDUSTRIES.items()}
@@ -211,6 +248,9 @@ with st.sidebar:
         if st.button(p, use_container_width=True):
             st.session_state.current_page = p
             st.rerun()
+    if st.button("💳 Billing", use_container_width=True):
+        st.session_state.current_page = "Billing"
+        st.rerun()
     with st.expander("More pages"):
         for p in ["What-If", "Customer Insights", "Inventory & Demand", "Anomalies & Alerts", "Inventory Optimization", "Margin Analysis", "Smart Alerts", "Cohort Analysis", "Customer LTV", "Revenue Attribution", "Competitive Benchmark"]:
             if st.button(p, use_container_width=True, key=f"nav_{p}"):
@@ -314,9 +354,9 @@ try:
         top_priority = get_top_priority_this_week(data, dash_metrics, industry)
         if top_priority:
             st.markdown(f"""
-            <div style='background:linear-gradient(135deg,#1E3A5F 0%,#0F172A 100%);border:1px solid rgba(59,130,246,0.5);border-radius:16px;padding:24px 28px;margin:0 0 2rem 0;box-shadow:0 4px 6px -1px rgba(0,0,0,0.2);'>
-                <p style='color:#93C5FD;font-size:11px;margin:0 0 10px 0;text-transform:uppercase;letter-spacing:0.5px;'>🎯 Top Priority This Week</p>
-                <p style='color:#F3F4F6;font-size:1.4rem;font-weight:700;margin:0 0 8px 0;line-height:1.4;'>{top_priority['title']}</p>
+            <div style='font-family:"DM Sans",sans-serif;background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border:1px solid rgba(16,185,129,0.3);border-radius:18px;padding:1.75rem 2rem;margin:0 0 2rem 0;box-shadow:0 8px 30px -10px rgba(0,0,0,0.3);'>
+                <p style='color:#34d399;font-size:10px;margin:0 0 10px 0;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;'>Top Priority This Week</p>
+                <p style='color:#f8fafc;font-size:1.35rem;font-weight:700;margin:0 0 8px 0;line-height:1.4;letter-spacing:-0.01em;'>{top_priority['title']}</p>
                 <p style='color:#D1D5DB;font-size:0.95rem;margin:0;line-height:1.5;'>{top_priority['action'][:120]}{'...' if len(top_priority['action']) > 120 else ''}</p>
                 <p style='color:#10B981;font-size:0.9rem;margin:1rem 0 0 0;font-weight:600;'>Impact: {top_priority['impact']}</p>
             </div>
@@ -468,6 +508,8 @@ try:
         render_competitive_benchmark_page(*args)
     elif p == "Data Sources":
         render_data_sources_page()
+    elif p == "Billing":
+        render_billing_page()
     else:
         st.info("Select a page from the sidebar.")
 except Exception as e:

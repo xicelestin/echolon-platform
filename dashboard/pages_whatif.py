@@ -358,9 +358,32 @@ def render_whatif_page(data=None, kpis=None, format_currency=None, format_percen
     
     st.markdown("<div style='border-top: 1px solid #374151; margin: 32px 0;'></div>", unsafe_allow_html=True)
     
-    # Action items
+    # Data-driven action items (from your business data)
     st.markdown("<h3 style='margin-top: 32px; margin-bottom: 20px; color: #ffffff;'>Recommended Actions</h3>", unsafe_allow_html=True)
     
+    from utils import calculate_key_metrics, generate_action_items
+    from utils.data_patterns import analyze_data_patterns
+    
+    if data is not None and not data.empty and 'revenue' in data.columns:
+        metrics = calculate_key_metrics(data)
+        pattern_result = analyze_data_patterns(data)
+        patterns = pattern_result.get('patterns', {}) if pattern_result.get('has_data') else {}
+        industry = st.session_state.get('industry', 'ecommerce')
+        action_items = generate_action_items(data, metrics, industry, patterns)
+        if action_items:
+            actions_df = pd.DataFrame(action_items)
+            actions_df['Priority'] = actions_df.get('priority', '🟡 Medium')
+            actions_df['Timeline'] = actions_df.get('timeline', '30 days')
+            actions_df['Expected Impact'] = actions_df.get('expected_impact', 'Based on your data')
+            st.dataframe(actions_df[['action', 'Priority', 'Timeline', 'Expected Impact']].rename(columns={'action': 'Action'}), use_container_width=True, hide_index=True)
+        else:
+            _show_fallback_actions()
+    else:
+        _show_fallback_actions()
+
+
+def _show_fallback_actions():
+    """Generic fallback when no data available."""
     actions = pd.DataFrame({
         'Action': [
             'Implement retention program',
@@ -373,7 +396,6 @@ def render_whatif_page(data=None, kpis=None, format_currency=None, format_percen
         'Timeline': ['Immediate', 'Q1', 'Q1', 'Q2', 'Q3'],
         'Expected Impact': ['+5-8% revenue', '+3-5% customers', '+12-15% ARPU', '+20% market reach', '+8-10% margin']
     })
-    
     st.dataframe(actions, use_container_width=True, hide_index=True)
 
 def create_scenario_comparison_chart(scenarios, metric_name):

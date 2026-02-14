@@ -566,25 +566,53 @@ def generate_action_items(
             'timeline': '7 days'
         })
     elif rev_growth < 8 and rev_growth >= 0:
+        growing = [c for c in dim_shifts if c.get('change_pct', 0) > 10]
+        if growing:
+            names = [s.get('segment_name') or s.get('channel', '') for s in growing[:2] if s.get('segment_name') or s.get('channel')]
+            if names:
+                action = f'Scale {", ".join(names)} by 20% — up {growing[0]["change_pct"]:.0f}% (growth at {rev_growth:.1f}%)'
+            else:
+                action = f'Scale top 2 revenue sources by 20% (growth at {rev_growth:.1f}%)'
+        else:
+            action = f'Scale top 2 revenue sources by 20% (growth at {rev_growth:.1f}%)'
         actions.append({
             'priority': '🔴 High',
-            'action': f'Scale top 2 revenue sources by 20% (growth at {rev_growth:.1f}%)',
+            'action': action,
             'expected_impact': f'+{_fmt_cur(total_rev * 0.05)} revenue potential',
             'timeline': '30 days'
         })
 
     if margin < bench['margin'] and margin > 0:
+        top_products = patterns.get('top_products', [])
+        low_margin_cats = patterns.get('low_margin_winners', [])
+        if low_margin_cats:
+            names = [lm['category'] for lm in low_margin_cats[:2]]
+            action = f'Raise prices 5-10% on {", ".join(names)} — high volume, thin margin ({margin:.1f}% vs {bench["margin"]:.0f}% benchmark)'
+        elif top_products:
+            names = [p['product'] for p in top_products[:3]]
+            action = f'Raise prices 5-10% on {", ".join(names)} (margin {margin:.1f}% vs {bench["margin"]:.0f}% benchmark)'
+        else:
+            action = f'Raise prices 5-10% on top 3 products (margin {margin:.1f}% vs {bench["margin"]:.0f}% benchmark)'
         actions.append({
             'priority': '🔴 High',
-            'action': f'Raise prices 5-10% on top 3 products (margin {margin:.1f}% vs {bench["margin"]:.0f}% benchmark)',
+            'action': action,
             'expected_impact': f'+{_fmt_cur(total_rev * (bench["margin"] - margin) / 100)} profit',
             'timeline': '14 days'
         })
 
     if roas < bench['roas'] and marketing_spend > 500:
+        channel_shifts = [s for s in dim_shifts if s.get('dimension_type', 'channel') == 'channel' or 'channel' in str(s.get('channel', ''))]
+        top_channels = [s.get('segment_name') or s.get('channel', '') for s in channel_shifts if (s.get('change_pct', 0) > 0 or s.get('current_rev', 0) > 0)][:3]
+        if not top_channels:
+            top_channels = [s.get('segment_name') or s.get('channel', '') for s in dim_shifts if (s.get('change_pct', 0) > 0 or s.get('current_rev', 0) > 0)][:3]
+        top_channels = [c for c in top_channels if c]
+        if top_channels:
+            action = f'Pause underperformers; scale {", ".join(top_channels[:2])} (ROAS {roas:.1f}x vs {bench["roas"]:.0f}x)'
+        else:
+            action = f'Pause bottom 20% campaigns, reallocate to winners (ROAS {roas:.1f}x vs {bench["roas"]:.0f}x)'
         actions.append({
             'priority': '🟡 Medium',
-            'action': f'Pause bottom 20% campaigns, reallocate to winners (ROAS {roas:.1f}x vs {bench["roas"]:.0f}x)',
+            'action': action,
             'expected_impact': f'+{_fmt_cur(marketing_spend * (bench["roas"] - roas) * margin / 100)} profit',
             'timeline': '14 days'
         })
@@ -600,18 +628,30 @@ def generate_action_items(
     if 'orders' in data.columns and data['orders'].sum() > 0:
         aov = total_rev / data['orders'].sum()
         if aov < 75:
+            top_products = patterns.get('top_products', [])
+            if top_products:
+                prod_names = [p['product'] for p in top_products[:2]]
+                action = f'Bundle {", ".join(prod_names)} with complementary items; set free-shipping threshold above ${aov:.0f} AOV'
+            else:
+                action = f'Add product bundles and free-shipping threshold (AOV ${aov:.0f})'
             actions.append({
                 'priority': '🟡 Medium',
-                'action': f'Add product bundles and free-shipping threshold (AOV ${aov:.0f})',
+                'action': action,
                 'expected_impact': f'+10-15% AOV, ~{_fmt_cur(total_rev * 0.1 * margin / 100)} profit',
                 'timeline': '30 days'
             })
 
     # Ensure at least 2 actions
     if len(actions) < 2:
+        top_products = patterns.get('top_products', [])
+        if top_products:
+            names = [p['product'] for p in top_products[:3]]
+            action = f'Review {", ".join(names)} — optimize pricing and promotion'
+        else:
+            action = 'Review top 5 products by revenue — optimize pricing and promotion'
         actions.append({
             'priority': '🟡 Medium',
-            'action': 'Review top 5 products by revenue — optimize pricing and promotion',
+            'action': action,
             'expected_impact': 'Margin and conversion improvement',
             'timeline': '30 days'
         })

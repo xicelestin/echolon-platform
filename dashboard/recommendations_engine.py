@@ -1,8 +1,9 @@
 """Data-driven recommendations engine - generates personalized insights from actual metrics."""
 import pandas as pd
 import numpy as np
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from utils import calculate_key_metrics
+from utils.data_patterns import analyze_data_patterns
 
 
 def compute_business_metrics(data: pd.DataFrame) -> Dict[str, float]:
@@ -30,9 +31,13 @@ def compute_business_metrics(data: pd.DataFrame) -> Dict[str, float]:
 def generate_data_driven_recommendations(data: pd.DataFrame, industry: str = 'ecommerce') -> List[Dict[str, Any]]:
     """
     Generate personalized recommendations from actual business data.
+    Uses patterns (channels, products, categories) when available for specific steps.
     Returns list of recommendation dicts with title, impact, why, steps, confidence, category.
     """
     metrics = compute_business_metrics(data)
+    pattern_result = analyze_data_patterns(data)
+    patterns = pattern_result.get('patterns', {}) if pattern_result.get('has_data') else {}
+    
     recs = []
     
     total_revenue = metrics.get('total_revenue', 0)
@@ -44,20 +49,38 @@ def generate_data_driven_recommendations(data: pd.DataFrame, industry: str = 'ec
     churn = metrics.get('churn_rate', 5)
     marketing_spend = metrics.get('marketing_spend', total_revenue * 0.15)
     
+    # Segment names from patterns (for personalized steps)
+    dim_shifts = patterns.get('dimension_shifts', []) or patterns.get('channel_shifts', [])
+    top_channels = [s['segment_name'] for s in dim_shifts if s.get('change_pct', 0) > 0 and s.get('dimension_type', 'channel') == 'channel'][:3]
+    if not top_channels:
+        top_channels = [s['segment_name'] for s in dim_shifts if s.get('change_pct', 0) > 0][:3]  # fallback to any dimension
+    top_products = [p['product'] for p in patterns.get('top_products', [])][:3]
+    top_categories = [c['category'] for c in patterns.get('top_categories', [])][:3]
+    low_margin = patterns.get('low_margin_winners', [])
+    
     # Revenue recommendations
     if rev_growth < 15 and rev_growth >= 0:
         est_impact = total_revenue * 0.08  # 8% uplift potential
-        recs.append({
-            'category': 'revenue',
-            'title': 'Scale Marketing on Top Channels',
-            'impact': f'+{format_currency_short(est_impact)} annually (est. 8-12% revenue lift)',
-            'why': f'Your revenue growth is {rev_growth:.1f}%. Industry leaders achieve 15%+. Your ROAS of {roas:.1f}x suggests room to scale winning campaigns.',
-            'steps': [
+        if top_channels:
+            steps = [
+                f'Scale {top_channels[0]} — your top performer',
+                f'Increase budget 20% on {", ".join(top_channels[:2])}',
+                'Pause or reduce underperformers',
+                'Monitor conversion rates weekly'
+            ]
+        else:
+            steps = [
                 'Identify top 3 channels by ROAS',
                 'Increase budget 20% on winners',
                 'Pause or reduce underperformers',
                 'Monitor conversion rates weekly'
-            ],
+            ]
+        recs.append({
+            'category': 'revenue',
+            'title': f'Scale Marketing on Top Channels' + (f' ({top_channels[0]})' if top_channels else ''),
+            'impact': f'+{format_currency_short(est_impact)} annually (est. 8-12% revenue lift)',
+            'why': f'Your revenue growth is {rev_growth:.1f}%. Industry leaders achieve 15%+. Your ROAS of {roas:.1f}x suggests room to scale winning campaigns.',
+            'steps': steps,
             'confidence': min(85, 70 + int(roas)),
             'cost_benefit': 'Low cost | High upside'
         })
@@ -65,17 +88,41 @@ def generate_data_driven_recommendations(data: pd.DataFrame, industry: str = 'ec
     if margin < 35 and margin > 0:
         margin_gap = 35 - margin
         est_impact = total_revenue * (margin_gap / 100)
-        recs.append({
-            'category': 'revenue',
-            'title': 'Improve Profit Margins',
-            'impact': f'+{format_currency_short(est_impact)} annually (moving to 35% margin)',
-            'why': f'At {margin:.1f}% margin, a 5-point improvement captures significant value. Top quartile businesses achieve 40%+.',
-            'steps': [
+        if low_margin:
+            lm_names = [lm['category'] for lm in low_margin[:2]]
+            steps = [
+                f'Raise prices 5-10% on {lm_names[0]} — high volume, thin margin',
+                f'Audit margins on {", ".join(lm_names)}',
+                'Negotiate supplier discounts',
+                'Reduce fulfillment waste'
+            ]
+        elif top_products:
+            steps = [
+                f'Raise prices 5-10% on {top_products[0]} (top seller)',
+                f'Audit margins on {", ".join(top_products[:3])}',
+                'Negotiate supplier discounts',
+                'Reduce fulfillment waste'
+            ]
+        elif top_categories:
+            steps = [
+                f'Raise prices on {top_categories[0]} — your largest category',
+                f'Audit margins across {", ".join(top_categories[:2])}',
+                'Negotiate supplier discounts',
+                'Reduce fulfillment waste'
+            ]
+        else:
+            steps = [
                 'Audit product-level margins',
                 'Raise prices on bestsellers 5-10%',
                 'Negotiate supplier discounts',
                 'Reduce fulfillment waste'
-            ],
+            ]
+        recs.append({
+            'category': 'revenue',
+            'title': 'Improve Profit Margins' + (f' ({low_margin[0]["category"]})' if low_margin else ''),
+            'impact': f'+{format_currency_short(est_impact)} annually (moving to 35% margin)',
+            'why': f'At {margin:.1f}% margin, a 5-point improvement captures significant value. Top quartile businesses achieve 40%+.',
+            'steps': steps,
             'confidence': 82,
             'cost_benefit': 'Minimal cost | Direct impact'
         })
@@ -104,17 +151,26 @@ def generate_data_driven_recommendations(data: pd.DataFrame, industry: str = 'ec
     if roas < 4 and marketing_spend > 1000:
         roas_gap = 4 - roas
         est_impact = marketing_spend * roas_gap * (margin / 100)
-        recs.append({
-            'category': 'efficiency',
-            'title': 'Optimize Marketing ROI',
-            'impact': f'+{format_currency_short(est_impact)} profit (ROAS 4x vs current {roas:.1f}x)',
-            'why': f'Your ROAS of {roas:.1f}x is below 4x benchmark. Reallocating from underperformers to winners typically yields 30-50% efficiency gain.',
-            'steps': [
+        if top_channels:
+            steps = [
+                f'Pause underperformers; scale {top_channels[0]}',
+                f'Increase budget 25% on {", ".join(top_channels[:2])}',
+                'Audit all campaigns by ROAS',
+                'Improve landing page conversion'
+            ]
+        else:
+            steps = [
                 'Audit all campaigns by ROAS',
                 'Pause bottom 20% performers',
                 'Increase top 3 channels 25%',
                 'Improve landing page conversion'
-            ],
+            ]
+        recs.append({
+            'category': 'efficiency',
+            'title': 'Optimize Marketing ROI' + (f' — scale {top_channels[0]}' if top_channels else ''),
+            'impact': f'+{format_currency_short(est_impact)} profit (ROAS 4x vs current {roas:.1f}x)',
+            'why': f'Your ROAS of {roas:.1f}x is below 4x benchmark. Reallocating from underperformers to winners typically yields 30-50% efficiency gain.',
+            'steps': steps,
             'confidence': 85,
             'cost_benefit': 'Zero additional spend | Better returns'
         })
@@ -122,17 +178,26 @@ def generate_data_driven_recommendations(data: pd.DataFrame, industry: str = 'ec
     if aov < 75 and aov > 0:
         uplift = 0.15  # 15% AOV increase potential
         est_impact = total_revenue * uplift * margin / 100
-        recs.append({
-            'category': 'efficiency',
-            'title': 'Increase Average Order Value',
-            'impact': f'+{format_currency_short(est_impact)} profit (15% AOV uplift)',
-            'why': f'Your AOV is ${aov:.0f}. Upsells and bundles typically add 10-20%. Low effort, high margin impact.',
-            'steps': [
+        if top_products:
+            steps = [
+                f'Bundle {top_products[0]} with complementary items',
+                'Add "Frequently bought together" at checkout',
+                'Create product bundles (10-15% discount)',
+                f'Set free-shipping threshold 15% above ${aov:.0f} AOV'
+            ]
+        else:
+            steps = [
                 'Add "Frequently bought together" section',
                 'Create product bundles (10-15% discount)',
                 'Implement minimum for free shipping',
                 'Train staff on add-on suggestions'
-            ],
+            ]
+        recs.append({
+            'category': 'efficiency',
+            'title': 'Increase Average Order Value' + (f' (${aov:.0f} → target $75+)' if aov else ''),
+            'impact': f'+{format_currency_short(est_impact)} profit (15% AOV uplift)',
+            'why': f'Your AOV is ${aov:.0f}. Upsells and bundles typically add 10-20%. Low effort, high margin impact.',
+            'steps': steps,
             'confidence': 80,
             'cost_benefit': 'Low effort | High margin'
         })
