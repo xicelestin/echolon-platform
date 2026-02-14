@@ -166,17 +166,20 @@ p = st.session_state.current_page
 args = (data, kpis, format_currency, format_percentage, format_multiplier)
 
 # Pages that need date+revenue show a friendly message if user didn't map those columns
-from utils.data_model import require_data_message
 PAGES_NEEDING_DATE_REVENUE = ["Executive Briefing", "Dashboard", "Analytics", "Insights", "Predictions", "Recommendations", "Goals", "What-If", "Margin Analysis", "Smart Alerts", "Anomalies & Alerts", "Revenue Attribution", "Customer LTV", "Competitive Benchmark"]
 def _check_data_for_page(page_name):
-    msg = require_data_message(["date", "revenue"], page_name.lower())
-    if msg:
-        st.info(msg)
-        if st.button("📁 Go to Data Sources", key=f"goto_ds_{page_name}"):
-            st.session_state.current_page = "Data Sources"
-            st.rerun()
-        return False
-    return True
+    provided = st.session_state.get("uploaded_data_provided_columns")
+    if provided is None:
+        return True  # Demo/API data: assume full
+    provided_set = set(provided)
+    if "date" in provided_set and "revenue" in provided_set:
+        return True
+    missing = [c for c in ["date", "revenue"] if c not in provided_set]
+    st.info(f"📊 **This page needs:** {', '.join(missing)}. Map these columns in **Data Sources** to see {page_name.lower()}.")
+    if st.button("📁 Go to Data Sources", key=f"goto_ds_{page_name}"):
+        st.session_state.current_page = "Data Sources"
+        st.rerun()
+    return False
 
 try:
     if p == "Executive Briefing":
