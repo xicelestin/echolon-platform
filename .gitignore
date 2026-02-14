@@ -231,3 +231,4 @@ dashboard/data/sessions.json
 # Local environment overrides
 .env.local
 .env.*.local
+.env.prod
