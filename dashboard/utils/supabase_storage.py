@@ -96,3 +96,37 @@ def delete_session_supabase(token: str) -> bool:
         return True
     except Exception:
         return False
+
+
+def save_subscription_supabase(username: str, tier: str, status: str = "active", stripe_customer_id: str = None, stripe_subscription_id: str = None) -> bool:
+    """Save subscription tier for user. Returns True if saved."""
+    sb = _get_supabase()
+    if not sb:
+        return False
+    try:
+        from datetime import datetime, timezone
+        sb.table("subscriptions").upsert({
+            "username": username,
+            "tier": tier,
+            "status": status,
+            "stripe_customer_id": stripe_customer_id,
+            "stripe_subscription_id": stripe_subscription_id,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }, on_conflict="username").execute()
+        return True
+    except Exception:
+        return False
+
+
+def get_subscription_supabase(username: str) -> Optional[Dict[str, Any]]:
+    """Get subscription for user. Returns {tier, status, ...} or None."""
+    sb = _get_supabase()
+    if not sb:
+        return None
+    try:
+        r = sb.table("subscriptions").select("*").eq("username", username).execute()
+        if r.data and len(r.data) > 0:
+            return r.data[0]
+    except Exception:
+        pass
+    return None

@@ -10,7 +10,9 @@ from utils import calculate_key_metrics, generate_personalized_insights
 def render_predictions_page(data=None, kpis=None, format_currency=None, format_percentage=None, format_multiplier=None):
     """Render the comprehensive AI Predictions page - uses real data when available."""
     if data is None:
-        data = st.session_state.get('current_data') or st.session_state.get('uploaded_data')
+        data = st.session_state.get('current_data')
+        if data is None:
+            data = st.session_state.get('uploaded_data')
     if data is None or (hasattr(data, 'empty') and data.empty):
         st.warning("Load data from Dashboard or Data Sources to get personalized forecasts.")
         return

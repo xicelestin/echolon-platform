@@ -7,7 +7,9 @@ from utils import get_goal_progress, calculate_key_metrics
 def render_goals_page(data=None, kpis=None, format_currency=None, format_percentage=None):
     """Render the Goals & Target Tracking page."""
     if data is None:
-        data = st.session_state.get('current_data') or st.session_state.get('uploaded_data')
+        data = st.session_state.get('current_data')
+        if data is None:
+            data = st.session_state.get('uploaded_data')
     if format_currency is None:
         format_currency = lambda v, d=0: f"${v:,.0f}" if v < 1e6 else f"${v/1e6:.1f}M"
     if format_percentage is None:

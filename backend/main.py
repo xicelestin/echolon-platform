@@ -3,6 +3,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api import endpoints
+from app.api.stripe_webhook import router as stripe_router
 from app.db.database import engine, Base
 from app.models.models import User, BusinessData, Metrics, Predictions
 from error_handling import setup_error_handling
@@ -36,6 +37,7 @@ setup_error_handling(app)
 
 # Include routers
 app.include_router(endpoints.router, prefix="/api/v1", tags=["main"])
+app.include_router(stripe_router, prefix="/api/v1/stripe", tags=["stripe"])
 
 @app.get("/")
 async def root():

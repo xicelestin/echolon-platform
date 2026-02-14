@@ -301,8 +301,18 @@ def require_authentication() -> bool:
         if sub_info and sub_info.get("status") == "active":
             # User must be logged in to attach subscription - they'll have session
             if st.session_state.get("authenticated"):
+                tier = sub_info.get("tier", "growth")
                 st.session_state.stripe_subscription_status = "active"
-                st.session_state.subscription_tier = sub_info.get("tier", "growth")
+                st.session_state.subscription_tier = tier
+                # Persist to Supabase so tier survives refresh
+                from utils.supabase_storage import save_subscription_supabase
+                save_subscription_supabase(
+                    st.session_state.username,
+                    tier,
+                    status="active",
+                    stripe_customer_id=sub_info.get("customer_id"),
+                    stripe_subscription_id=sub_info.get("subscription_id"),
+                )
             _clear_query_params()
             if st.session_state.get("authenticated"):
                 st.success("✅ Payment successful! Your plan is now active.")
@@ -319,6 +329,12 @@ def require_authentication() -> bool:
             # Load user data on restore-from-token
             from utils.user_data_storage import load_user_data
             load_user_data(username)
+            # Load subscription from Supabase so tier persists across refresh
+            from utils.supabase_storage import get_subscription_supabase
+            sub = get_subscription_supabase(username)
+            if sub and sub.get("status") == "active":
+                st.session_state.stripe_subscription_status = "active"
+                st.session_state.subscription_tier = sub.get("tier", "growth")
             return True
         # Invalid/expired token - clear it
         _clear_query_params()
@@ -360,7 +376,7 @@ def render_user_info():
             st.markdown("---")
             st.markdown(f"### 👤 {username}")
             
-            if st.button("🚪 Logout", use_container_width=True):
+            if st.button("🚪 Logout", use_container_width=True, key="sidebar_logout"):
                 logout()
 
 

@@ -59,7 +59,9 @@ def generate_scenario_insights(scenarios, revenue_growth, churn_rate, cac_change
 def render_whatif_page(data=None, kpis=None, format_currency=None, format_percentage=None, format_multiplier=None):
     """Render What-If Scenario Planner page — uses your data for baseline when available."""
     if data is None:
-        data = st.session_state.get('current_data') or st.session_state.get('uploaded_data')
+        data = st.session_state.get('current_data')
+        if data is None:
+            data = st.session_state.get('uploaded_data')
     
     # Page header
     st.markdown("""

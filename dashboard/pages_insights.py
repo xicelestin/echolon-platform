@@ -38,7 +38,9 @@ def create_kpi_card(icon, title, value, delta, delta_pct_color, help_text):
 def render_insights_page(data=None, kpis=None, format_currency=None, format_percentage=None, format_number=None):
     """Render the Sales Insights & Key Metrics page - uses real data when provided."""
     if data is None:
-        data = st.session_state.get('current_data') or st.session_state.get('uploaded_data')
+        data = st.session_state.get('current_data')
+        if data is None:
+            data = st.session_state.get('uploaded_data')
     if data is None or (hasattr(data, 'empty') and data.empty):
         st.warning("Load data from Dashboard or Data Sources to see insights.")
         return

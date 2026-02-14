@@ -18,6 +18,7 @@ from components import display_business_health_score, display_metric_with_compar
 
 # Import auth early to avoid circular import (pages_data_sources imports auth)
 from auth import require_authentication, render_user_info, get_current_user
+from utils.subscription import get_user_tier, can_access_page
 
 # Page Imports
 from pages_margin_analysis import render_margin_analysis_page
@@ -96,7 +97,8 @@ def load_data():
 
 try:
     with st.spinner("Loading data..."):
-        data = st.session_state.get('uploaded_data') or load_data()
+        uploaded = st.session_state.get('uploaded_data')
+        data = load_data() if uploaded is None else uploaded
         data = data.copy()
         st.session_state.current_data = data  # Single source of truth — all pages use this when they need data
         if 'profit' not in data.columns and 'revenue' in data.columns:
@@ -242,23 +244,42 @@ with st.sidebar:
         st.caption("We alert you when: revenue drops >5%, margin drops >3 pts, ROAS down >15%.")
         st.caption("Based on your last 60 days of data.")
     st.markdown("---")
+    tier = get_user_tier()
     st.caption("Main")
     st.markdown("<div style='margin-bottom: 0.5rem;'></div>", unsafe_allow_html=True)
-    for p in ["Executive Briefing", "Dashboard", "Analytics", "Insights", "Predictions", "Recommendations", "Goals", "Data Sources"]:
-        if st.button(p, use_container_width=True):
-            st.session_state.current_page = p
-            st.rerun()
-    if st.button("💳 Billing", use_container_width=True):
-        st.session_state.current_page = "Billing"
-        st.rerun()
-    with st.expander("More pages"):
-        for p in ["What-If", "Customer Insights", "Inventory & Demand", "Anomalies & Alerts", "Inventory Optimization", "Margin Analysis", "Smart Alerts", "Cohort Analysis", "Customer LTV", "Revenue Attribution", "Competitive Benchmark"]:
-            if st.button(p, use_container_width=True, key=f"nav_{p}"):
+    main_pages = ["Executive Briefing", "Dashboard", "Analytics", "Insights", "Predictions", "Recommendations", "Goals", "Data Sources"]
+    for p in main_pages:
+        if can_access_page(p, tier):
+            if st.button(p, use_container_width=True, key=f"main_{p}"):
                 st.session_state.current_page = p
                 st.rerun()
+        else:
+            st.button(f"🔒 {p}", use_container_width=True, disabled=True, key=f"main_{p}", help="Upgrade to access")
+    if st.button("💳 Billing", use_container_width=True, key="main_billing"):
+        st.session_state.current_page = "Billing"
+        st.rerun()
+    more_pages = ["What-If", "Customer Insights", "Inventory & Demand", "Anomalies & Alerts", "Inventory Optimization", "Margin Analysis", "Smart Alerts", "Cohort Analysis", "Customer LTV", "Revenue Attribution", "Competitive Benchmark"]
+    with st.expander("More pages"):
+        for p in more_pages:
+            if can_access_page(p, tier):
+                if st.button(p, use_container_width=True, key=f"nav_{p}"):
+                    st.session_state.current_page = p
+                    st.rerun()
+            else:
+                st.button(f"🔒 {p}", use_container_width=True, disabled=True, key=f"nav_{p}", help="Upgrade to access")
+
+    render_user_info()
 
 p = st.session_state.current_page
 args = (data, kpis, format_currency, format_percentage, format_multiplier)
+
+# Tier enforcement: if user can't access this page, show upgrade prompt
+if not can_access_page(p, tier):
+    st.info(f"🔒 **{p}** is available on Growth plan. Upgrade to unlock Predictions, What-If, Recommendations, and more.")
+    if st.button("💳 Upgrade Plan", key="upgrade_from_page"):
+        st.session_state.current_page = "Billing"
+        st.rerun()
+    st.stop()
 
 # Pages that need date+revenue show a friendly message if user didn't map those columns
 PAGES_NEEDING_DATE_REVENUE = ["Executive Briefing", "Dashboard", "Analytics", "Insights", "Predictions", "Recommendations", "Goals", "What-If", "Margin Analysis", "Smart Alerts", "Anomalies & Alerts", "Revenue Attribution", "Customer LTV", "Competitive Benchmark"]

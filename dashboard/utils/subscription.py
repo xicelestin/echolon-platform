@@ -68,6 +68,8 @@ def can_access_page(page_name: str, tier: str) -> bool:
     """Check if tier allows access to page."""
     if tier == "growth":
         return True
+    if page_name == "Billing":
+        return True  # Everyone can access Billing to upgrade
     config = TIERS.get(tier, TIERS["free"])
     allowed = config.get("pages_allowed")
     if allowed is None:
@@ -140,16 +142,26 @@ def get_subscription_from_session(session_id: str) -> Optional[dict]:
         price_id = getattr(price, "id", None) or (price.get("id", "") if price and hasattr(price, "get") else "")
         try:
             import streamlit as st
-            if str(price_id) == str(st.secrets.get("STRIPE_PRICE_GROWTH_MONTHLY", "")):
+            growth_monthly = str(st.secrets.get("STRIPE_PRICE_GROWTH_MONTHLY", ""))
+            growth_annual = str(st.secrets.get("STRIPE_PRICE_GROWTH_ANNUAL", ""))
+            starter_monthly = str(st.secrets.get("STRIPE_PRICE_STARTER_MONTHLY", ""))
+            starter_annual = str(st.secrets.get("STRIPE_PRICE_STARTER_ANNUAL", ""))
+            pid = str(price_id)
+            if pid in (growth_monthly, growth_annual):
                 tier = "growth"
-            else:
+            elif pid in (starter_monthly, starter_annual):
                 tier = "starter"
+            else:
+                tier = "growth"
         except Exception:
             tier = "growth"
+        sub_id = sub.get("id") if hasattr(sub, "get") else getattr(sub, "id", None)
+        cust_id = session.get("customer") if hasattr(session, "get") else getattr(session, "customer", None)
         return {
             "tier": tier,
-            "status": sub.get("status", "active"),
-            "customer_id": session.get("customer"),
+            "status": sub.get("status", "active") if hasattr(sub, "get") else getattr(sub, "status", "active"),
+            "customer_id": cust_id,
+            "subscription_id": sub_id,
         }
     except Exception:
         return None

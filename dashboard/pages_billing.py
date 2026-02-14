@@ -33,21 +33,31 @@ def render_billing_page():
     
     with col2:
         with st.container(border=True):
-            st.markdown("**Starter** — $49/mo")
+            st.markdown("**Starter** — $49/mo · $39/mo annual")
             st.caption("Dashboard, Analytics, Insights, 90 days")
             if tier == "free":
-                if st.button("Subscribe", key="sub_starter"):
-                    _redirect_to_checkout("starter")
+                sub_col1, sub_col2 = st.columns(2)
+                with sub_col1:
+                    if st.button("Monthly", key="sub_starter_monthly"):
+                        _redirect_to_checkout("starter", annual=False)
+                with sub_col2:
+                    if st.button("Annual", key="sub_starter_annual"):
+                        _redirect_to_checkout("starter", annual=True)
             elif tier == "starter":
                 st.success("Current plan")
     
     with col3:
         with st.container(border=True):
-            st.markdown("**Growth** — $99/mo")
+            st.markdown("**Growth** — $99/mo · $79/mo annual")
             st.caption("All features, unlimited sources, 12 months")
             if tier != "growth":
-                if st.button("Upgrade", key="sub_growth", type="primary"):
-                    _redirect_to_checkout("growth")
+                sub_col1, sub_col2 = st.columns(2)
+                with sub_col1:
+                    if st.button("Monthly", key="sub_growth_monthly", type="primary"):
+                        _redirect_to_checkout("growth", annual=False)
+                with sub_col2:
+                    if st.button("Annual", key="sub_growth_annual", type="primary"):
+                        _redirect_to_checkout("growth", annual=True)
             else:
                 st.success("Current plan")
     
@@ -55,7 +65,7 @@ def render_billing_page():
     st.caption("14-day free trial on paid plans. Cancel anytime. Annual billing saves 20%.")
 
 
-def _redirect_to_checkout(plan: str):
+def _redirect_to_checkout(plan: str, annual: bool = False):
     """Create Stripe Checkout session and redirect."""
     try:
         import streamlit as st
@@ -70,13 +80,19 @@ def _redirect_to_checkout(plan: str):
         sess_param = f"&session={session_token}" if session_token else ""
         
         # Price IDs from secrets
-        price_ids = {
-            "starter": st.secrets.get("STRIPE_PRICE_STARTER_MONTHLY", ""),
-            "growth": st.secrets.get("STRIPE_PRICE_GROWTH_MONTHLY", ""),
-        }
+        if annual:
+            price_ids = {
+                "starter": st.secrets.get("STRIPE_PRICE_STARTER_ANNUAL", ""),
+                "growth": st.secrets.get("STRIPE_PRICE_GROWTH_ANNUAL", ""),
+            }
+        else:
+            price_ids = {
+                "starter": st.secrets.get("STRIPE_PRICE_STARTER_MONTHLY", ""),
+                "growth": st.secrets.get("STRIPE_PRICE_GROWTH_MONTHLY", ""),
+            }
         price_id = price_ids.get(plan)
         if not price_id:
-            st.warning("Billing not configured yet. Add STRIPE_PRICE_STARTER_MONTHLY and STRIPE_PRICE_GROWTH_MONTHLY to secrets.")
+            st.warning("Billing not configured yet. Add STRIPE_PRICE_* keys to secrets.")
             return
         
         url = create_checkout_session(
