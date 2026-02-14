@@ -13,7 +13,7 @@ Stripe Price IDs (set in secrets):
 - STRIPE_PRICE_GROWTH_ANNUAL
 """
 import os
-from typing import Optional
+from typing import Optional, Tuple
 
 TIERS = {
     "free": {
@@ -88,9 +88,9 @@ def get_max_history_days(tier: str) -> int:
     return TIERS.get(tier, TIERS["free"])["history_days"]
 
 
-def create_checkout_session(price_id: str, success_url: str, cancel_url: str, customer_email: str = None) -> Optional[str]:
+def create_checkout_session(price_id: str, success_url: str, cancel_url: str, customer_email: str = None) -> Tuple[Optional[str], Optional[str]]:
     """
-    Create Stripe Checkout session. Returns session URL or None.
+    Create Stripe Checkout session. Returns (session_url, error_message).
     Requires STRIPE_SECRET_KEY in secrets.
     """
     try:
@@ -99,11 +99,11 @@ def create_checkout_session(price_id: str, success_url: str, cancel_url: str, cu
         sk = os.environ.get("STRIPE_SECRET_KEY")
         if not sk:
             try:
-                sk = st.secrets.get("stripe", {}).get("secret_key") or st.secrets.get("STRIPE_SECRET_KEY")
+                sk = st.secrets.get("STRIPE_SECRET_KEY") or (st.secrets.get("stripe") or {}).get("secret_key")
             except Exception:
                 pass
         if not sk:
-            return None
+            return None, "STRIPE_SECRET_KEY not found in secrets. Add it in Streamlit Cloud → App → Settings → Secrets."
         stripe.api_key = sk
         session = stripe.checkout.Session.create(
             mode="subscription",
@@ -112,9 +112,9 @@ def create_checkout_session(price_id: str, success_url: str, cancel_url: str, cu
             cancel_url=cancel_url,
             customer_email=customer_email,
         )
-        return session.url
-    except Exception:
-        return None
+        return session.url, None
+    except Exception as e:
+        return None, str(e)
 
 
 def create_billing_portal_session(customer_id: str, return_url: str) -> Optional[str]:
