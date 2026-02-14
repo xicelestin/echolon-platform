@@ -344,7 +344,8 @@ def render_csv_upload_section():
                 with col2:
                     st.metric("Columns", len(df.columns))
                 with col3:
-                    missing_pct = (df.isnull().sum().sum() / (len(df) * len(df.columns)) * 100)
+                    denom = len(df) * len(df.columns) if len(df) > 0 and len(df.columns) > 0 else 1
+                    missing_pct = (df.isnull().sum().sum() / denom * 100)
                     st.metric("Missing Data", f"{missing_pct:.1f}%")
             
             # Column mapping interface - flexible: map whatever you have
@@ -476,35 +477,37 @@ def render_csv_upload_section():
                         processed_df['category'] = df_sub[category_col].astype(str).values[:n]
                         provided_columns.append('category')
                     
-                    # Derived metrics (safe division)
-                    processed_df['profit'] = processed_df['revenue'] - processed_df['cost']
-                    r = processed_df['revenue'].replace(0, 1)
-                    processed_df['profit_margin'] = (processed_df['profit'] / r * 100).round(2)
-                    o = processed_df['orders'].replace(0, 1)
-                    processed_df['avg_order_value'] = (processed_df['revenue'] / o).round(2)
-                    
-                    st.session_state.uploaded_data = processed_df
-                    st.session_state.uploaded_data_provided_columns = provided_columns
-                    if 'connected_sources' not in st.session_state:
-                        st.session_state.connected_sources = {}
-                    st.session_state.connected_sources['csv'] = {
-                        'name': 'CSV Upload',
-                        'connected_at': datetime.now().strftime("%Y-%m-%d %H:%M"),
-                        'last_sync': datetime.now().strftime("%Y-%m-%d %H:%M"),
-                        'status': 'active'
-                    }
-                    
-                    st.session_state.upload_history.append({
-                        'filename': uploaded_file.name,
-                        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M"),
-                        'rows': len(processed_df),
-                        'columns': len(processed_df.columns),
-                        'source': 'csv_upload'
-                    })
-                    save_user_data(get_current_user())
-                    st.success(f"✅ Successfully processed {len(processed_df):,} rows!")
-                    st.info("💡 Navigate to Dashboard — pages will show what data they need.")
-                    st.balloons()
+                    if len(processed_df) == 0:
+                        st.error("❌ No valid rows after processing. Check that your date column has valid dates.")
+                    else:
+                        # Derived metrics (safe division)
+                        processed_df['profit'] = processed_df['revenue'] - processed_df['cost']
+                        r = processed_df['revenue'].replace(0, 1)
+                        processed_df['profit_margin'] = (processed_df['profit'] / r * 100).round(2)
+                        o = processed_df['orders'].replace(0, 1)
+                        processed_df['avg_order_value'] = (processed_df['revenue'] / o).round(2)
+                        
+                        st.session_state.uploaded_data = processed_df
+                        st.session_state.uploaded_data_provided_columns = provided_columns
+                        if 'connected_sources' not in st.session_state:
+                            st.session_state.connected_sources = {}
+                        st.session_state.connected_sources['csv'] = {
+                            'name': 'CSV Upload',
+                            'connected_at': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                            'last_sync': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                            'status': 'active'
+                        }
+                        st.session_state.upload_history.append({
+                            'filename': uploaded_file.name,
+                            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                            'rows': len(processed_df),
+                            'columns': len(processed_df.columns),
+                            'source': 'csv_upload'
+                        })
+                        save_user_data(get_current_user())
+                        st.success(f"✅ Successfully processed {len(processed_df):,} rows!")
+                        st.info("💡 Navigate to Dashboard — pages will show what data they need.")
+                        st.balloons()
             
         except Exception as e:
             st.error(f"❌ Error processing file: {str(e)}")
@@ -513,13 +516,11 @@ def render_csv_upload_section():
     else:
         # Show instructions when no file uploaded
         st.info(
-                        "Get Started: 1. Prepare your CSV file with business data. "
-                        "2. Drag and drop it above or click to browse. "
-                        "3. Map your columns to Echolon fields. "
-                        "4. Review the preview and click Process. "
-                        "Required Columns: date, revenue, orders. "
-                        "Optional Columns: customers, cost, marketing_spend."
-                )
+            "Get Started: 1. Prepare your CSV file with business data. "
+            "2. Drag and drop it above or click to browse. "
+            "3. Map your columns to Echolon fields (map what you have). "
+            "4. Review the preview and click Process."
+        )
 
 # ==================== UPDATE MAIN RENDER FUNCTION ====================
 # Modify render_data_sources_page to include tabs for better organization

@@ -6,6 +6,8 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import io
 
+# Must be first Streamlit command
+st.set_page_config(page_title="Echolon AI", page_icon="📊", layout="wide")
 
 from components import create_line_chart, create_bar_chart, COLORS, COLOR_PALETTE
 from utils import create_multi_format_export, create_download_button
@@ -43,8 +45,6 @@ if not require_authentication():
 # Sync connected sources if data is stale (>6 hrs) - runs quietly on each visit
 from utils.sync_utils import sync_all_if_stale
 sync_all_if_stale()
-
-st.set_page_config(page_title="Echolon AI", page_icon="📊", layout="wide")
 
 def format_currency(value, decimals=0):
     if value >= 1e6: return f"${value/1e6:.{decimals}f}M"
@@ -115,7 +115,10 @@ try:
             days = days_map.get(date_range, 90)
             start_date = end_date - timedelta(days=days)
             data = data[(data['date'] >= start_date) & (data['date'] <= end_date)].copy()
-    kpis = {'total_revenue': data['revenue'].sum(), 'roas': data['roas'].mean()}
+    roas_val = float(data['roas'].mean()) if 'roas' in data.columns and len(data) > 0 else 3.0
+    if pd.isna(roas_val):
+        roas_val = 3.0
+    kpis = {'total_revenue': float(data['revenue'].sum()) if 'revenue' in data.columns else 0, 'roas': roas_val}
 except Exception as e:
     st.error("❌ Failed to load data. Please try again or upload fresh data from Data Sources.")
     st.exception(e)
@@ -229,7 +232,8 @@ try:
             sync_line = f" | Last synced: {format_last_sync_ago(recent) if recent else 'Never'}"
         st.info(f"{banner} | Last updated: {last_date}{sync_line}")
         
-        # Alerts when metrics deteriorate
+        # Calculate metrics first (needed for alerts and top priority)
+        dash_metrics = calculate_key_metrics(data)
         metric_alerts = get_metric_alerts(data, dash_metrics)
         if metric_alerts:
             st.markdown("#### ⚠️ Alerts")
@@ -240,7 +244,6 @@ try:
                     st.warning(f"**{a['title']}** — {a['message']}")
         
         # Top Priority This Week
-        dash_metrics = calculate_key_metrics(data)
         industry = st.session_state.get('industry', 'ecommerce')
         top_priority = get_top_priority_this_week(data, dash_metrics, industry)
         if top_priority:
