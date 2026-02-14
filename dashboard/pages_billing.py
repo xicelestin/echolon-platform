@@ -132,12 +132,5 @@ def _redirect_to_checkout(plan: str, annual: bool = False):
             st.link_button("→ Go to Stripe Checkout", url, type="primary")
         else:
             st.error(f"Could not create checkout: {err}")
-            try:
-                sk = st.secrets.get("STRIPE_SECRET_KEY") or ""
-                key_len = len(sk) if sk else 0
-                key_prefix = (sk[:12] + "...") if len(sk) > 12 else "(empty)"
-                st.caption(f"Debug: Key length={key_len}, prefix={key_prefix}. Expected: ~107 chars, sk_live_ or sk_test_")
-            except Exception:
-                pass
     except Exception as e:
         st.error(f"Billing setup required. Add Stripe keys to secrets. ({str(e)[:80]})")
