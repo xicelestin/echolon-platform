@@ -297,7 +297,7 @@ def render_csv_upload_section():
     uploaded_file = st.file_uploader(
         "Drag and drop your CSV file here or click to browse",
         type=['csv'],
-        help=f"Max {MAX_CSV_MB}MB, {MAX_CSV_ROWS:,} rows. Required: date, revenue, orders"
+        help=f"Max {MAX_CSV_MB}MB, {MAX_CSV_ROWS:,} rows. Map whatever columns you have — pages will show what they need."
     )
     
     if uploaded_file is not None:
@@ -347,38 +347,52 @@ def render_csv_upload_section():
                     missing_pct = (df.isnull().sum().sum() / (len(df) * len(df.columns)) * 100)
                     st.metric("Missing Data", f"{missing_pct:.1f}%")
             
-            # Column mapping interface
+            # Column mapping interface - flexible: map whatever you have
             st.markdown("### 🗂️ Map Your Columns")
-            st.caption("Match your CSV columns to Echolon's required fields")
+            st.caption("Match your CSV columns to Echolon's fields. Map what you have — pages that need more will tell you.")
+            
+            # Auto-detect as fallback when user doesn't map
+            from utils.data_model import detect_and_map_columns
+            auto_map = detect_and_map_columns(df)
+            opts = [''] + list(df.columns)
+            
+            def _default(canonical):
+                v = auto_map.get(canonical)
+                return v if v and v in df.columns else ''
             
             col_map1, col_map2 = st.columns(2)
             
             with col_map1:
                 date_col = st.selectbox(
-                    "Date Column *",
-                    options=[''] + list(df.columns),
-                    help="Column containing transaction dates"
+                    "Date Column",
+                    options=opts,
+                    index=opts.index(_default('date')) if _default('date') else 0,
+                    help="Column containing transaction dates (needed for time-based views)"
                 )
                 revenue_col = st.selectbox(
-                    "Revenue Column *",
-                    options=[''] + list(df.columns),
+                    "Revenue Column",
+                    options=opts,
+                    index=opts.index(_default('revenue')) if _default('revenue') else 0,
                     help="Column containing revenue/sales amounts"
                 )
                 orders_col = st.selectbox(
-                    "Orders Column *",
-                    options=[''] + list(df.columns),
+                    "Orders Column",
+                    options=opts,
+                    index=opts.index(_default('orders')) if _default('orders') else 0,
                     help="Column containing order counts"
                 )
             
             with col_map2:
                 customers_col = st.selectbox(
-                    "Customers Column (Optional)",
-                    options=[''] + list(df.columns),
+                    "Customers Column",
+                    options=opts,
+                    index=opts.index(_default('customers')) if _default('customers') else 0,
                     help="Column containing customer counts"
                 )
                 cost_col = st.selectbox(
-                    "Cost Column (Optional)",
-                    options=[''] + list(df.columns),
+                    "Cost Column",
+                    options=opts,
+                    index=opts.index(_default('cost')) if _default('cost') else 0,
                     help="Column containing cost of goods sold"
                 )
             
@@ -386,29 +400,23 @@ def render_csv_upload_section():
             col_map3, col_map4 = st.columns(2)
             with col_map3:
                 channel_col = st.selectbox(
-                    "Channel Column (Optional)",
-                    options=[''] + list(df.columns),
+                    "Channel Column",
+                    options=opts,
+                    index=opts.index(_default('channel')) if _default('channel') else 0,
                     help="Sales channel: Online, POS, Wholesale, etc."
                 )
             with col_map4:
                 category_col = st.selectbox(
-                    "Product Category Column (Optional)",
-                    options=[''] + list(df.columns),
+                    "Product Category Column",
+                    options=opts,
+                    index=opts.index(_default('category')) if _default('category') else 0,
                     help="Product category for driver analysis"
                 )
             
-            # Validation of required mappings
             status_text.text("🔍 Checking column mappings...")
             progress_bar.progress(0.8)
             
-            if not date_col:
-                validation_errors.append("Date column is required")
-            if not revenue_col:
-                validation_errors.append("Revenue column is required")
-            if not orders_col:
-                validation_errors.append("Orders column is required")
-            
-            # Display validation results
+            # Display validation results (only file-level errors block processing)
             if validation_errors:
                 for error in validation_errors:
                     st.error(f"❌ {error}")
@@ -417,64 +425,86 @@ def render_csv_upload_section():
                 for warning in validation_warnings:
                     st.warning(f"⚠️ {warning}")
             
-            # Process button
-            if not validation_errors:
-                status_text.text("✅ Ready to process")
-                progress_bar.progress(1.0)
-                
-                if st.button("🚀 Process Data", type="primary", use_container_width=True):
-                    with st.spinner("Processing your data..."):
-                        # Map columns
-                        processed_df = pd.DataFrame()
-                        processed_df['date'] = pd.to_datetime(df[date_col])
-                        processed_df['revenue'] = pd.to_numeric(df[revenue_col], errors='coerce')
-                        processed_df['orders'] = pd.to_numeric(df[orders_col], errors='coerce')
-                        
-                        if customers_col:
-                            processed_df['customers'] = pd.to_numeric(df[customers_col], errors='coerce')
-                        else:
-                            processed_df['customers'] = processed_df['orders'] * 0.5  # Estimate
-                        
-                        if cost_col:
-                            processed_df['cost'] = pd.to_numeric(df[cost_col], errors='coerce')
-                        else:
-                            processed_df['cost'] = processed_df['revenue'] * 0.6  # Estimate
-                        
-                        if channel_col:
-                            processed_df['channel'] = df[channel_col].astype(str)
-                        if category_col:
-                            processed_df['category'] = df[category_col].astype(str)
-                        
-                        # Calculate derived metrics
-                        processed_df['profit'] = processed_df['revenue'] - processed_df['cost']
-                        processed_df['profit_margin'] = (processed_df['profit'] / processed_df['revenue'] * 100).round(2)
-                        processed_df['avg_order_value'] = (processed_df['revenue'] / processed_df['orders']).round(2)
-                        
-                        # Store in session state
-                        st.session_state.uploaded_data = processed_df
-                        if 'connected_sources' not in st.session_state:
-                            st.session_state.connected_sources = {}
-                        st.session_state.connected_sources['csv'] = {
-                            'name': 'CSV Upload',
-                            'connected_at': datetime.now().strftime("%Y-%m-%d %H:%M"),
-                            'last_sync': datetime.now().strftime("%Y-%m-%d %H:%M"),
-                            'status': 'active'
-                        }
-                        
-                        # Add to history
-                        st.session_state.upload_history.append({
-                            'filename': uploaded_file.name,
-                            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M"),
-                            'rows': len(processed_df),
-                            'columns': len(processed_df.columns),
-                            'source': 'csv_upload'
-                        })
-                        save_user_data(get_current_user())
-                        st.success(f"✅ Successfully processed {len(processed_df):,} rows!")
-                        st.info("💡 Navigate to Dashboard to see your insights")
-                        st.balloons()
-            else:
-                st.error("Please fix the errors above before processing")
+            # Process button: only block on file-level errors (empty, too large), not column mapping
+            status_text.text("✅ Ready to process" if not validation_errors else "Fix file issues above")
+            progress_bar.progress(1.0)
+            
+            if not validation_errors and st.button("🚀 Process Data", type="primary", use_container_width=True):
+                with st.spinner("Processing your data..."):
+                    processed_df = pd.DataFrame()
+                    provided_columns = []
+                    n = len(df)
+                    if date_col:
+                        processed_df['date'] = pd.to_datetime(df[date_col], errors='coerce')
+                        valid = processed_df['date'].notna()
+                        processed_df = processed_df[valid].reset_index(drop=True)
+                        n = len(processed_df)
+                        df_sub = df[valid].reset_index(drop=True)
+                        provided_columns.append('date')
+                    else:
+                        processed_df['date'] = pd.date_range(start='2024-01-01', periods=n, freq='D')
+                        df_sub = df
+                    
+                    if revenue_col:
+                        processed_df['revenue'] = pd.to_numeric(df_sub[revenue_col], errors='coerce').fillna(0).values[:n]
+                        provided_columns.append('revenue')
+                    else:
+                        processed_df['revenue'] = 0.0
+                    
+                    if orders_col:
+                        processed_df['orders'] = pd.to_numeric(df_sub[orders_col], errors='coerce').fillna(0).values[:n]
+                        provided_columns.append('orders')
+                    else:
+                        processed_df['orders'] = 1 if revenue_col else 0
+                    
+                    if customers_col:
+                        processed_df['customers'] = pd.to_numeric(df_sub[customers_col], errors='coerce').fillna(0).values[:n]
+                        provided_columns.append('customers')
+                    else:
+                        processed_df['customers'] = processed_df['orders'] * 0.5
+                    
+                    if cost_col:
+                        processed_df['cost'] = pd.to_numeric(df_sub[cost_col], errors='coerce').fillna(0).values[:n]
+                        provided_columns.append('cost')
+                    else:
+                        processed_df['cost'] = processed_df['revenue'] * 0.6
+                    
+                    if channel_col:
+                        processed_df['channel'] = df_sub[channel_col].astype(str).values[:n]
+                        provided_columns.append('channel')
+                    if category_col:
+                        processed_df['category'] = df_sub[category_col].astype(str).values[:n]
+                        provided_columns.append('category')
+                    
+                    # Derived metrics (safe division)
+                    processed_df['profit'] = processed_df['revenue'] - processed_df['cost']
+                    r = processed_df['revenue'].replace(0, 1)
+                    processed_df['profit_margin'] = (processed_df['profit'] / r * 100).round(2)
+                    o = processed_df['orders'].replace(0, 1)
+                    processed_df['avg_order_value'] = (processed_df['revenue'] / o).round(2)
+                    
+                    st.session_state.uploaded_data = processed_df
+                    st.session_state.uploaded_data_provided_columns = provided_columns
+                    if 'connected_sources' not in st.session_state:
+                        st.session_state.connected_sources = {}
+                    st.session_state.connected_sources['csv'] = {
+                        'name': 'CSV Upload',
+                        'connected_at': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                        'last_sync': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                        'status': 'active'
+                    }
+                    
+                    st.session_state.upload_history.append({
+                        'filename': uploaded_file.name,
+                        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                        'rows': len(processed_df),
+                        'columns': len(processed_df.columns),
+                        'source': 'csv_upload'
+                    })
+                    save_user_data(get_current_user())
+                    st.success(f"✅ Successfully processed {len(processed_df):,} rows!")
+                    st.info("💡 Navigate to Dashboard — pages will show what data they need.")
+                    st.balloons()
             
         except Exception as e:
             st.error(f"❌ Error processing file: {str(e)}")

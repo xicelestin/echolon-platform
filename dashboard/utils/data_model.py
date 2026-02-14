@@ -31,6 +31,7 @@ COLUMN_ALIASES = {
     'category': ['category', 'product_category', 'department'],
     'channel': ['channel', 'sales_channel', 'source', 'platform'],
     'region': ['region', 'location', 'store', 'market'],
+    'cost': ['cost', 'cogs', 'cost_of_goods', 'cost_of_sales'],
 }
 
 
@@ -93,6 +94,35 @@ def normalize_to_canonical(
         out['roas'] = (out['revenue'] / out['marketing_spend'].replace(0, 1)).clip(0.5, 20)
     
     return out
+
+
+def get_provided_columns() -> List[str]:
+    """Return which columns the user actually mapped (from CSV upload). Demo/API data = all provided."""
+    import streamlit as st
+    provided = st.session_state.get("uploaded_data_provided_columns")
+    if provided is not None:
+        return provided
+    # Demo data or API data: assume full
+    return ["date", "revenue", "orders", "customers", "channel", "category"]
+
+
+def has_required_columns(required: List[str]) -> bool:
+    """Check if user's data has the required columns (from their mapping)."""
+    provided = set(get_provided_columns())
+    return all(r in provided for r in required)
+
+
+def require_data_message(required: List[str], page_name: str = "this view") -> Optional[str]:
+    """
+    If user's data doesn't have required columns, return a friendly message.
+    Returns None if they have the data.
+    """
+    if has_required_columns(required):
+        return None
+    missing = [r for r in required if r not in set(get_provided_columns())]
+    labels = {"date": "date", "revenue": "revenue", "orders": "orders", "customers": "customers"}
+    missing_str = ", ".join(labels.get(m, m) for m in missing)
+    return f"📊 **This page needs:** {missing_str}. Map these columns in **Data Sources** to see {page_name}."
 
 
 def get_available_dimensions(df: pd.DataFrame) -> List[str]:

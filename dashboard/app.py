@@ -165,8 +165,23 @@ with st.sidebar:
 p = st.session_state.current_page
 args = (data, kpis, format_currency, format_percentage, format_multiplier)
 
+# Pages that need date+revenue show a friendly message if user didn't map those columns
+from utils.data_model import require_data_message
+PAGES_NEEDING_DATE_REVENUE = ["Executive Briefing", "Dashboard", "Analytics", "Insights", "Predictions", "Recommendations", "Goals", "What-If", "Margin Analysis", "Smart Alerts", "Anomalies & Alerts", "Revenue Attribution", "Customer LTV", "Competitive Benchmark"]
+def _check_data_for_page(page_name):
+    msg = require_data_message(["date", "revenue"], page_name.lower())
+    if msg:
+        st.info(msg)
+        if st.button("📁 Go to Data Sources", key=f"goto_ds_{page_name}"):
+            st.session_state.current_page = "Data Sources"
+            st.rerun()
+        return False
+    return True
+
 try:
     if p == "Executive Briefing":
+        if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
+            st.stop()
         render_executive_briefing_page(*args)
         # Add export options
         metrics = calculate_key_metrics(data)
@@ -196,6 +211,8 @@ try:
                 use_container_width=True
             )
     elif p == "Dashboard":
+        if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
+            st.stop()
         st.title("Dashboard")
 
         # Data source banner
@@ -321,37 +338,61 @@ try:
         health_score = calculate_business_health_score(health_metrics)
         display_business_health_score(health_score)
     elif p == "Analytics":
+        if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
+            st.stop()
         render_analytics_page(*args)
     elif p == "Predictions":
+        if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
+            st.stop()
         render_predictions_page(*args)
     elif p == "What-If":
+        if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
+            st.stop()
         render_whatif_page(*args)
     elif p == "Recommendations":
+        if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
+            st.stop()
         render_recommendations_page(*args)
     elif p == "Customer Insights":
         render_customer_insights_page(*args)
     elif p == "Insights":
+        if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
+            st.stop()
         from pages_insights import render_insights_page
         render_insights_page(data, kpis, format_currency, format_percentage, format_number)
     elif p == "Inventory & Demand":
         render_inventory_demand_page(*args)
     elif p == "Anomalies & Alerts":
+        if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
+            st.stop()
         render_anomalies_alerts_page(*args)
     elif p == "Inventory Optimization":
         render_inventory_optimization_page(*args)
     elif p == "Margin Analysis":
+        if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
+            st.stop()
         render_margin_analysis_page(*args)
     elif p == "Smart Alerts":
+        if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
+            st.stop()
         render_smart_alerts_page(*args)
     elif p == "Goals":
+        if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
+            st.stop()
         render_goals_page(data, kpis, format_currency, format_percentage)
     elif p == "Cohort Analysis":
         render_cohort_analysis_page(*args)
     elif p == "Customer LTV":
+        if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
+            st.stop()
         render_customer_ltv_page(*args)
     elif p == "Revenue Attribution":
+        if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
+            st.stop()
         render_revenue_attribution_page(*args)
     elif p == "Competitive Benchmark":
+        if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
+            st.stop()
         render_competitive_benchmark_page(*args)
     elif p == "Data Sources":
         render_data_sources_page()

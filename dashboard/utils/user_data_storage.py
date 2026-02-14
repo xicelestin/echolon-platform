@@ -58,6 +58,7 @@ def save_user_data(username: str) -> bool:
             "company_name": st.session_state.get("company_name", "Your Business"),
             "date_range": st.session_state.get("date_range", "Last 90 Days"),
             "api_keys": st.session_state.get("api_keys", {}),
+            "uploaded_data_provided_columns": st.session_state.get("uploaded_data_provided_columns", []),
         }
         meta_path = user_dir / "metadata.json"
         with open(meta_path, "w") as f:
@@ -106,6 +107,11 @@ def load_user_data(username: str) -> bool:
                 st.session_state.date_range = meta["date_range"]
             if meta.get("api_keys"):
                 st.session_state.api_keys = meta["api_keys"]
+            # Legacy: if no provided_columns stored, assume full data (backward compat)
+            provided = meta.get("uploaded_data_provided_columns")
+            st.session_state.uploaded_data_provided_columns = (
+                provided if provided is not None else ["date", "revenue", "orders", "customers"]
+            )
 
         return True
     except Exception as e:
