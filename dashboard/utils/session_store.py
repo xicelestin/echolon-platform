@@ -8,6 +8,7 @@ import json
 import secrets
 import time
 from pathlib import Path
+from typing import Optional
 
 # Sessions expire after 7 days
 SESSION_EXPIRY_DAYS = 7
@@ -49,7 +50,7 @@ def create_session(username: str) -> str:
     return token
 
 
-def validate_session(token: str) -> str | None:
+def validate_session(token: str) -> Optional[str]:
     """Validate token. Returns username if valid, None otherwise."""
     if not token:
         return None

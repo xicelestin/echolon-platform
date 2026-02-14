@@ -16,7 +16,33 @@ import os
 import streamlit as st
 import hashlib
 import hmac
-from utils.session_store import create_session, validate_session, destroy_session
+
+
+def _get_query_param(key: str):
+    """Get query param - works with Streamlit 1.28+ (experimental) or 1.30+ (query_params)."""
+    if hasattr(st, "query_params"):
+        val = st.query_params.get(key)
+        return val[0] if isinstance(val, list) else val
+    return st.experimental_get_query_params().get(key, [None])[0]
+
+
+def _set_query_param(key: str, value: str):
+    """Set query param."""
+    if hasattr(st, "query_params"):
+        st.query_params[key] = value
+    else:
+        params = st.experimental_get_query_params()
+        params = {k: (v[0] if isinstance(v, list) and v else v) for k, v in params.items()}
+        params[key] = value
+        st.experimental_set_query_params(**params)
+
+
+def _clear_query_params():
+    """Clear all query params."""
+    if hasattr(st, "query_params"):
+        st.query_params.clear()
+    else:
+        st.experimental_set_query_params()
 
 # In production, set ECHOLON_PRODUCTION=true to disable demo credentials
 IS_PRODUCTION = os.getenv("ECHOLON_PRODUCTION", "").lower() in ("true", "1", "yes")
@@ -105,8 +131,9 @@ def render_login_page():
                         st.session_state.authenticated = True
                         st.session_state.username = username
                         # Create persistent session (survives refresh)
+                        from utils.session_store import create_session
                         token = create_session(username)
-                        st.query_params["session"] = token
+                        _set_query_param("session", token)
                         # Load any saved data for this account
                         from utils.user_data_storage import load_user_data
                         if load_user_data(username):
@@ -136,10 +163,11 @@ def render_login_page():
 def logout():
     """Logout current user and clear session data (data stays saved on disk for next login)."""
     # Remove session token so refresh won't auto-login
-    token = st.query_params.get("session")
+    token = _get_query_param("session")
     if token:
+        from utils.session_store import destroy_session
         destroy_session(token)
-        st.query_params.clear()
+        _clear_query_params()
     st.session_state.authenticated = False
     st.session_state.username = None
     # Clear user-specific session data so next user doesn't see it
@@ -156,8 +184,9 @@ def require_authentication() -> bool:
         bool: True if authenticated, False if login page is shown
     """
     # Check for persistent session token (survives page refresh)
-    token = st.query_params.get("session")
+    token = _get_query_param("session")
     if token:
+        from utils.session_store import validate_session
         username = validate_session(token)
         if username:
             st.session_state.authenticated = True
@@ -167,7 +196,7 @@ def require_authentication() -> bool:
             load_user_data(username)
             return True
         # Invalid/expired token - clear it
-        st.query_params.clear()
+        _clear_query_params()
     
     # Initialize session state
     if 'authenticated' not in st.session_state:

@@ -16,6 +16,9 @@ from utils import get_top_priority_this_week, get_metric_alerts
 from utils.metrics_utils import forecast_revenue
 from components import display_business_health_score, display_metric_with_comparison, display_key_metrics_grid
 
+# Import auth early to avoid circular import (pages_data_sources imports auth)
+from auth import require_authentication, render_user_info, get_current_user
+
 # Page Imports
 from pages_margin_analysis import render_margin_analysis_page
 from pages_smart_alerts import render_smart_alerts_page
@@ -38,7 +41,6 @@ from utils.industry_utils import INDUSTRIES
 from utils.pdf_export import create_pdf_download_button, create_excel_download_button
 from utils.weekly_digest import generate_weekly_digest
 
-from auth import require_authentication, render_user_info, get_current_user
 if not require_authentication():
     st.stop()
 
