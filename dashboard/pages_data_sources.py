@@ -6,9 +6,17 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import io
-from data_source_apis import fetch_data_from_api
 from auth import get_current_user
 from utils.user_data_storage import save_user_data
+
+
+def _get_fetch_data_from_api():
+    """Lazy import to avoid ImportError on Streamlit Cloud when optional deps fail."""
+    try:
+        from data_source_apis import fetch_data_from_api
+        return fetch_data_from_api
+    except ImportError:
+        return None
 
 # ==================== DATA SOURCE CONFIGURATIONS ====================
 DATA_SOURCES = {
@@ -120,6 +128,10 @@ def render_source_card(source_key, source_info):
 
 def connect_source_with_credentials(source_key, credentials):
     """Connect using provided credentials (e.g. Stripe API key)."""
+    fetch_fn = _get_fetch_data_from_api()
+    if not fetch_fn:
+        st.warning("API integrations are temporarily unavailable. Try CSV upload instead.")
+        st.rerun()
     # Persist API keys per user (for Stripe sync, reconnect after refresh)
     if "api_keys" not in st.session_state:
         st.session_state.api_keys = {}
@@ -133,7 +145,7 @@ def connect_source_with_credentials(source_key, credentials):
             'status': 'active'
         }
         try:
-            data_df = fetch_data_from_api(source_key, credentials)
+            data_df = fetch_fn(source_key, credentials)
             if data_df is not None and not data_df.empty:
                 st.session_state.uploaded_data = data_df
                 st.session_state.upload_history.append({
@@ -192,12 +204,14 @@ def connect_source(source_key, source_info):
 
 def fetch_data_from_source(source_key, source_info):
     """Fetch actual data from the connected source using real APIs."""
-    try:
-        api_data = fetch_data_from_api(source_key)
-        if api_data is not None and not api_data.empty:
-            return api_data
-    except Exception as e:
-        st.warning(f"Could not fetch from API: {str(e)}. Using demo data.")
+    fetch_fn = _get_fetch_data_from_api()
+    if fetch_fn:
+        try:
+            api_data = fetch_fn(source_key)
+            if api_data is not None and not api_data.empty:
+                return api_data
+        except Exception as e:
+            st.warning(f"Could not fetch from API: {str(e)}. Using demo data.")
     return generate_demo_data_fallback(source_key)
 
 
@@ -218,7 +232,8 @@ def sync_data_source(source_key):
             if key:
                 credentials = {"api_key": key}
         try:
-            data_df = fetch_data_from_api(source_key, credentials) if credentials else fetch_data_from_source(source_key, source_info)
+            fetch_fn = _get_fetch_data_from_api()
+            data_df = fetch_fn(source_key, credentials) if fetch_fn and credentials else fetch_data_from_source(source_key, source_info)
             
             if data_df is not None and not data_df.empty:
                 st.session_state.uploaded_data = data_df
