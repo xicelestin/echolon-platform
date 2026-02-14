@@ -139,6 +139,24 @@ st.markdown("""
 with st.sidebar:
     st.title("Echolon AI")
     st.caption("Business Intelligence")
+    
+    # Onboarding checklist for first-time users
+    has_data = bool(st.session_state.get('connected_sources') or st.session_state.get('uploaded_data') is not None)
+    has_goals = bool(st.session_state.get('goals') and any(g.get('target') for g in (st.session_state.get('goals') or {}).values()))
+    if not has_data or not has_goals:
+        with st.expander("✅ Get Started", expanded=not has_data):
+            st.markdown(f"{'✅' if has_data else '⬜'} Connect your data")
+            st.markdown(f"{'✅' if has_goals else '⬜'} Set your first goal")
+            if not has_data:
+                if st.button("📁 Add Data", key="onboard_data"):
+                    st.session_state.current_page = "Data Sources"
+                    st.rerun()
+            if not has_goals and has_data:
+                if st.button("🎯 Set Goals", key="onboard_goals"):
+                    st.session_state.current_page = "Goals"
+                    st.rerun()
+        st.markdown("---")
+    
     industry_options = {k: f"{v['icon']} {v['name']}" for k, v in INDUSTRIES.items()}
     st.session_state.industry = st.selectbox(
         "Industry",
@@ -153,6 +171,9 @@ with st.sidebar:
         key="sidebar_date_range"
     )
     st.session_state.company_name = st.text_input("Company Name", value=st.session_state.get('company_name', 'Your Business'), key="company_name_input")
+    with st.expander("🔔 Alerts"):
+        st.caption("We alert you when: revenue drops >5%, margin drops >3 pts, ROAS down >15%.")
+        st.caption("Based on your last 60 days of data.")
     st.markdown("---")
     st.caption("Main")
     for p in ["Executive Briefing", "Dashboard", "Analytics", "Insights", "Predictions", "Recommendations", "Goals", "Data Sources"]:
@@ -201,11 +222,14 @@ try:
         health_score = calculate_business_health_score(health_metrics)
         st.markdown("---")
         st.subheader("📤 Export & Share")
+        st.caption("Send to your accountant, share with your team, or keep for your records.")
         col_exp1, col_exp2, col_exp3 = st.columns(3)
         with col_exp1:
             create_pdf_download_button(data, kpis, health_score, st.session_state.get('company_name', 'Your Business'), "exec_pdf")
+            st.caption("PDF for accountant")
         with col_exp2:
             create_excel_download_button(data, kpis, health_score, st.session_state.get('company_name', 'Your Business'), "exec_excel")
+            st.caption("Excel for analysis")
         with col_exp3:
             digest = generate_weekly_digest(data, kpis, health_score)
             st.download_button(
@@ -216,6 +240,7 @@ try:
                 key="exec_digest",
                 use_container_width=True
             )
+            st.caption("Summary for email")
     elif p == "Dashboard":
         if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
             st.stop()
@@ -231,6 +256,16 @@ try:
             recent = get_most_recent_sync()
             sync_line = f" | Last synced: {format_last_sync_ago(recent) if recent else 'Never'}"
         st.info(f"{banner} | Last updated: {last_date}{sync_line}")
+        
+        # vs Industry benchmark
+        from utils.industry_utils import get_industry_benchmarks
+        industry = st.session_state.get('industry', 'ecommerce')
+        benchmarks = get_industry_benchmarks(industry)
+        ind_name = {'ecommerce': 'E-commerce', 'saas': 'SaaS', 'restaurant': 'Restaurant', 'services': 'Services', 'general': 'General'}.get(industry, 'E-commerce')
+        your_margin = float(data['profit_margin'].mean()) if 'profit_margin' in data.columns else 40
+        bench_margin = benchmarks.get('profit_margin', 35)
+        m_icon = "✓" if your_margin >= bench_margin else "→"
+        st.caption(f"📊 vs {ind_name}: Your margin {your_margin:.0f}% {m_icon} industry avg {bench_margin}%")
         
         # Calculate metrics first (needed for alerts and top priority)
         dash_metrics = calculate_key_metrics(data)

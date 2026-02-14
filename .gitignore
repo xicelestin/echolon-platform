@@ -226,6 +226,7 @@ dashboard/sample_data.csv
 
 # Per-user persisted data (stored locally, not in git)
 dashboard/data/user_data/
+dashboard/data/sessions.json
 
 # Local environment overrides
 .env.local

@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Tuple
 from utils import calculate_business_health_score, calculate_key_metrics, get_change_explanation, get_metric_alerts
 from utils.data_patterns import analyze_data_patterns
+from utils.industry_utils import get_industry_benchmarks
 
 
 def compute_cash_flow_metrics(data: pd.DataFrame) -> Dict[str, Any]:
@@ -197,7 +198,7 @@ def get_this_week_action(opportunities: list, risks: list) -> str:
 
 
 def render_executive_briefing_page(data, kpis, format_currency, format_percentage, format_multiplier):
-    """Render the Executive Briefing - 30-second view."""
+    """Render the Executive Briefing - 30-second view. Leads with what to do today."""
     st.title("📋 Executive Briefing")
     st.markdown("### Your business at a glance — *30 seconds*")
     
@@ -217,6 +218,30 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
     opportunities = get_top_opportunities(data, metrics, kpis, patterns)
     risks = get_top_risks(data, cash_metrics, metrics, patterns)
     this_week = get_this_week_action(opportunities, risks)
+    
+    # === HERO: Do This Week (lead with action) ===
+    st.markdown(f"""
+    <div style="background:linear-gradient(135deg,#059669 0%,#047857 100%);border-radius:16px;padding:28px 32px;margin-bottom:24px;border:1px solid #10B981;">
+        <p style="color:rgba(255,255,255,0.9);font-size:12px;margin:0 0 8px 0;text-transform:uppercase;letter-spacing:0.5px;">📌 Do This Week</p>
+        <p style="color:white;font-size:22px;font-weight:700;margin:0;line-height:1.4;">{this_week}</p>
+        <p style="color:rgba(255,255,255,0.85);font-size:14px;margin:12px 0 0 0;">Based on your data — revenue, margins, and trends.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # === Quick: Money In vs Out (cash flow at a glance) ===
+    inflow = cash_metrics.get('monthly_inflow', 0)
+    burn = cash_metrics.get('monthly_burn', 0)
+    outflow = inflow + burn  # expenses = revenue + burn (burn is expenses - revenue)
+    cf_col1, cf_col2, cf_col3 = st.columns(3)
+    with cf_col1:
+        st.metric("💰 Money In", format_currency(inflow), "Avg monthly revenue")
+    with cf_col2:
+        st.metric("💸 Money Out", format_currency(outflow), "Est. expenses")
+    with cf_col3:
+        surplus = inflow - outflow
+        st.metric("📊 Net Cash Flow", format_currency(surplus), "Surplus" if surplus >= 0 else "Deficit")
+    
+    st.markdown("---")
     
     # === HERO: Health Score + Cash Flow ===
     col1, col2, col3 = st.columns([1, 1, 1])
@@ -250,6 +275,18 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
             <p style="color:#6b7280;font-size:12px;margin-top:8px;">Last 12 months</p>
         </div>
         """, unsafe_allow_html=True)
+    
+    # === vs Industry Benchmarks ===
+    industry = st.session_state.get('industry', 'ecommerce')
+    benchmarks = get_industry_benchmarks(industry)
+    ind_name = {'ecommerce': 'E-commerce', 'saas': 'SaaS', 'restaurant': 'Restaurant', 'services': 'Services', 'general': 'General'}.get(industry, 'E-commerce')
+    your_margin = float(data['profit_margin'].mean()) if 'profit_margin' in data.columns else 40
+    your_roas = float(data['roas'].mean()) if 'roas' in data.columns else 3
+    bench_margin = benchmarks.get('profit_margin', 35)
+    bench_roas = benchmarks.get('roas', 4)
+    m_vs = "above" if your_margin >= bench_margin else "below"
+    r_vs = "above" if your_roas >= bench_roas else "below"
+    st.markdown(f"**📊 vs {ind_name} benchmark:** Margin {your_margin:.0f}% ({m_vs} {bench_margin}% avg) · ROAS {your_roas:.1f}x ({r_vs} {bench_roas}x avg)")
     
     st.markdown("---")
     
@@ -293,14 +330,14 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
             st.markdown(f"- {d['explanation']}")
         st.markdown("---")
     
-    # === Top Opportunities ===
+    # === Top Opportunities (with "why") ===
     st.subheader("🎯 Top Opportunities")
     for opp in opportunities:
         with st.container(border=True):
             col_l, col_r = st.columns([4, 1])
             with col_l:
                 st.markdown(f"**{opp['title']}**")
-                st.caption(opp['impact'])
+                st.caption(f"**Why:** {opp['impact']}")
                 st.markdown(f"*→ {opp['action']}*")
             with col_r:
                 st.metric("Priority", opp['priority'].title(), "")

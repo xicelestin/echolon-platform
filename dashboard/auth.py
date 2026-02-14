@@ -2,6 +2,7 @@
 
 Provides simple username/password authentication using Streamlit secrets.
 No database required - perfect for MVP with pilot customers.
+Login persists across page refresh via session token in URL.
 
 Usage:
     from auth import require_authentication
@@ -15,6 +16,7 @@ import os
 import streamlit as st
 import hashlib
 import hmac
+from utils.session_store import create_session, validate_session, destroy_session
 
 # In production, set ECHOLON_PRODUCTION=true to disable demo credentials
 IS_PRODUCTION = os.getenv("ECHOLON_PRODUCTION", "").lower() in ("true", "1", "yes")
@@ -102,6 +104,9 @@ def render_login_page():
                     if check_password(username, password):
                         st.session_state.authenticated = True
                         st.session_state.username = username
+                        # Create persistent session (survives refresh)
+                        token = create_session(username)
+                        st.query_params["session"] = token
                         # Load any saved data for this account
                         from utils.user_data_storage import load_user_data
                         if load_user_data(username):
@@ -130,6 +135,11 @@ def render_login_page():
 
 def logout():
     """Logout current user and clear session data (data stays saved on disk for next login)."""
+    # Remove session token so refresh won't auto-login
+    token = st.query_params.get("session")
+    if token:
+        destroy_session(token)
+        st.query_params.clear()
     st.session_state.authenticated = False
     st.session_state.username = None
     # Clear user-specific session data so next user doesn't see it
@@ -145,6 +155,19 @@ def require_authentication() -> bool:
     Returns:
         bool: True if authenticated, False if login page is shown
     """
+    # Check for persistent session token (survives page refresh)
+    token = st.query_params.get("session")
+    if token:
+        username = validate_session(token)
+        if username:
+            st.session_state.authenticated = True
+            st.session_state.username = username
+            # Load user data on restore-from-token
+            from utils.user_data_storage import load_user_data
+            load_user_data(username)
+            return True
+        # Invalid/expired token - clear it
+        st.query_params.clear()
     
     # Initialize session state
     if 'authenticated' not in st.session_state:
