@@ -1,7 +1,8 @@
 """Billing and subscription management page."""
+import os
 import streamlit as st
-from auth import get_current_user
-from utils.subscription import TIERS, get_user_tier, create_checkout_session
+from auth import get_current_user, _get_query_param
+from utils.subscription import TIERS, get_user_tier, create_checkout_session, create_billing_portal_session
 
 
 def render_billing_page():
@@ -19,6 +20,21 @@ def render_billing_page():
         st.success("You have access to core features. Upgrade to Growth for Predictions, What-If, and unlimited data sources.")
     else:
         st.success("You have full access to all features.")
+    
+    # Manage subscription link for paid plans (update payment, cancel, view invoices)
+    if tier in ("starter", "growth"):
+        from utils.supabase_storage import get_subscription_supabase
+        sub = get_subscription_supabase(get_current_user())
+        customer_id = sub.get("stripe_customer_id") if sub else None
+        if customer_id:
+            base_url = os.environ.get("STREAMLIT_SERVER_BASE_URL", "http://localhost:8501")
+            if "localhost" not in base_url and base_url.startswith("http://"):
+                base_url = base_url.replace("http://", "https://", 1)
+            session_token = _get_query_param("session")
+            return_url = f"{base_url}/?session={session_token}" if session_token else base_url + "/"
+            portal_url = create_billing_portal_session(customer_id, return_url)
+            if portal_url:
+                st.link_button("⚙️ Manage subscription (payment, cancel, invoices)", portal_url, type="primary")
     
     st.markdown("---")
     st.subheader("Plans")
@@ -50,6 +66,7 @@ def render_billing_page():
         with st.container(border=True):
             st.markdown("**Growth** — $99/mo · $79/mo annual")
             st.caption("All features, unlimited sources, 12 months")
+            has_paid_subscription = st.session_state.get("stripe_subscription_status") == "active"
             if tier != "growth":
                 sub_col1, sub_col2 = st.columns(2)
                 with sub_col1:
@@ -58,8 +75,17 @@ def render_billing_page():
                 with sub_col2:
                     if st.button("Annual", key="sub_growth_annual", type="primary"):
                         _redirect_to_checkout("growth", annual=True)
-            else:
+            elif has_paid_subscription:
                 st.success("Current plan")
+            else:
+                st.caption("Subscribe to lock in your plan")
+                sub_col1, sub_col2 = st.columns(2)
+                with sub_col1:
+                    if st.button("Monthly", key="sub_growth_monthly", type="primary"):
+                        _redirect_to_checkout("growth", annual=False)
+                with sub_col2:
+                    if st.button("Annual", key="sub_growth_annual", type="primary"):
+                        _redirect_to_checkout("growth", annual=True)
     
     st.markdown("---")
     st.caption("14-day free trial on paid plans. Cancel anytime. Annual billing saves 20%.")

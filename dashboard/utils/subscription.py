@@ -117,6 +117,29 @@ def create_checkout_session(price_id: str, success_url: str, cancel_url: str, cu
         return None
 
 
+def create_billing_portal_session(customer_id: str, return_url: str) -> Optional[str]:
+    """
+    Create Stripe Customer Portal session. Returns portal URL or None.
+    Lets customers manage payment method, cancel, view invoices.
+    """
+    try:
+        import stripe
+        import streamlit as st
+        sk = os.environ.get("STRIPE_SECRET_KEY")
+        if not sk:
+            sk = st.secrets.get("stripe", {}).get("secret_key") or st.secrets.get("STRIPE_SECRET_KEY")
+        if not sk or not customer_id:
+            return None
+        stripe.api_key = sk
+        session = stripe.billing_portal.Session.create(
+            customer=customer_id,
+            return_url=return_url,
+        )
+        return session.url
+    except Exception:
+        return None
+
+
 def get_subscription_from_session(session_id: str) -> Optional[dict]:
     """
     Retrieve checkout session and return subscription info.
