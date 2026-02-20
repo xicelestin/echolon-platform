@@ -79,7 +79,7 @@ def render_insights_page(data=None, kpis=None, format_currency=None, format_perc
     industry = st.session_state.get('industry', 'ecommerce')
     
     # Top Priority This Week - single clear recommendation
-    top_priority = get_top_priority_this_week(data, metrics, industry)
+    top_priority = get_top_priority_this_week(data, metrics, industry, kpis=kpis or {})
     if top_priority:
         st.markdown(f"""
         <div style='background:linear-gradient(135deg,#1E3A5F 0%,#0F172A 100%);border:1px solid #3B82F6;border-radius:12px;padding:20px 24px;margin-bottom:24px;'>
@@ -318,7 +318,7 @@ For detailed analysis, please visit the Insights page in the Echolon platform.
         st.markdown("")
     
     # Quick Wins - under 2 hours
-    quick_wins = get_quick_wins(data, metrics, industry)
+    quick_wins = get_quick_wins(data, metrics, industry, kpis=kpis or {})
     if quick_wins:
         st.markdown("""<div style='margin:24px 0 16px 0;'><h3 style='font-size:20px;font-weight:600;margin-bottom:16px;'>⚡ Quick Wins (Under 2 Hours)</h3></div>""", unsafe_allow_html=True)
         for w in quick_wins:
@@ -351,7 +351,7 @@ For detailed analysis, please visit the Insights page in the Echolon platform.
     # Personalized Insights - uses patterns when available for specificity
     st.markdown("""<div style='margin:24px 0 16px 0;'><h3 style='font-size:20px;font-weight:600;margin-bottom:16px;'>📊 Personalized Insights for Your Business</h3></div>""", unsafe_allow_html=True)
     
-    insights = generate_personalized_insights(data, metrics, industry, patterns)
+    insights = generate_personalized_insights(data, metrics, industry, patterns, kpis=kpis or {})
     
     if insights:
         for ins in insights:
@@ -370,7 +370,7 @@ For detailed analysis, please visit the Insights page in the Echolon platform.
     # Data-driven Action Items (uses patterns when available)
     st.markdown("""<div style='margin:24px 0 16px 0;'><h4 style='font-size:16px;font-weight:600;margin-bottom:16px;'>💡 Recommended Actions (from your data)</h4></div>""", unsafe_allow_html=True)
     
-    actions = generate_action_items(data, metrics, industry, patterns)
+    actions = generate_action_items(data, metrics, industry, patterns, kpis=kpis or {})
     action_df = pd.DataFrame(actions)
     st.dataframe(action_df, use_container_width=True, hide_index=True)
 

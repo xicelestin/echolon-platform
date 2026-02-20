@@ -22,6 +22,12 @@ def render_analytics_page(data, kpis, format_currency, format_percentage, format
 
     with st.spinner("Loading charts..."):
         try:
+            # Graceful degrade: Plotly trendline="ols" requires statsmodels
+            _has_statsmodels = True
+            try:
+                import statsmodels.api as sm
+            except ImportError:
+                _has_statsmodels = False
             st.subheader("📈 Revenue & Profitability Trends")
             tab1, tab2 = st.tabs(["Trend Analysis", "Growth Rates"])
 
@@ -49,7 +55,7 @@ def render_analytics_page(data, kpis, format_currency, format_percentage, format
             col_cust1, col_cust2 = st.columns(2)
             with col_cust1:
                 color_col = 'profit_margin' if 'profit_margin' in data.columns else None
-                fig_corr = px.scatter(data, x='orders', y='revenue', title="Order Volume vs Revenue Correlation", trendline="ols", color=color_col)
+                fig_corr = px.scatter(data, x='orders', y='revenue', title="Order Volume vs Revenue Correlation", trendline="ols" if _has_statsmodels else None, color=color_col)
                 st.plotly_chart(fig_corr, use_container_width=True)
             with col_cust2:
                 aov_col = 'avg_order_value' if 'avg_order_value' in data.columns else 'revenue'
@@ -71,6 +77,9 @@ def render_analytics_page(data, kpis, format_currency, format_percentage, format
             fig_roas = px.area(data, x='date', y='roas', title="ROAS Trend", color_discrete_sequence=['#9467bd'])
             st.plotly_chart(fig_roas, use_container_width=True)
 
+        except ImportError as e:
+            st.warning("⚠️ **Analytics module requires statsmodels.** Install with: `pip install statsmodels`")
+            st.info("Charts will load without trendlines. For full functionality, add statsmodels to your environment.")
         except Exception as e:
             st.error(f"❌ Error loading analytics: {str(e)}")
             st.info("Try refreshing the page or checking your data format.")

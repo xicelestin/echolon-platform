@@ -40,12 +40,14 @@ def display_metric_with_dollar_impact(
 
 
 def display_explain_this_number(
-    metric_name: str, formula: str, window: str, assumptions: str = ""
+    metric_name: str, formula: str, window: str, assumptions: str = "",
+    aggregation: str = "SUM over rows in window"
 ):
     """Expandable 'Explain This Number' - reduces confusion, increases trust."""
     with st.expander(f"📖 Explain: {metric_name}", expanded=False):
         st.markdown(f"**Calculated as:** {formula}")
         st.markdown(f"**Window:** {window}")
+        st.markdown(f"**Aggregated by:** {aggregation}")
         if assumptions:
             st.markdown(f"**Assumptions:** {assumptions}")
         else:
@@ -84,10 +86,13 @@ def display_business_health_score(health_data: Dict[str, Any]):
         # Breakdown metrics
         st.markdown("#### Score Breakdown")
         for metric_name, metric_score in breakdown.items():
-            # Progress bar for each component
-            progress_color = "green" if metric_score >= 70 else ("orange" if metric_score >= 50 else "red")
-            st.markdown(f"**{metric_name}**: {metric_score}/100")
-            st.progress(metric_score / 100)
+            if metric_score is None:
+                st.markdown(f"**{metric_name}**: N/A")
+                st.caption("Data not available")
+            else:
+                progress_color = "green" if metric_score >= 70 else ("orange" if metric_score >= 50 else "red")
+                st.markdown(f"**{metric_name}**: {metric_score}/100")
+                st.progress(metric_score / 100)
         
     # Health insights
     st.markdown("---")

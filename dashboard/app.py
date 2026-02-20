@@ -16,9 +16,11 @@ from utils import (
     calculate_business_health_score,
     calculate_period_comparison,
     calculate_key_metrics,
+    compute_kpis,
     safe_divide,
     apply_time_filter,
     calculate_data_confidence,
+    validate_data_contract,
 )
 from utils import get_top_priority_this_week, get_metric_alerts
 from utils.metrics_utils import forecast_revenue
@@ -64,8 +66,9 @@ def format_currency(value, decimals=0):
     return f"${value:,.{decimals}f}"
 
 def format_percentage(value, decimals=1): return f"{value:.{decimals}f}%"
-def format_multiplier(value, decimals=2): return f"{value:.{decimals}f}x"
+def format_multiplier(value, decimals=2): return f"{value:.{decimals}f}x"  # Only for ratios (ROAS, LTV/CAC)
 def format_number(value, decimals=0): return f"{value:,.{decimals}f}"
+def format_count(value): return f"{int(round(value)):,}"  # Counts: no decimals, no "x"
 
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'Executive Briefing'
@@ -132,20 +135,9 @@ try:
         data, window_info = apply_time_filter(data, date_range)
         st.session_state.current_data = data
         st.session_state.window_info = window_info
-    # ROAS: SUM(revenue)/SUM(marketing_spend) for window. No fake 3.0.
-    mkt_col = 'marketing_spend' if 'marketing_spend' in data.columns else 'ad_spend' if 'ad_spend' in data.columns else None
-    total_mkt = float(data[mkt_col].sum()) if mkt_col else 0
-    roas_val = None
-    roas_unavailable = True
-    if mkt_col and total_mkt > 0 and 'revenue' in data.columns:
-        roas_val = float(data['revenue'].sum() / total_mkt)
-        roas_unavailable = False
-    kpis = {
-        'total_revenue': float(data['revenue'].sum()) if 'revenue' in data.columns else 0,
-        'roas': roas_val,
-        'roas_unavailable': roas_unavailable,
-        'window_info': st.session_state.get('window_info', {})
-    }
+    # Single source of truth for KPIs (includes _provenance, cost_missing, etc.)
+    window_info = st.session_state.get('window_info', {})
+    kpis = compute_kpis(data, window_info)
 except Exception as e:
     st.error("❌ Failed to load data. Please try again or upload fresh data from Data Sources.")
     with st.expander("Technical details"):
@@ -335,29 +327,47 @@ if not can_access_page(p, tier):
 PAGES_NEEDING_DATE_REVENUE = ["Executive Briefing", "Dashboard", "Analytics", "Insights", "Predictions", "Recommendations", "Goals", "What-If", "Margin Analysis", "Smart Alerts", "Anomalies & Alerts", "Revenue Attribution", "Customer LTV", "Competitive Benchmark"]
 
 def _render_data_quality_panel(data, kpis):
-    """Data Quality panel: missing columns, row count, month count, % NaNs."""
+    """Data Quality panel from data contract: checks, row count, month count, % nulls, simulated."""
     if data is None or data.empty:
         return
+    report = validate_data_contract(data, kpis.get('window_info', {}))
     with st.expander("📋 Data Quality", expanded=False):
-        required = ['date', 'revenue']
-        missing_req = [c for c in required if c not in data.columns]
-        has_mkt = 'marketing_spend' in data.columns or 'ad_spend' in data.columns
-        winfo = kpis.get('window_info', {})
+        # Summary metrics
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            st.metric("Rows in window", f"{len(data):,}", "")
+            st.metric("Rows in window", f"{report.get('row_count', 0):,}", "")
         with col2:
-            st.metric("Months", winfo.get('months', '—'), "")
+            st.metric("Months", report.get('month_count', '—'), "")
         with col3:
-            nan_pct = (data['revenue'].isna().sum() / len(data) * 100) if 'revenue' in data.columns else 0
-            st.metric("% NaNs (revenue)", f"{nan_pct:.1f}%", "")
+            nulls = report.get('null_pcts', {})
+            rev_nan = nulls.get('revenue', 0)
+            st.metric("% NaNs (revenue)", f"{rev_nan:.1f}%", "")
         with col4:
-            status = "⚠️ Missing" if missing_req else ("⚠️ No ad_spend" if not has_mkt else "✅ OK")
-            st.metric("Columns", status, "")
-        if missing_req:
-            st.warning(f"Missing required: {', '.join(missing_req)}")
+            sim = report.get('simulated_used', False)
+            st.metric("Simulated values", "Yes" if sim else "No", "")
+        # Margin definition
+        if kpis.get('margin_definition'):
+            st.caption(f"**Margin definition:** {kpis.get('margin_definition', 'Gross')} (revenue − cost)")
+        # Checks list
+        st.markdown("**Checks**")
+        for c in report.get('checks', [])[:12]:
+            status = c.get('status', 'info')
+            msg = c.get('message', '')
+            icon = "✅" if status == 'ok' else ("⚠️" if status == 'warn' else ("❌" if status == 'error' else "ℹ️"))
+            st.markdown(f"{icon} {msg}")
+        if report.get('customers_semantics'):
+            st.caption(f"Customers: {report['customers_semantics']} (last value)" if report['customers_semantics'] == 'cumulative' else f"Customers: {report['customers_semantics']} (sum in window)")
         if kpis.get('roas_unavailable'):
             st.caption("ROAS: map ad_spend or marketing_spend")
+        # Download cleaned CSV
+        from utils.export_cleaned import create_download_cleaned_csv_button
+        create_download_cleaned_csv_button(data, window_info=kpis.get('window_info'), key="dq_download_cleaned")
+        # Debug: KPI provenance (dev mode)
+        import os
+        if os.environ.get('ECHOLON_DEV') or st.session_state.get('dev_mode'):
+            prov = kpis.get('_provenance', {})
+            with st.expander("🔧 Debug: KPI provenance", expanded=False):
+                st.json(prov)
 
 def _check_data_for_page(page_name):
     provided = st.session_state.get("uploaded_data_provided_columns")
@@ -367,6 +377,8 @@ def _check_data_for_page(page_name):
     if "date" in provided_set and "revenue" in provided_set:
         return True
     missing = [c for c in ["date", "revenue"] if c not in provided_set]
+    from utils.telemetry import log_module_disabled
+    log_module_disabled(page_name, "missing required columns", missing)
     st.info(f"📊 **This page needs:** {', '.join(missing)}. Map these columns in **Data Sources** to see {page_name.lower()}.")
     if st.button("📁 Go to Data Sources", key=f"goto_ds_{page_name}"):
         st.session_state.current_page = "Data Sources"
@@ -383,7 +395,7 @@ try:
         metrics = calculate_key_metrics(data)
         health_metrics = {
             'revenue_growth': metrics.get('revenue_growth', 0),
-            'profit_margin': float(data['profit_margin'].mean()) if 'profit_margin' in data.columns else 40,
+            'profit_margin': metrics.get('profit_margin'),
             'cash_flow_ratio': 1.2,
             'customer_growth': metrics.get('customer_growth', 0),
         }
@@ -463,7 +475,7 @@ try:
         
         # Top Priority This Week
         industry = st.session_state.get('industry', 'ecommerce')
-        top_priority = get_top_priority_this_week(data, dash_metrics, industry)
+        top_priority = get_top_priority_this_week(data, dash_metrics, industry, kpis=kpis)
         if top_priority:
             st.markdown(f"""
             <div style='font-family:"DM Sans",sans-serif;background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border:1px solid rgba(16,185,129,0.3);border-radius:18px;padding:1.75rem 2rem;margin:0 0 2rem 0;box-shadow:0 8px 30px -10px rgba(0,0,0,0.3);'>
@@ -474,9 +486,10 @@ try:
             </div>
             """, unsafe_allow_html=True)
         
-        # Executive Summary
+        # Executive Summary (all metrics from same window)
         st.markdown("<div style='margin-top: 2rem;'></div>", unsafe_allow_html=True)
         st.subheader("📊 Executive Summary")
+        st.caption(f"All values from: {winfo.get('label', 'Selected window')}")
         col1, col2, col3, col4 = st.columns(4)
     
         with col1:
@@ -529,17 +542,26 @@ try:
     
         with col2:
                 st.markdown("### 📊 Key Trends")
-                recent_revenue = data.tail(30)['revenue'].mean()
-                older_revenue = data.head(30)['revenue'].mean()
-                trend = ((recent_revenue - older_revenue) / older_revenue) * 100 if older_revenue > 0 else 0
-                trend = max(-99, min(999, trend))  # Cap for realistic display
-                st.metric("30-Day Revenue Trend", format_currency(recent_revenue), f"{trend:+.1f}%")
+                # Rolling 30-day avg vs previous 30-day avg (same window, consistent)
+                n = len(data)
+                if n >= 60 and 'revenue' in data.columns:
+                    rev = data['revenue'].values
+                    recent_30 = rev[-30:].mean() if len(rev) >= 30 else rev[-n//2:].mean()
+                    prev_30 = rev[-60:-30].mean() if len(rev) >= 60 else rev[:n//2].mean()
+                    trend = ((recent_30 - prev_30) / prev_30) * 100 if prev_30 > 0 else 0
+                else:
+                    half = max(1, n // 2)
+                    recent_30 = data.iloc[-half:]['revenue'].mean() if n >= 2 else data['revenue'].mean()
+                    prev_30 = data.iloc[:half]['revenue'].mean() if n >= 2 else recent_30
+                    trend = ((recent_30 - prev_30) / prev_30) * 100 if prev_30 > 0 else 0
+                trend = max(-99, min(999, trend))
+                st.metric("Avg Daily Revenue (rolling 30d)", format_currency(recent_30), f"{trend:+.1f}% vs prior 30d")
         
                 margin_val = data['profit_margin'].mean() if 'profit_margin' in data.columns else 40
                 st.markdown(f"""  
                 - **Revenue Growth:** {trend:+.1f}% vs. previous period
                 - **Profit Margin:** {margin_val:.1f}%
-                - **Total Customers:** {int(data['customers'].sum()) if 'customers' in data.columns else '—'}
+                - **Total Customers:** {format_count(dash_metrics['total_customers']) if 'total_customers' in dash_metrics and dash_metrics.get('total_customers') is not None else '—'}
                 - **Inventory Health:** {int(data['inventory_units'].mean()) if 'inventory_units' in data.columns else '—'} avg units
                 """)
     
@@ -614,7 +636,7 @@ try:
     elif p == "Goals":
         if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
             st.stop()
-        render_goals_page(data, kpis, format_currency, format_percentage)
+        render_goals_page(data, kpis, format_currency, format_percentage, format_count)
     elif p == "Cohort Analysis":
         render_cohort_analysis_page(*args)
     elif p == "Customer LTV":

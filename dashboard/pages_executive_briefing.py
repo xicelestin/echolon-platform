@@ -55,17 +55,16 @@ def compute_cash_flow_metrics(data: pd.DataFrame) -> Dict[str, Any]:
     else:
         monthly_marketing = monthly_revenue * 0.15  # Estimate only when missing
     
-    if 'cost' in data.columns and data['cost'].sum() > 0:
+    cost_missing = 'cost' not in data.columns
+    if not cost_missing:
         monthly_cost = data['cost'].sum() / num_months
+        monthly_profit = monthly_revenue - (monthly_cost + monthly_marketing)
     else:
-        margin = data['profit_margin'].mean() / 100 if 'profit_margin' in data.columns else 0.4
-        monthly_cost = monthly_revenue * (1 - margin)
-    
-    # Use actual cost + ad spend; no phantom 20% overhead when we have real data
-    monthly_expenses = monthly_cost + monthly_marketing
-    
-    margin = data['profit_margin'].mean() / 100 if 'profit_margin' in data.columns else 0.4
-    monthly_profit = monthly_revenue * margin
+        monthly_cost = None
+        monthly_profit = None  # N/A when cost missing
+
+    # Use actual cost + ad spend when available; when cost missing, expenses = ad spend only
+    monthly_expenses = (monthly_cost or 0) + monthly_marketing
     monthly_inflow = monthly_revenue
     monthly_burn = monthly_expenses - monthly_revenue  # Negative = profitable
     
@@ -91,11 +90,12 @@ def compute_cash_flow_metrics(data: pd.DataFrame) -> Dict[str, Any]:
         'monthly_burn': monthly_burn,
         'monthly_inflow': monthly_inflow,
         'monthly_profit': monthly_profit,
+        'cost_missing': cost_missing,
         'monthly_expenses': monthly_expenses,
         'cash_health': cash_health,
         'cash_reserve_est': cash_reserve,
         'date_range_label': date_range_label,
-        'expenses_label': 'Cost + Ad Spend' if has_actual_expenses else 'Est. expenses'
+        'expenses_label': 'Cost + Ad Spend' if has_actual_expenses else ('Ad Spend only (cost missing)' if cost_missing and mkt_col else 'Est. expenses')
     }
 
 
@@ -105,19 +105,28 @@ def get_top_opportunities(data: pd.DataFrame, metrics: Dict, kpis: Dict, pattern
     patterns = patterns or {}
 
     # Pattern-based: dimension shifts — sort by dollar_impact first (not % growth)
+    # Filter: minimum dollar impact to avoid "Up 32% but added $0" contradictions
     dim_shifts = patterns.get('dimension_shifts', []) or patterns.get('channel_shifts', [])
-    growing = sorted([c for c in dim_shifts if c.get('change_pct', 0) > 15], key=lambda x: -x.get('dollar_impact', 0))
+    growing = sorted(
+        [c for c in dim_shifts if c.get('change_pct', 0) > 15 and c.get('current_rev', 0) > 0],
+        key=lambda x: -x.get('dollar_impact', 0)
+    )
     declining = sorted([c for c in dim_shifts if c.get('change_pct', 0) < -15], key=lambda x: -abs(x.get('dollar_impact', 0)))
     if growing and not declining:
         s = growing[0]
         name = s.get('segment_name') or s.get('channel', '')
         dollar_impact = s.get('dollar_impact', 0)
         if name:
+            # Consistent "why": show dollar impact when meaningful; else describe share shift
+            if dollar_impact and abs(dollar_impact) >= 100:
+                impact_msg = f'{name} added ~${dollar_impact:,.0f} vs prior period and is now {s["share_now"]:.0f}% of revenue.'
+            else:
+                impact_msg = f'{name} grew to {s["share_now"]:.0f}% of revenue (share shift vs prior period).'
             opportunities.append({
                 'title': f'Scale {name} — Up {s["change_pct"]:.0f}%',
-                'impact': f'{name} added ~${dollar_impact:,.0f} vs prior period and is now {s["share_now"]:.0f}% of revenue.',
+                'impact': impact_msg,
                 'priority': 'high',
-                'action': f'Increase investment in {name} — highest dollar impact',
+                'action': f'Increase investment in {name} — highest dollar impact' if dollar_impact and abs(dollar_impact) >= 100 else f'Increase investment in {name} — growing share',
                 'dollar_impact': dollar_impact
             })
     elif declining:
@@ -299,7 +308,7 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
     roas_val = kpis.get('roas')
     health_metrics = {
         'revenue_growth': metrics.get('revenue_growth', 0),
-        'profit_margin': float(data['profit_margin'].mean()) if 'profit_margin' in data.columns else 40,
+        'profit_margin': metrics.get('profit_margin'),  # None when cost missing
         'cash_flow_ratio': 1.2,
         'customer_growth': metrics.get('customer_growth', 0),
     }
@@ -322,11 +331,10 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
     </div>
     """, unsafe_allow_html=True)
     
-    # === Money In/Out (primary — larger than Health Score) ===
+    # === Money In/Out (primary — must balance: surplus = inflow - outflow) ===
     inflow = cash_metrics.get('monthly_inflow', 0)
-    burn = cash_metrics.get('monthly_burn', 0)
-    outflow = inflow + burn
-    surplus = inflow - outflow
+    outflow = cash_metrics.get('monthly_expenses', 0)  # avg monthly cost + ad spend
+    surplus = inflow - outflow  # explicit: Net Cash Flow = Money In - Money Out
     st.markdown(f"""
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;">
         <div style="background:linear-gradient(135deg,#059669 0%,#047857 100%);padding:1.75rem;border-radius:16px;text-align:center;border:1px solid rgba(52,211,153,0.4);">
@@ -337,7 +345,7 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
         <div style="background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);padding:1.75rem;border-radius:16px;text-align:center;border:1px solid #374151;">
             <p style="color:#94a3b8;font-size:0.75rem;margin:0 0 8px 0;text-transform:uppercase;">Money Out</p>
             <p style="color:white;font-size:1.75rem;font-weight:700;margin:0;">{format_currency(outflow)}</p>
-            <p style="color:#94a3b8;font-size:0.8rem;margin:8px 0 0 0;font-style:italic;">{cash_metrics.get('expenses_label', 'Est. expenses')}</p>
+            <p style="color:#94a3b8;font-size:0.8rem;margin:8px 0 0 0;font-style:italic;">{cash_metrics.get('expenses_label', 'Est. expenses')} · Avg monthly</p>
         </div>
         <div style="background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);padding:1.75rem;border-radius:16px;text-align:center;border:1px solid #374151;">
             <p style="color:#94a3b8;font-size:0.75rem;margin:0 0 8px 0;text-transform:uppercase;">Net Cash Flow</p>
@@ -351,7 +359,8 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
         "Net Cash Flow",
         "Revenue − (Cost + Ad Spend)",
         winfo.get('label', 'Last 90 Days'),
-        "Ops Overhead: 0% (not assumed)" if not ('cost' in data.columns and ('marketing_spend' in data.columns or 'ad_spend' in data.columns)) else "Using measured cost and ad spend."
+        "Ops Overhead: 0% (not assumed)" if not ('cost' in data.columns and ('marketing_spend' in data.columns or 'ad_spend' in data.columns)) else "Using measured cost and ad spend.",
+        aggregation="SUM over rows in window"
     )
     
     # === Data Confidence (next to Business Health) ===
@@ -373,6 +382,13 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
             <p style="color:{conf_color};font-size:12px;margin-top:10px;font-weight:600;">Data Confidence: {conf_level}</p>
         </div>
         """, unsafe_allow_html=True)
+        display_explain_this_number(
+            "Business Health Score",
+            "Weighted: Revenue, Profitability, Cash Flow, Customer Growth, Efficiency (ROAS). 0–100 scale.",
+            winfo.get('label', '—'),
+            "Components: " + ", ".join(f"{k}={v}" for k, v in (health_score.get('breakdown') or {}).items() if v is not None),
+            aggregation="Component scores aggregated by weighted average"
+        )
     
     with col2:
         st.markdown(f"""
@@ -397,17 +413,30 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
     industry = st.session_state.get('industry', 'ecommerce')
     benchmarks = get_industry_benchmarks(industry)
     ind_name = {'ecommerce': 'E-commerce', 'saas': 'SaaS', 'restaurant': 'Restaurant', 'services': 'Services', 'general': 'General'}.get(industry, 'E-commerce')
-    your_margin = float(data['profit_margin'].mean()) if 'profit_margin' in data.columns else 40
+    your_margin = kpis.get('profit_margin')
     your_roas = kpis.get('roas')
     bench_margin = benchmarks.get('profit_margin', 35)
     bench_roas = benchmarks.get('roas', 4)
-    m_vs = "above" if your_margin >= bench_margin else "below"
+    if your_margin is not None:
+        m_vs = "above" if your_margin >= bench_margin else "below"
+        margin_line = f"Margin {your_margin:.0f}% ({m_vs} {bench_margin}% avg)"
+    else:
+        margin_line = "Margin N/A (cost missing)"
     if kpis.get('roas_unavailable') or your_roas is None:
         roas_line = "ROAS N/A (map ad_spend)"
     else:
         r_vs = "above" if your_roas >= bench_roas else "below"
         roas_line = f"ROAS {your_roas:.1f}x ({r_vs} {bench_roas}x avg)"
-    st.markdown(f"**📊 vs {ind_name} benchmark:** Margin {your_margin:.0f}% ({m_vs} {bench_margin}% avg) · {roas_line}")
+    margin_def = kpis.get('margin_definition', 'Gross')
+    st.markdown(f"**📊 vs {ind_name} benchmark:** {margin_line} · {roas_line}")
+    st.caption(f"Margin = {margin_def} (revenue − cost)")
+    # Explain ROAS (when available) and Margin
+    with st.expander("📖 Explain: ROAS & Margin", expanded=False):
+        st.markdown("**ROAS** = SUM(revenue) ÷ SUM(marketing_spend or ad_spend)")
+        st.markdown(f"**Window:** {winfo.get('label', '—')}")
+        st.markdown(f"**Margin:** {kpis.get('margin_definition', 'Gross')} = (revenue − cost) ÷ revenue")
+        if kpis.get('roas_unavailable'):
+            st.caption("ROAS unavailable — map ad_spend or marketing_spend in Data Sources.")
     
     # === What Changed? Diff Panel (period-over-period) ===
     period_diff = calculate_period_diff(data, kpis, format_currency)

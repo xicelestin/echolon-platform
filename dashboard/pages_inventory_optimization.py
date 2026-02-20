@@ -13,6 +13,23 @@ def render_inventory_optimization_page(data, kpis, format_currency, format_perce
     
     st.title("📶 Inventory Optimization & Product Performance")
     st.markdown("### Maximize inventory efficiency with AI-powered product classification")
+
+    # Simulated data badge when actual inventory data missing
+    has_actual = data is not None and 'inventory_units' in data.columns
+    if data is not None and not data.empty and not has_actual:
+        st.markdown("""
+        <div style="background:linear-gradient(135deg,#F59E0B 0%,#D97706 100%);color:#1F2937;padding:12px 20px;border-radius:12px;font-weight:700;font-size:0.9rem;margin-bottom:1.5rem;border:2px solid #FBBF24;">
+            ⚠️ SIMULATED — Product data below is simulated. Upload data with <code>inventory_units</code> for real recommendations.
+        </div>
+        """, unsafe_allow_html=True)
+        with st.expander("Why is this simulated?"):
+            st.markdown("""
+            This page uses **simulated product data** because your dataset doesn't include `inventory_units` (and optionally `unit_cost`) at the SKU level.
+            To get real reorder recommendations:
+            1. Map `inventory_units` in Data Sources
+            2. Optionally map `unit_cost` for cost estimates
+            3. Use Inventory & Demand for demand-based reorder points
+            """)
     
     if data is None or data.empty:
         st.warning("📋 No data available. Please upload data to view inventory insights.")
@@ -143,8 +160,11 @@ def render_inventory_optimization_page(data, kpis, format_currency, format_perce
     
     st.markdown("---")
     
-    # Forecasted Stock Needs
+    # Forecasted Stock Needs — require actual inventory data when available
     st.subheader("🔮 Forecasted Stock Needs (Next 30 Days)")
+    has_actual_inventory = 'inventory_units' in data.columns if data is not None else False
+    if data is not None and not has_actual_inventory:
+        st.warning("⚠️ **Inventory inputs missing.** Upload data with `inventory_units` (and optionally `unit_cost`) for real reorder recommendations. Below uses simulated product data.")
     
     # Calculate forecast
     forecast_days = 30

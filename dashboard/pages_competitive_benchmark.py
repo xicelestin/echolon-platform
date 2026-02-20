@@ -76,11 +76,12 @@ def calculate_dollar_gaps(current_metrics, benchmarks, revenue, margin):
     spend = float(current_metrics.get('marketing_spend', 0) or 0)
     if spend <= 0 and revenue > 0:
         spend = revenue * 0.15
-    if 'roas' in current_metrics and spend > 0:
+    current_roas = current_metrics.get('roas')
+    if current_roas is not None and spend > 0:
         row = benchmarks[benchmarks['metric'] == 'ROAS']
         if not row.empty:
             target = float(row['top_quartile'].values[0])
-            current_roas = float(current_metrics.get('roas', 0) or 0)
+            current_roas = float(current_roas)
             gap = target - current_roas
             if gap > 0:
                 add_rev = spend * gap  # (Industry_ROAS - Current_ROAS) * Spend
@@ -114,16 +115,21 @@ def render_competitive_benchmark_page(data, kpis, format_currency, format_percen
     
     total_revenue = kpis.get('total_revenue', data['revenue'].sum() if 'revenue' in data.columns else 0)
     avg_margin = data['profit_margin'].mean() if 'profit_margin' in data.columns else 40
-    avg_roas = data['roas'].mean() if 'roas' in data.columns else 0
+    avg_roas = kpis.get('roas')
+    if avg_roas is None and 'roas' in data.columns:
+        avg_roas = data['roas'].mean()
     marketing_spend = data['marketing_spend'].sum() if 'marketing_spend' in data.columns else 0
+    spend_is_estimate = False
     if marketing_spend <= 0 and total_revenue > 0:
-        marketing_spend = total_revenue * 0.15  # Estimate 15% of revenue on marketing
+        marketing_spend = total_revenue * 0.15
+        spend_is_estimate = True
     
     current_metrics = {
         'profit_margin': avg_margin,
         'roas': avg_roas,
         'revenue': total_revenue,
         'marketing_spend': marketing_spend,
+        'spend_is_estimate': spend_is_estimate,
         'customer_count': kpis.get('total_customers', 0)
     }
     
@@ -140,9 +146,13 @@ def render_competitive_benchmark_page(data, kpis, format_currency, format_percen
         metric_name = row['metric']
         key = metric_to_key.get(metric_name, metric_name.lower().replace(' ', '_'))
         your_val = current_metrics.get(key, avg_margin if 'margin' in metric_name.lower() else avg_roas)
-        rank = calculate_percentile_rank(
-            your_val, row['industry_avg'], row['top_quartile'], row['best_in_class']
-        )
+        if your_val is None:
+            your_val = 0
+            rank = "N/A (no data)"
+        else:
+            rank = calculate_percentile_rank(
+                your_val, row['industry_avg'], row['top_quartile'], row['best_in_class']
+            )
         comparison_data.append({
             'Metric': metric_name,
             'Your Performance': your_val,
@@ -195,6 +205,9 @@ def render_competitive_benchmark_page(data, kpis, format_currency, format_percen
     st.subheader("💰 Financial Impact of Closing Gaps")
     
     gaps = calculate_dollar_gaps(current_metrics, benchmarks, total_revenue, avg_margin)
+    
+    if spend_is_estimate:
+        st.warning("⚠️ **Marketing spend estimated** (15% of revenue). Map `ad_spend` in Data Sources for accurate opportunity.")
     
     if gaps:
         for gap_type, gap_data in gaps.items():

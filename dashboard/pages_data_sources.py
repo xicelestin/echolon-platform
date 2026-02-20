@@ -413,7 +413,7 @@ def render_csv_upload_section():
                 )
             
             st.caption("Optional: Add these for driver analysis (what changed and why)")
-            col_map3, col_map4 = st.columns(2)
+            col_map3, col_map4, col_map5 = st.columns(3)
             with col_map3:
                 channel_col = st.selectbox(
                     "Channel Column",
@@ -427,6 +427,13 @@ def render_csv_upload_section():
                     options=opts,
                     index=opts.index(_default('category')) if _default('category') else 0,
                     help="Product category for driver analysis"
+                )
+            with col_map5:
+                ad_spend_col = st.selectbox(
+                    "Ad/Marketing Spend Column",
+                    options=opts,
+                    index=opts.index(_default('marketing_spend')) if _default('marketing_spend') else 0,
+                    help="Column for ad_spend, marketing_spend, or marketing_cost (for ROAS)"
                 )
             
             status_text.text("🔍 Checking column mappings...")
@@ -484,6 +491,10 @@ def render_csv_upload_section():
                         provided_columns.append('cost')
                     else:
                         processed_df['cost'] = processed_df['revenue'] * 0.6
+                    
+                    if ad_spend_col:
+                        processed_df['marketing_spend'] = pd.to_numeric(df_sub[ad_spend_col], errors='coerce').fillna(0).values[:n]
+                        provided_columns.append('marketing_spend')
                     
                     if channel_col:
                         processed_df['channel'] = df_sub[channel_col].astype(str).values[:n]

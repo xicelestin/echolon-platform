@@ -4,6 +4,13 @@ import numpy as np
 from datetime import datetime, timedelta
 from typing import Dict, Any, Tuple, Optional
 
+# Standardized metric definitions (avoid internal contradictions)
+# Gross Profit = revenue − cost
+# Contribution Profit = revenue − cost − marketing_spend
+# Margin: explicitly Gross (revenue-cost)/revenue or Contribution (revenue-cost-mkt)/revenue
+MARGIN_DEFINITION_GROSS = "Gross"
+MARGIN_DEFINITION_CONTRIBUTION = "Contribution"
+
 
 def safe_divide(a, b):
     """Divide a by b; return np.nan where b <= 0. No silent fallbacks."""
@@ -13,26 +20,87 @@ def safe_divide(a, b):
     return (float(a) / float(b)) if b and float(b) > 0 else np.nan
 
 
+# --- Single source of truth for window ---
+DAYS_MAP = {'Last 7 Days': 7, 'Last 30 Days': 30, 'Last 90 Days': 90, 'Last 12 Months': 365, 'All Time': 99999}
+
+
+def get_window_info(df: pd.DataFrame, date_range: str) -> Dict[str, Any]:
+    """
+    Single source of truth for window. Returns:
+    start_date, end_date, days, months, baseline_start, baseline_end, label, baseline_label.
+    Baseline is same-length period immediately preceding (for comparisons).
+    """
+    if df is None or df.empty or 'date' not in df.columns:
+        return {
+            'start_date': None, 'end_date': None, 'days': 0, 'months': 0,
+            'baseline_start': None, 'baseline_end': None,
+            'label': 'All data', 'baseline_label': '',
+        }
+    df = df.copy()
+    df['date'] = pd.to_datetime(df['date'])
+    end_date = df['date'].max()
+    days = DAYS_MAP.get(date_range, 90)
+    start_date = end_date - timedelta(days=days)
+    # Ensure we have data in range
+    in_range = df[(df['date'] >= start_date) & (df['date'] <= end_date)]
+    if in_range.empty:
+        start_date = df['date'].min()
+    actual_start = max(start_date, df['date'].min())
+    actual_end = min(end_date, df['date'].max())
+    day_count = (actual_end - actual_start).days
+    months = df[(df['date'] >= actual_start) & (df['date'] <= actual_end)]['date'].dt.to_period('M').nunique()
+    label = f"{actual_start.strftime('%Y-%m-%d')} → {actual_end.strftime('%Y-%m-%d')} ({day_count} days, {months} months)"
+    # Baseline: same-length period immediately preceding
+    baseline_end = actual_start - timedelta(days=1)
+    baseline_start = baseline_end - timedelta(days=day_count)
+    baseline_label = f"{baseline_start.strftime('%Y-%m-%d')} → {baseline_end.strftime('%Y-%m-%d')} (prior {day_count}d)"
+    return {
+        'start_date': actual_start,
+        'end_date': actual_end,
+        'days': day_count,
+        'months': months,
+        'baseline_start': baseline_start,
+        'baseline_end': baseline_end,
+        'label': label,
+        'baseline_label': baseline_label,
+    }
+
+
 def apply_time_filter(data: pd.DataFrame, date_range: str) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """
     Apply sidebar date range to data. Returns (filtered_df, window_info).
-    window_info: {start_date, end_date, days, months, label}
+    Uses get_window_info as single source of truth.
     """
     if data is None or data.empty or 'date' not in data.columns:
-        return data, {'label': 'All data', 'days': 0, 'months': 0}
+        return data, get_window_info(data, date_range)
     df = data.copy()
     df['date'] = pd.to_datetime(df['date'])
-    end_date = df['date'].max()
-    days_map = {'Last 7 Days': 7, 'Last 30 Days': 30, 'Last 90 Days': 90, 'Last 12 Months': 365, 'All Time': 99999}
-    days = days_map.get(date_range, 90)
-    start_date = end_date - timedelta(days=days)
-    filtered = df[(df['date'] >= start_date) & (df['date'] <= end_date)].copy()
+    winfo = get_window_info(df, date_range)
+    start = winfo.get('start_date')
+    end = winfo.get('end_date')
+    if start is None or end is None:
+        return df, winfo
+    filtered = df[(df['date'] >= start) & (df['date'] <= end)].copy()
     if filtered.empty:
         filtered = df
-    unique_months = filtered['date'].dt.to_period('M').nunique()
-    date_range_days = (filtered['date'].max() - filtered['date'].min()).days
-    label = f"{filtered['date'].min().strftime('%Y-%m-%d')} → {filtered['date'].max().strftime('%Y-%m-%d')} ({date_range_days} days, {unique_months} months)"
-    return filtered, {'start_date': filtered['date'].min(), 'end_date': filtered['date'].max(), 'days': date_range_days, 'months': unique_months, 'label': label}
+    # Recompute months from filtered
+    winfo['months'] = filtered['date'].dt.to_period('M').nunique()
+    winfo['days'] = (filtered['date'].max() - filtered['date'].min()).days
+    winfo['label'] = f"{filtered['date'].min().strftime('%Y-%m-%d')} → {filtered['date'].max().strftime('%Y-%m-%d')} ({winfo['days']} days, {winfo['months']} months)"
+    return filtered, winfo
+
+
+def get_baseline_df(full_df: pd.DataFrame, window_info: Dict) -> pd.DataFrame:
+    """Return baseline period dataframe (same-length, immediately preceding)."""
+    if full_df is None or full_df.empty or 'date' not in full_df.columns:
+        return pd.DataFrame()
+    bs = window_info.get('baseline_start')
+    be = window_info.get('baseline_end')
+    if bs is None or be is None:
+        return pd.DataFrame()
+    df = full_df.copy()
+    df['date'] = pd.to_datetime(df['date'])
+    return df[(df['date'] >= bs) & (df['date'] <= be)]
 
 
 def calculate_period_comparison(current_value: float, previous_value: float) -> Dict[str, Any]:
@@ -196,21 +264,37 @@ def calculate_business_health_score(metrics: Dict[str, float], weights: Optional
         else:
             return max(0, value * 100)
     
-    # Calculate component scores
+    # Calculate component scores — skip N/A (cost missing, roas unavailable)
     revenue_score = normalize_growth(metrics.get('revenue_growth', 0))
-    profit_score = normalize_margin(metrics.get('profit_margin', 0))
+    profit_margin_val = metrics.get('profit_margin')
+    profit_score = normalize_margin(profit_margin_val) if profit_margin_val is not None else None
     cash_score = normalize_positive(metrics.get('cash_flow_ratio', 1))
     customer_score = normalize_growth(metrics.get('customer_growth', 0))
-    efficiency_score = normalize_positive(metrics.get('roas', 1))  # Normalize ROAS
-    
-    # Calculate weighted score
-    total_score = (
-        revenue_score * weights['revenue_growth'] +
-        profit_score * weights['profitability'] +
-        cash_score * weights['cash_flow'] +
-        customer_score * weights['customer_growth'] +
-        efficiency_score * weights['efficiency']
-    )
+    roas_val = metrics.get('roas')
+    efficiency_score = normalize_positive(roas_val) if roas_val is not None else None
+
+    # Reweight: only include available components
+    comp_scores = {'Revenue': revenue_score, 'Profitability': profit_score, 'Cash Flow': cash_score,
+                   'Customer Growth': customer_score, 'Efficiency': efficiency_score}
+    comp_weights = {'Revenue': 0.30, 'Profitability': 0.20, 'Cash Flow': 0.20, 'Customer Growth': 0.20, 'Efficiency': 0.10}
+    total_weight = 0
+    weighted_sum = 0
+    breakdown = {}
+    for name, score in comp_scores.items():
+        w = comp_weights[name]
+        if score is not None:
+            s = max(0, min(100, score))
+            breakdown[name] = round(s, 1)
+            weighted_sum += s * w
+            total_weight += w
+        else:
+            breakdown[name] = None  # N/A
+    if total_weight <= 0:
+        total_weight = 1
+        weighted_sum = 50
+    total_score = weighted_sum / total_weight
+    total_score = max(0, min(100, total_score))
+    is_partial = any(s is None for s in comp_scores.values())
     
     # Determine color and status
     if total_score >= 75:
@@ -225,19 +309,16 @@ def calculate_business_health_score(metrics: Dict[str, float], weights: Optional
         color = 'red'
         status = 'Needs Attention'
         emoji = '🔴'
-    
+    if is_partial:
+        status = f"{status} (Partial)"
+
     return {
         'score': round(total_score, 1),
-        'breakdown': {
-            'Revenue': round(revenue_score, 1),
-            'Profitability': round(profit_score, 1),
-            'Cash Flow': round(cash_score, 1),
-            'Customer Growth': round(customer_score, 1),
-            'Efficiency': round(efficiency_score, 1)
-        },
+        'breakdown': breakdown,
         'color': color,
         'status': status,
-        'emoji': emoji
+        'emoji': emoji,
+        'is_partial': is_partial,
     }
 
 
@@ -301,10 +382,23 @@ def calculate_key_metrics(df: pd.DataFrame) -> Dict[str, float]:
         metrics['total_revenue'] = df['revenue'].sum()
         metrics['avg_daily_revenue'] = df['revenue'].mean()
     
-    # Customer metrics
+    # Customer metrics — semantics: cumulative (use last) vs per-period (use sum in window)
     if 'customers' in df.columns and len(df) > 0:
         df_sorted = df.sort_values('date' if 'date' in df.columns else df.index.name or 0).reset_index(drop=True)
-        metrics['total_customers'] = df_sorted['customers'].iloc[-1]
+        cust_col = pd.to_numeric(df_sorted['customers'], errors='coerce')
+        valid = cust_col.dropna()
+        if len(valid) >= 2:
+            diffs = valid.diff().dropna()
+            is_cumulative = bool((diffs >= -0.01).all())
+        else:
+            is_cumulative = True
+        if is_cumulative:
+            last_val = df_sorted['customers'].iloc[-1]
+            metrics['total_customers'] = float(last_val) if pd.notna(last_val) else 0
+            metrics['customers_semantics'] = 'cumulative'
+        else:
+            metrics['total_customers'] = float(df_sorted['customers'].sum())
+            metrics['customers_semantics'] = 'per_period'
         
         # Churn: adapt to data granularity (daily vs weekly vs monthly)
         if 'date' in df.columns and len(df_sorted) >= 2:
@@ -338,12 +432,20 @@ def calculate_key_metrics(df: pd.DataFrame) -> Dict[str, float]:
         avg_daily_sales = df['revenue'].sum() / len(df)
         metrics['dso'] = avg_ar / avg_daily_sales if avg_daily_sales > 0 else 0
     
-    # Profit margins
+    # Profit margins — standardized: Gross = (revenue - cost) / revenue
+    # When cost missing: margin/profit become N/A (no silent derivation from profit_margin column)
     if 'revenue' in df.columns and 'cost' in df.columns:
         total_revenue = df['revenue'].sum()
         total_cost = df['cost'].sum()
         metrics['profit_margin'] = ((total_revenue - total_cost) / total_revenue * 100) if total_revenue > 0 else 0
-    
+        metrics['margin_definition'] = MARGIN_DEFINITION_GROSS
+        metrics['cost_missing'] = False
+    else:
+        # Cost missing: margin/profit N/A. Do NOT derive from profit_margin column.
+        metrics['profit_margin'] = None
+        metrics['margin_definition'] = MARGIN_DEFINITION_GROSS
+        metrics['cost_missing'] = True
+
     # Growth rates - adapt to data length (works for sparse/non-daily data)
     if 'revenue' in df.columns and len(df) >= 4:
         n = len(df)
@@ -361,6 +463,58 @@ def calculate_key_metrics(df: pd.DataFrame) -> Dict[str, float]:
         metrics['customer_growth'] = ((current_customers - period_ago_customers) / period_ago_customers * 100) if period_ago_customers > 0 else 0
     
     return metrics
+
+
+def compute_kpis(df: pd.DataFrame, window_info: Dict) -> Dict[str, Any]:
+    """
+    Single source of truth for KPIs. Returns full kpis dict with margin_definition,
+    roas, roas_unavailable, window_info, etc.
+    """
+    kpis = {'window_info': window_info}
+    if df is None or df.empty:
+        kpis['total_revenue'] = 0
+        kpis['roas'] = None
+        kpis['roas_unavailable'] = True
+        kpis['margin_definition'] = MARGIN_DEFINITION_GROSS
+        return kpis
+
+    metrics = calculate_key_metrics(df)
+    kpis['total_revenue'] = metrics.get('total_revenue', 0)
+
+    mkt_col = 'marketing_spend' if 'marketing_spend' in df.columns else 'ad_spend' if 'ad_spend' in df.columns else None
+    total_mkt = float(df[mkt_col].sum()) if mkt_col and mkt_col in df.columns else 0
+    if mkt_col and total_mkt > 0 and 'revenue' in df.columns:
+        kpis['roas'] = float(df['revenue'].sum() / total_mkt)
+        kpis['roas_unavailable'] = False
+    else:
+        kpis['roas'] = None
+        kpis['roas_unavailable'] = True
+
+    kpis['margin_definition'] = metrics.get('margin_definition', MARGIN_DEFINITION_GROSS)
+    kpis['customers_semantics'] = metrics.get('customers_semantics')
+    kpis['cost_missing'] = metrics.get('cost_missing', True)
+    kpis['profit_margin'] = metrics.get('profit_margin')
+
+    # Metric provenance for debugging
+    kpis['_provenance'] = {
+        'columns_used': {
+            'revenue': 'revenue' in df.columns,
+            'cost': 'cost' in df.columns,
+            'marketing_spend': 'marketing_spend' in df.columns or 'ad_spend' in df.columns,
+            'orders': 'orders' in df.columns,
+            'customers': 'customers' in df.columns,
+        },
+        'assumptions': [],
+        'warnings': [],
+    }
+    if kpis.get('cost_missing'):
+        kpis['_provenance']['assumptions'].append('Cost missing: margin/profit N/A')
+    if kpis.get('roas_unavailable'):
+        kpis['_provenance']['assumptions'].append('ROAS unavailable: marketing_spend/ad_spend missing or zero')
+    if metrics.get('customers_semantics'):
+        kpis['_provenance']['assumptions'].append(f"Customers: {metrics['customers_semantics']}")
+
+    return kpis
 
 
 def get_goal_progress(current: float, target: float) -> Dict[str, Any]:

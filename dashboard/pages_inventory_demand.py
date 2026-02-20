@@ -138,10 +138,16 @@ def render_inventory_demand_page(data, kpis, format_currency, format_percentage,
     
     st.markdown("---")
     
-    # Stock Recommendations
+    # Stock Recommendations — require inventory_units AND orders
     st.subheader("🎯 Restocking Recommendations")
     
-    if 'inventory_units' in data.columns and 'orders' in data.columns and len(data) > 0:
+    has_inventory = 'inventory_units' in data.columns and len(data) > 0
+    has_orders = 'orders' in data.columns and data['orders'].sum() > 0
+    if not has_inventory:
+        st.warning("⚠️ **Inventory inputs missing.** Upload data with `inventory_units` column to see restocking recommendations.")
+    elif not has_orders:
+        st.warning("⚠️ **Demand data missing.** Upload data with `orders` column to calculate reorder points.")
+    elif has_inventory and has_orders:
         recommendations = []
         
         current_stock = data['inventory_units'].iloc[-1]

@@ -122,20 +122,25 @@ def get_progress_callouts(data: pd.DataFrame, metrics: Dict[str, float]) -> List
     return callouts[:3]
 
 
-def get_quick_wins(data: pd.DataFrame, metrics: Dict[str, float], industry: str = 'general') -> List[Dict[str, Any]]:
+def get_quick_wins(data: pd.DataFrame, metrics: Dict[str, float], industry: str = 'general', kpis: Optional[Dict] = None) -> List[Dict[str, Any]]:
     """
     Actions that take under 2 hours. High impact, low effort.
+    ROAS advice gated when roas_unavailable.
     """
     wins = []
     if data is None or data.empty:
         return wins
 
+    kpis = kpis or {}
+    roas_unavailable = kpis.get('roas_unavailable', True)
     total_rev = data['revenue'].sum() if 'revenue' in data.columns else 0
     margin = data['profit_margin'].mean() if 'profit_margin' in data.columns else 40
-    roas = data['roas'].mean() if 'roas' in data.columns else 3
+    roas = kpis.get('roas') if not roas_unavailable else None
+    if roas is None and not roas_unavailable and 'roas' in data.columns:
+        roas = data['roas'].mean()
     bench = _get_benchmarks(industry)
 
-    if roas < bench['roas'] and total_rev > 5000:
+    if not roas_unavailable and roas is not None and roas < bench['roas'] and total_rev > 5000:
         wins.append({
             'action': 'Pause your lowest-ROAS campaign (takes 15 min)',
             'impact': f"Frees budget for winners — could add ~{_fmt_cur(total_rev * 0.02 * margin / 100)} profit",
@@ -166,19 +171,25 @@ def get_quick_wins(data: pd.DataFrame, metrics: Dict[str, float], industry: str 
 def get_top_priority_this_week(
     data: pd.DataFrame,
     metrics: Dict[str, float],
-    industry: str = 'general'
+    industry: str = 'general',
+    kpis: Optional[Dict] = None
 ) -> Optional[Dict[str, Any]]:
     """
     Single clear recommendation: the one thing to do first.
     Scored by urgency × impact. Returns {title, action, impact, urgency, evidence}.
+    ROAS-based advice is gated: never show when roas_unavailable.
     """
     if data is None or data.empty:
         return None
 
+    kpis = kpis or {}
+    roas_unavailable = kpis.get('roas_unavailable', True)
     total_rev = data['revenue'].sum() if 'revenue' in data.columns else 0
     rev_growth = metrics.get('revenue_growth', 0)
     margin = data['profit_margin'].mean() if 'profit_margin' in data.columns else 40
-    roas = data['roas'].mean() if 'roas' in data.columns else 3
+    roas = kpis.get('roas') if not roas_unavailable else None
+    if roas is None and not roas_unavailable:
+        roas = data['roas'].mean() if 'roas' in data.columns else None
     churn = metrics.get('churn_rate', 2.5)
     marketing_spend = data['marketing_spend'].sum() if 'marketing_spend' in data.columns else total_rev * 0.15
     bench = _get_benchmarks(industry)
@@ -214,8 +225,8 @@ def get_top_priority_this_week(
             'urgency': 8,
             'evidence': f"Margin {margin:.1f}% vs {bench['margin']:.0f}% industry benchmark.",
         })
-    # ROAS below benchmark
-    elif roas < bench['roas'] and marketing_spend > 500:
+    # ROAS below benchmark — ONLY when ROAS is valid (not unavailable)
+    elif not roas_unavailable and roas is not None and roas < bench['roas'] and marketing_spend > 500:
         est = marketing_spend * (bench['roas'] - roas) * (margin / 100)
         candidates.append({
             'title': 'Optimize Marketing ROI',
@@ -246,6 +257,15 @@ def get_top_priority_this_week(
                 'evidence': f"AOV ${aov:.0f} — bundles typically add 10-15%.",
             })
 
+    # When ROAS unavailable, add Connect as fallback (low urgency)
+    if roas_unavailable:
+        candidates.append({
+            'title': 'Connect Marketing Spend',
+            'action': 'Map ad_spend or marketing_spend in Data Sources to enable ROAS insights and ROI recommendations.',
+            'impact': 'Unlock marketing efficiency analysis',
+            'urgency': 2,
+            'evidence': 'ROAS unavailable — connect marketing spend column.',
+        })
     if not candidates:
         return {
             'title': 'Stay the Course',
@@ -263,7 +283,8 @@ def generate_personalized_insights(
     data: pd.DataFrame,
     metrics: Dict[str, float],
     industry: str = 'general',
-    patterns: Optional[Dict[str, Any]] = None
+    patterns: Optional[Dict[str, Any]] = None,
+    kpis: Optional[Dict] = None
 ) -> List[Dict[str, Any]]:
     """
     Generate personalized insights from actual business data.
@@ -326,10 +347,14 @@ def generate_personalized_insights(
             'action': f'Plan inventory and staffing for next {peak["period"]}. Consider early promotions to capture demand.',
             'impact': f'{peak["multiplier"]}x your average month'
         })
+    kpis = kpis or {}
+    roas_unavailable = kpis.get('roas_unavailable', True)
     total_rev = data['revenue'].sum() if 'revenue' in data.columns else 0
     rev_growth = metrics.get('revenue_growth', 0)
     margin = data['profit_margin'].mean() if 'profit_margin' in data.columns else 40
-    roas = data['roas'].mean() if 'roas' in data.columns else 3
+    roas = kpis.get('roas') if not roas_unavailable else None
+    if roas is None and not roas_unavailable and 'roas' in data.columns:
+        roas = data['roas'].mean()
     aov = (total_rev / data['orders'].sum()) if 'orders' in data.columns and data['orders'].sum() > 0 else 50
     churn = metrics.get('churn_rate', 2.5)
     cust_count = int(data['customers'].iloc[-1]) if 'customers' in data.columns else 0
@@ -413,9 +438,9 @@ def generate_personalized_insights(
             'impact': 'Healthy foundation for scaling'
         })
 
-    # ROAS / marketing efficiency (industry benchmark)
+    # ROAS / marketing efficiency — only when ROAS is valid
     target_roas = bench['roas']
-    if roas < target_roas and marketing_spend > 500:
+    if not roas_unavailable and roas is not None and roas < target_roas and marketing_spend > 500:
         roas_gap = target_roas - roas
         est_profit = marketing_spend * roas_gap * (margin / 100)
         insights.append({
@@ -426,7 +451,7 @@ def generate_personalized_insights(
             'action': 'Pause bottom 20% of campaigns by ROAS. Reallocate to top 3 performers. Improve landing page conversion (A/B test headlines).',
             'impact': f'~{_fmt_cur(est_profit)} profit improvement'
         })
-    elif roas >= target_roas + 1:
+    elif not roas_unavailable and roas is not None and roas >= target_roas + 1:
         scale_room = marketing_spend * 0.2 * (margin / 100)  # 20% more spend at current ROAS
         insights.append({
             'type': 'positive',
@@ -516,7 +541,8 @@ def generate_action_items(
     data: pd.DataFrame,
     metrics: Dict[str, float],
     industry: str = 'general',
-    patterns: Optional[Dict[str, Any]] = None
+    patterns: Optional[Dict[str, Any]] = None,
+    kpis: Optional[Dict] = None
 ) -> List[Dict[str, Any]]:
     """
     Generate prioritized, data-driven action items for business owners.
@@ -527,6 +553,8 @@ def generate_action_items(
         return actions
 
     patterns = patterns or {}
+    kpis = kpis or {}
+    roas_unavailable = kpis.get('roas_unavailable', True)
     bench = _get_benchmarks(industry)
 
     # Pattern-based actions: use actual segment names from data
@@ -554,7 +582,9 @@ def generate_action_items(
     total_rev = data['revenue'].sum() if 'revenue' in data.columns else 0
     rev_growth = metrics.get('revenue_growth', 0)
     margin = data['profit_margin'].mean() if 'profit_margin' in data.columns else 40
-    roas = data['roas'].mean() if 'roas' in data.columns else 3
+    roas = kpis.get('roas') if not roas_unavailable else None
+    if roas is None and not roas_unavailable and 'roas' in data.columns:
+        roas = data['roas'].mean()
     churn = metrics.get('churn_rate', 2.5)
     marketing_spend = data['marketing_spend'].sum() if 'marketing_spend' in data.columns else total_rev * 0.15
 
@@ -600,7 +630,7 @@ def generate_action_items(
             'timeline': '14 days'
         })
 
-    if roas < bench['roas'] and marketing_spend > 500:
+    if not roas_unavailable and roas is not None and roas < bench['roas'] and marketing_spend > 500:
         channel_shifts = [s for s in dim_shifts if s.get('dimension_type', 'channel') == 'channel' or 'channel' in str(s.get('channel', ''))]
         top_channels = [s.get('segment_name') or s.get('channel', '') for s in channel_shifts if (s.get('change_pct', 0) > 0 or s.get('current_rev', 0) > 0)][:3]
         if not top_channels:

@@ -11,6 +11,7 @@ python-dotenv>=1.0.0
 psutil>=5.9.0
 scipy>=1.11.0
 scikit-learn>=1.3.0
+statsmodels>=0.14.0
 stripe>=7.0.0
 ShopifyAPI>=12.5.0
 openpyxl>=3.1.0

@@ -110,14 +110,16 @@ def detect_dimension_shifts(
             share = (c_val / curr_total * 100)
             if p_val > 0:
                 pct = ((c_val - p_val) / p_val) * 100
+                dollar_impact = c_val - p_val
                 shifts.append({
                     'segment_name': str(seg),
                     'dimension_type': dimension_label,
                     'current_rev': c_val,
                     'prev_rev': p_val,
                     'change_pct': round(pct, 1),
+                    'dollar_impact': dollar_impact,
                     'share_now': round(share, 1),
-                    'message': f"{seg}: {pct:+.1f}% vs prior half of period, now {share:.0f}% of revenue",
+                    'message': f"{seg}: {pct:+.1f}% vs prior half ({_fmt_cur(dollar_impact)}), now {share:.0f}% of revenue",
                 })
             else:
                 shifts.append({
@@ -126,10 +128,12 @@ def detect_dimension_shifts(
                     'current_rev': c_val,
                     'prev_rev': 0,
                     'change_pct': 100,
+                    'dollar_impact': c_val,
                     'share_now': round(share, 1),
                     'message': f"{seg}: new in period, {share:.0f}% of revenue",
                 })
-        return sorted(shifts, key=lambda x: -x['current_rev'])[:6]
+        # Sort by dollar_impact (desc), then by current_rev, then change_pct
+        return sorted(shifts, key=lambda x: (-x.get('dollar_impact', 0), -x['current_rev'], -x.get('change_pct', 0)))[:6]
     except Exception:
         return []
 

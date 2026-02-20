@@ -24,12 +24,14 @@ from .export_utils import (
 from .metrics_utils import (
     safe_divide,
     apply_time_filter,
+    get_window_info,
     calculate_period_comparison,
     get_period_data,
     calculate_business_health_score,
     calculate_key_metrics,
     calculate_ltv,
     get_goal_progress,
+    compute_kpis,
     format_currency,
     format_percentage,
     get_trend_indicator,
@@ -41,6 +43,7 @@ from .metrics_utils import (
 from .driver_analysis import get_change_explanation, analyze_revenue_drivers
 from .data_patterns import analyze_data_patterns
 from .alerts import get_metric_alerts
+from .data_contract import validate_data_contract, REQUIRED_BY_FEATURE
 from .personalized_insights import (
     generate_personalized_insights,
     generate_action_items,
@@ -65,12 +68,14 @@ __all__ = [
     'to_json',    # Metrics utilities
     'safe_divide',
     'apply_time_filter',
+    'get_window_info',
     'calculate_period_comparison',
     'get_period_data',
     'calculate_business_health_score',
     'calculate_key_metrics',
     'calculate_ltv',
     'get_goal_progress',
+    'compute_kpis',
     'format_currency',
     'format_percentage',
     'get_trend_indicator',
@@ -88,6 +93,8 @@ __all__ = [
     'analyze_revenue_drivers',
     'analyze_data_patterns',
     'get_metric_alerts',
+    'validate_data_contract',
+    'REQUIRED_BY_FEATURE',
 ]
 
 __version__ = '1.0.0'
