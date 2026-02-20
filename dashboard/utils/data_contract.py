@@ -135,11 +135,11 @@ def validate_data_contract(
         except Exception as e:
             checks.append({'status': 'error', 'message': f"Date parsing failed: {e}"})
 
-    # 5. Duplicates: check primary key (date+channel+category+product_id) if available
+    # 5. Duplicates: check primary key (date+channel+category+product_id) only when ALL exist
     # Duplicate dates alone are normal for segmented data — informational only, not error
     if 'date' in data.columns and len(data) > 0:
         key_cols = [c for c in ['date', 'channel', 'category', 'product_id'] if c in data.columns]
-        if len(key_cols) >= 2:
+        if len(key_cols) == 4:
             dupes = data[key_cols].duplicated().sum()
             if dupes > 0:
                 checks.append({'status': 'warn', 'message': f"Duplicate rows on key {key_cols}: {int(dupes)}"})

@@ -21,7 +21,9 @@ def compute_cash_flow_metrics(data: pd.DataFrame) -> Dict[str, Any]:
     """Compute cash flow and runway from business data. Uses actual cost/ad_spend when available."""
     if data is None or data.empty:
         return {'runway_months': 0, 'monthly_burn': 0, 'monthly_inflow': 0, 'cash_health': 'unknown'}
-    
+    if 'revenue' not in data.columns:
+        return {'runway_months': 0, 'monthly_burn': 0, 'monthly_inflow': 0, 'cash_health': 'unknown'}
+
     # Use actual date span to compute monthly revenue (not hardcoded 12)
     total_revenue = data['revenue'].sum()
     date_range_label = "Last 12 months"

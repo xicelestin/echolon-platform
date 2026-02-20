@@ -90,7 +90,7 @@ def get_what_changed(data: pd.DataFrame, metrics: Dict[str, float]) -> List[Dict
         # Customers
         if 'customers' in data.columns and len(curr) > 0 and len(prev) > 0:
             c_c, p_c = curr['customers'].iloc[-1], prev['customers'].iloc[-1]
-            if p_c > 0:
+            if pd.notna(c_c) and pd.notna(p_c) and p_c > 0:
                 pct = ((c_c - p_c) / p_c) * 100
                 changes.append({
                     'metric': 'Customers',
@@ -357,7 +357,8 @@ def generate_personalized_insights(
         roas = data['roas'].mean()
     aov = (total_rev / data['orders'].sum()) if 'orders' in data.columns and data['orders'].sum() > 0 else 50
     churn = metrics.get('churn_rate', 2.5)
-    cust_count = int(data['customers'].iloc[-1]) if 'customers' in data.columns else 0
+    last_cust = data['customers'].iloc[-1] if 'customers' in data.columns and len(data) > 0 else None
+    cust_count = int(last_cust) if last_cust is not None and pd.notna(last_cust) else 0
     marketing_spend = data['marketing_spend'].sum() if 'marketing_spend' in data.columns else total_rev * 0.15
     ltv = metrics.get('ltv', aov * 12)
     cac = metrics.get('cac', 45)

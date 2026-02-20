@@ -384,7 +384,7 @@ def calculate_key_metrics(df: pd.DataFrame) -> Dict[str, float]:
     
     # Customer metrics — semantics: cumulative (use last) vs per-period (use sum in window)
     if 'customers' in df.columns and len(df) > 0:
-        df_sorted = df.sort_values('date' if 'date' in df.columns else df.index.name or 0).reset_index(drop=True)
+        df_sorted = df.sort_values('date').reset_index(drop=True) if 'date' in df.columns else df.reset_index(drop=True)
         cust_col = pd.to_numeric(df_sorted['customers'], errors='coerce')
         valid = cust_col.dropna()
         if len(valid) >= 2:
@@ -455,7 +455,7 @@ def calculate_key_metrics(df: pd.DataFrame) -> Dict[str, float]:
         metrics['revenue_growth'] = ((current_rev - previous_rev) / previous_rev * 100) if previous_rev > 0 else 0
     
     if 'customers' in df.columns and len(df) >= 2:
-        df_s = df.sort_values('date' if 'date' in df.columns else df.index.name or 0).reset_index(drop=True)
+        df_s = df.sort_values('date').reset_index(drop=True) if 'date' in df.columns else df.reset_index(drop=True)
         n = len(df_s)
         half = max(1, n // 2)
         current_customers = df_s['customers'].iloc[-1]
@@ -476,6 +476,9 @@ def compute_kpis(df: pd.DataFrame, window_info: Dict) -> Dict[str, Any]:
         kpis['roas'] = None
         kpis['roas_unavailable'] = True
         kpis['margin_definition'] = MARGIN_DEFINITION_GROSS
+        kpis['cost_missing'] = True
+        kpis['profit_margin'] = None
+        kpis['_provenance'] = {'columns_used': {}, 'assumptions': ['No data'], 'warnings': []}
         return kpis
 
     metrics = calculate_key_metrics(df)
@@ -641,7 +644,7 @@ def calculate_data_confidence(data: pd.DataFrame, kpis: Dict, window_info: Dict)
             if nan_pct > 10:
                 score -= 10
                 reasons.append(f"{col}: {nan_pct:.0f}% missing")
-            elif nan_pct > 10:
+            elif nan_pct > 5:
                 score -= 5
                 reasons.append(f"{col}: {nan_pct:.0f}% missing")
 
