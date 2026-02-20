@@ -329,7 +329,11 @@ def render_csv_upload_section():
                 st.error(f"❌ File too large. Maximum size: {MAX_CSV_MB}MB")
                 return
             uploaded_file.seek(0)
-            df = pd.read_csv(uploaded_file)
+            try:
+                df = pd.read_csv(uploaded_file, encoding='utf-8')
+            except UnicodeDecodeError:
+                uploaded_file.seek(0)
+                df = pd.read_csv(uploaded_file, encoding='latin-1')
             
             # Step 2: Validation
             status_text.text("✅ Validating data...")
@@ -375,26 +379,30 @@ def render_csv_upload_section():
             def _default(canonical):
                 v = auto_map.get(canonical)
                 return v if v and v in df.columns else ''
-            
+
+            def _safe_index(canonical):
+                v = _default(canonical)
+                return opts.index(v) if v and v in opts else 0
+
             col_map1, col_map2 = st.columns(2)
-            
+
             with col_map1:
                 date_col = st.selectbox(
                     "Date Column",
                     options=opts,
-                    index=opts.index(_default('date')) if _default('date') else 0,
+                    index=_safe_index('date'),
                     help="Column containing transaction dates (needed for time-based views)"
                 )
                 revenue_col = st.selectbox(
                     "Revenue Column",
                     options=opts,
-                    index=opts.index(_default('revenue')) if _default('revenue') else 0,
+                    index=_safe_index('revenue'),
                     help="Column containing revenue/sales amounts"
                 )
                 orders_col = st.selectbox(
                     "Orders Column",
                     options=opts,
-                    index=opts.index(_default('orders')) if _default('orders') else 0,
+                    index=_safe_index('orders'),
                     help="Column containing order counts"
                 )
             
@@ -402,13 +410,13 @@ def render_csv_upload_section():
                 customers_col = st.selectbox(
                     "Customers Column",
                     options=opts,
-                    index=opts.index(_default('customers')) if _default('customers') else 0,
+                    index=_safe_index('customers'),
                     help="Column containing customer counts"
                 )
                 cost_col = st.selectbox(
                     "Cost Column",
                     options=opts,
-                    index=opts.index(_default('cost')) if _default('cost') else 0,
+                    index=_safe_index('cost'),
                     help="Column containing cost of goods sold"
                 )
             
@@ -418,21 +426,21 @@ def render_csv_upload_section():
                 channel_col = st.selectbox(
                     "Channel Column",
                     options=opts,
-                    index=opts.index(_default('channel')) if _default('channel') else 0,
+                    index=_safe_index('channel'),
                     help="Sales channel: Online, POS, Wholesale, etc."
                 )
             with col_map4:
                 category_col = st.selectbox(
                     "Product Category Column",
                     options=opts,
-                    index=opts.index(_default('category')) if _default('category') else 0,
+                    index=_safe_index('category'),
                     help="Product category for driver analysis"
                 )
             with col_map5:
                 ad_spend_col = st.selectbox(
                     "Ad/Marketing Spend Column",
                     options=opts,
-                    index=opts.index(_default('marketing_spend')) if _default('marketing_spend') else 0,
+                    index=_safe_index('marketing_spend'),
                     help="Column for ad_spend, marketing_spend, or marketing_cost (for ROAS)"
                 )
             
@@ -530,13 +538,17 @@ def render_csv_upload_section():
                             'columns': len(processed_df.columns),
                             'source': 'csv_upload'
                         })
-                        save_user_data(get_current_user())
+                        try:
+                            save_user_data(get_current_user())
+                        except Exception:
+                            pass  # Don't fail upload if persistence fails
                         st.success(f"✅ Successfully processed {len(processed_df):,} rows!")
                         st.info("💡 Navigate to Dashboard — pages will show what data they need.")
                         st.balloons()
             
         except Exception as e:
             st.error("❌ Error processing file. Check your CSV format and column mapping.")
+            st.caption(f"Error: {str(e)}")
             with st.expander("Technical details"):
                 st.exception(e)
     
