@@ -190,6 +190,56 @@ def render_whatif_page(data=None, kpis=None, format_currency=None, format_percen
         </div>
         """, unsafe_allow_html=True)
     
+    # Save scenario / Send to Goals
+    st.markdown("<h4 style='color:#9ca3af;margin:16px 0 12px 0;'>Save or Use Scenario</h4>", unsafe_allow_html=True)
+    save_col1, save_col2, save_col3, save_col4 = st.columns(4)
+    with save_col1:
+        from utils.pdf_export import generate_whatif_scenario_pdf
+        pdf_bytes = generate_whatif_scenario_pdf(
+            scenarios,
+            {'revenue_growth': revenue_growth, 'churn_rate': churn_rate, 'cac_change': cac_change},
+            st.session_state.get('company_name', 'Your Business')
+        )
+        if pdf_bytes:
+            st.download_button("📄 Save as PDF", data=pdf_bytes, file_name=f"whatif_scenario_{pd.Timestamp.now().strftime('%Y%m%d')}.pdf",
+                               mime="application/pdf", key="whatif_pdf", use_container_width=True)
+        else:
+            st.caption("PDF: install reportlab")
+    with save_col2:
+        if st.button("🎯 Set Best Case as Goal", key="whatif_goal_best", use_container_width=True):
+            from utils import calculate_key_metrics
+            if 'goals' not in st.session_state:
+                metrics = calculate_key_metrics(data) if data is not None and not data.empty else {}
+                st.session_state.goals = {
+                    'revenue': {'target': scenarios['best_case']['revenue'], 'current': base_revenue},
+                    'profit_margin': {'target': 45, 'current': metrics.get('profit_margin', 40)},
+                    'customers': {'target': 3000, 'current': metrics.get('customers', 2000)},
+                    'roas': {'target': 5.0, 'current': metrics.get('roas', 3.5)}
+                }
+            else:
+                st.session_state.goals['revenue']['target'] = scenarios['best_case']['revenue']
+                st.session_state.goals['revenue']['current'] = base_revenue
+            st.session_state.current_page = "Goals"
+            st.rerun()
+    with save_col3:
+        if st.button("📊 Set Expected as Goal", key="whatif_goal_expected", use_container_width=True):
+            from utils import calculate_key_metrics
+            if 'goals' not in st.session_state:
+                metrics = calculate_key_metrics(data) if data is not None and not data.empty else {}
+                st.session_state.goals = {
+                    'revenue': {'target': scenarios['expected']['revenue'], 'current': base_revenue},
+                    'profit_margin': {'target': 45, 'current': metrics.get('profit_margin', 40)},
+                    'customers': {'target': 3000, 'current': metrics.get('customers', 2000)},
+                    'roas': {'target': 5.0, 'current': metrics.get('roas', 3.5)}
+                }
+            else:
+                st.session_state.goals['revenue']['target'] = scenarios['expected']['revenue']
+                st.session_state.goals['revenue']['current'] = base_revenue
+            st.session_state.current_page = "Goals"
+            st.rerun()
+    with save_col4:
+        st.caption("Best/Expected → Goals page")
+    
     st.markdown("<div style='border-top: 1px solid #374151; margin: 32px 0;'></div>", unsafe_allow_html=True)
     
     # Revenue projection chart

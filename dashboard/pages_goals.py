@@ -36,7 +36,7 @@ def render_goals_page(data=None, kpis=None, format_currency=None, format_percent
         goals['revenue']['current'] = data['revenue'].sum()
         if 'profit_margin' in data.columns:
             goals['profit_margin']['current'] = data['profit_margin'].mean()
-        if 'customers' in data.columns:
+        if 'customers' in data.columns and len(data) > 0:
             goals['customers']['current'] = int(data['customers'].iloc[-1])
         if 'roas' in data.columns:
             goals['roas']['current'] = data['roas'].mean()

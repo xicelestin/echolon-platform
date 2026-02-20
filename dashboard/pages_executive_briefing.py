@@ -14,8 +14,23 @@ def compute_cash_flow_metrics(data: pd.DataFrame) -> Dict[str, Any]:
     if data is None or data.empty:
         return {'runway_months': 0, 'monthly_burn': 0, 'monthly_inflow': 0, 'cash_health': 'unknown'}
     
-    # Estimate: revenue = inflow, expenses = revenue * (1 - margin) + marketing
-    monthly_revenue = data['revenue'].sum() / 12 if len(data) >= 30 else data['revenue'].mean() * 30
+    # Use actual date span to compute monthly revenue (not hardcoded 12)
+    total_revenue = data['revenue'].sum()
+    date_range_label = "Last 12 months"
+    if 'date' in data.columns and len(data) >= 7:
+        df = data.copy()
+        df['date'] = pd.to_datetime(df['date'])
+        date_range_days = (df['date'].max() - df['date'].min()).days
+        num_months = max(0.25, date_range_days / 30.44)  # 30.44 = avg days/month
+        monthly_revenue = total_revenue / num_months
+        if num_months >= 11.5:
+            date_range_label = "Last 12 months"
+        elif num_months >= 5.5:
+            date_range_label = f"Last {int(round(num_months))} months"
+        else:
+            date_range_label = f"Last {date_range_days} days"
+    else:
+        monthly_revenue = data['revenue'].mean() * 30 if len(data) > 0 else 0
     monthly_marketing = data['marketing_spend'].mean() * 30 if 'marketing_spend' in data.columns else monthly_revenue * 0.15
     margin = data['profit_margin'].mean() / 100 if 'profit_margin' in data.columns else 0.4
     monthly_profit = monthly_revenue * margin
@@ -46,7 +61,8 @@ def compute_cash_flow_metrics(data: pd.DataFrame) -> Dict[str, Any]:
         'monthly_inflow': monthly_inflow,
         'monthly_profit': monthly_profit,
         'cash_health': cash_health,
-        'cash_reserve_est': cash_reserve
+        'cash_reserve_est': cash_reserve,
+        'date_range_label': date_range_label
     }
 
 
@@ -258,22 +274,32 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
     </div>
     """, unsafe_allow_html=True)
     
-    # === Quick: Money In vs Out (cash flow at a glance) ===
+    # === Money In/Out (primary — larger than Health Score) ===
     inflow = cash_metrics.get('monthly_inflow', 0)
     burn = cash_metrics.get('monthly_burn', 0)
-    outflow = inflow + burn  # expenses = revenue + burn (burn is expenses - revenue)
-    cf_col1, cf_col2, cf_col3 = st.columns(3)
-    with cf_col1:
-        st.metric("💰 Money In", format_currency(inflow), "Avg monthly revenue")
-    with cf_col2:
-        st.metric("💸 Money Out", format_currency(outflow), "Est. expenses")
-    with cf_col3:
-        surplus = inflow - outflow
-        st.metric("📊 Net Cash Flow", format_currency(surplus), "Surplus" if surplus >= 0 else "Deficit")
+    outflow = inflow + burn
+    surplus = inflow - outflow
+    st.markdown(f"""
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;">
+        <div style="background:linear-gradient(135deg,#059669 0%,#047857 100%);padding:1.75rem;border-radius:16px;text-align:center;border:1px solid rgba(52,211,153,0.4);">
+            <p style="color:rgba(255,255,255,0.9);font-size:0.75rem;margin:0 0 8px 0;text-transform:uppercase;">Money In</p>
+            <p style="color:white;font-size:1.75rem;font-weight:700;margin:0;">{format_currency(inflow)}</p>
+            <p style="color:rgba(255,255,255,0.8);font-size:0.8rem;margin:8px 0 0 0;">Avg monthly revenue</p>
+        </div>
+        <div style="background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);padding:1.75rem;border-radius:16px;text-align:center;border:1px solid #374151;">
+            <p style="color:#94a3b8;font-size:0.75rem;margin:0 0 8px 0;text-transform:uppercase;">Money Out</p>
+            <p style="color:white;font-size:1.75rem;font-weight:700;margin:0;">{format_currency(outflow)}</p>
+            <p style="color:#64748b;font-size:0.8rem;margin:8px 0 0 0;">Est. expenses</p>
+        </div>
+        <div style="background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);padding:1.75rem;border-radius:16px;text-align:center;border:1px solid #374151;">
+            <p style="color:#94a3b8;font-size:0.75rem;margin:0 0 8px 0;text-transform:uppercase;">Net Cash Flow</p>
+            <p style="color:white;font-size:1.75rem;font-weight:700;margin:0;">{format_currency(surplus)}</p>
+            <p style="color:#64748b;font-size:0.8rem;margin:8px 0 0 0;">{"Surplus" if surplus >= 0 else "Deficit"}</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
-    st.markdown("<div style='margin: 2rem 0;'></div>", unsafe_allow_html=True)
-    
-    # === HERO: Health Score + Cash Flow ===
+    # === Health Score (secondary) ===
     col1, col2, col3 = st.columns([1, 1, 1])
     runway = cash_metrics.get('runway_months', 12)
     health_emoji = {'healthy': '🟢', 'moderate': '🟡', 'caution': '🟠', 'critical': '🔴'}.get(cash_metrics.get('cash_health', 'moderate'), '🟡')
@@ -302,7 +328,7 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
         <div style="text-align:center;padding:28px 24px;background:#1f2937;border-radius:16px;border:1px solid #374151;box-shadow:0 4px 6px -1px rgba(0,0,0,0.2);">
             <h2 style="color:white;margin:0;font-size:1.75rem;font-weight:700;">{format_currency(monthly_rev)}</h2>
             <p style="color:#9ca3af;margin:8px 0 0 0;">Avg Monthly Revenue</p>
-            <p style="color:#6b7280;font-size:0.75rem;margin-top:6px;">Last 12 months</p>
+            <p style="color:#6b7280;font-size:0.75rem;margin-top:6px;">{cash_metrics.get('date_range_label', 'Last 12 months')}</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -358,15 +384,23 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
             for d in change_explanation.get('drivers', [])[:4]:
                 st.markdown(f"- {d['explanation']}")
     
-    # === Top Opportunities (with "why") ===
+    # === Top Opportunities (with "why" and contextual links) ===
+    OPP_TO_PAGE = {'Scale': 'Analytics', 'Address': 'Insights', 'Plan for': 'Predictions', 'Improve Margin': 'Margin Analysis',
+                   'Improve Profit': 'Margin Analysis', 'Optimize': 'Analytics', 'Focus on': 'Analytics',
+                   'Accelerate Revenue': 'Predictions', 'Reverse Revenue': 'Insights', 'Optimize Marketing': 'Analytics'}
     st.subheader("🎯 Top Opportunities")
-    for opp in opportunities:
+    for i, opp in enumerate(opportunities):
         with st.container(border=True):
             col_l, col_r = st.columns([4, 1])
             with col_l:
                 st.markdown(f"**{opp['title']}**")
                 st.caption(f"**Why:** {opp['impact']}")
                 st.markdown(f"*→ {opp['action']}*")
+                link_page = next((p for k, p in OPP_TO_PAGE.items() if opp['title'].startswith(k)), None)
+                if link_page:
+                    if st.button(f"→ Go to {link_page}", key=f"opp_link_{i}_{link_page}"):
+                        st.session_state.current_page = link_page
+                        st.rerun()
             with col_r:
                 st.metric("Priority", opp['priority'].title(), "")
     

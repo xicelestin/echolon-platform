@@ -5,21 +5,25 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
+from utils import calculate_ltv
 
 def render_customer_ltv_page(data, kpis, format_currency, format_percentage, format_number):
     """Render Customer LTV Analysis Page"""
     st.title("💵 Customer Lifetime Value Analysis")
     st.markdown("### CLV Segmentation, Churn Prediction & Retention Strategy ($250K+ Retention Opportunity)")
     
-    # Calculate CLV metrics
+    if data is None or data.empty:
+        st.warning("⚠️ No data available. Please upload data to view LTV analysis.")
+        return
+    
+    # Calculate CLV metrics - use single source of truth (24 months default)
     total_revenue = data['revenue'].sum() if 'revenue' in data.columns else 0
     total_customers = data['customers'].sum() if 'customers' in data.columns else 1
     avg_order_value = total_revenue / data['orders'].sum() if 'orders' in data.columns and data['orders'].sum() > 0 else 0
     purchase_frequency = data['orders'].sum() / total_customers if total_customers > 0 else 0
     
-    # Simplified CLV = AOV × Purchase Frequency × Average Customer Lifespan (assume 3 years)
-    customer_lifespan = 3
-    clv = avg_order_value * purchase_frequency * 12 * customer_lifespan
+    clv = calculate_ltv(data, lifespan_months=24)
+    customer_lifespan = 2  # years (24 months)
     
     # Customer Acquisition Cost
     cac = data['marketing_spend'].sum() / total_customers if 'marketing_spend' in data.columns and total_customers > 0 else 0
@@ -182,17 +186,17 @@ def render_customer_ltv_page(data, kpis, format_currency, format_percentage, for
         st.metric("Years Active", f"{customer_lifespan}")
         st.progress(customer_lifespan / 5)
     
-    # CLV improvement scenarios
+    # CLV improvement scenarios (based on standardized clv)
     st.markdown("---")
     st.subheader("📈 CLV Improvement Scenarios")
     
     scenarios = pd.DataFrame({
         'Scenario': ['Increase AOV by 15%', 'Increase Frequency by 20%', 'Extend Lifespan by 1 year', 'Combined Strategy'],
         'New CLV': [
-            avg_order_value * 1.15 * purchase_frequency * 12 * customer_lifespan,
-            avg_order_value * purchase_frequency * 1.20 * 12 * customer_lifespan,
-            avg_order_value * purchase_frequency * 12 * (customer_lifespan + 1),
-            avg_order_value * 1.15 * purchase_frequency * 1.20 * 12 * (customer_lifespan + 1)
+            clv * 1.15,
+            clv * 1.20,
+            clv * (24 + 12) / 24,  # +1 year = 36/24
+            clv * 1.15 * 1.20 * (24 + 12) / 24
         ]
     })
     

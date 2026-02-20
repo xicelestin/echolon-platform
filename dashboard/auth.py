@@ -83,7 +83,8 @@ def render_landing_page():
     """Render landing page with value prop, features, and pricing."""
     st.markdown("""
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <div style="font-family:'DM Sans',sans-serif;text-align:center;padding:4.5rem 2.5rem;background:linear-gradient(135deg,#0f172a 0%,#1e293b 40%,#0f172a 100%);border-radius:24px;margin-bottom:2.5rem;border:1px solid rgba(16,185,129,0.25);box-shadow:0 25px 50px -12px rgba(0,0,0,0.4);position:relative;overflow:hidden;">
+    <style>@media (max-width:768px){.echolon-hero{padding:2rem 1.25rem!important;}}</style>
+    <div class="echolon-hero" style="font-family:'DM Sans',sans-serif;text-align:center;padding:4.5rem 2.5rem;background:linear-gradient(135deg,#0f172a 0%,#1e293b 40%,#0f172a 100%);border-radius:24px;margin-bottom:2.5rem;border:1px solid rgba(16,185,129,0.25);box-shadow:0 25px 50px -12px rgba(0,0,0,0.4);position:relative;overflow:hidden;">
         <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(16,185,129,0.5),transparent);opacity:0.8;"></div>
         <h1 style="font-size:3rem;font-weight:700;color:white;margin:0 0 0.75rem 0;letter-spacing:-0.03em;">Echolon AI</h1>
         <p style="font-size:1.35rem;color:#34d399;margin:0 0 1.5rem 0;font-weight:500;">Business intelligence that tells you what to do next</p>

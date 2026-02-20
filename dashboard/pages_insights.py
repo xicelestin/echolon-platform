@@ -51,7 +51,7 @@ def render_insights_page(data=None, kpis=None, format_currency=None, format_perc
     metrics = calculate_key_metrics(data)
     total_revenue = data['revenue'].sum() if 'revenue' in data.columns else 0
     total_orders = data['orders'].sum() if 'orders' in data.columns else 0
-    active_customers = int(data['customers'].iloc[-1]) if 'customers' in data.columns else int(total_orders * 0.5)
+    active_customers = int(data['customers'].iloc[-1]) if 'customers' in data.columns and len(data) > 0 else int(total_orders * 0.5)
     avg_order_value = (total_revenue / total_orders) if total_orders > 0 else 50
     ltv = metrics.get('ltv', avg_order_value * 12)
     cac = metrics.get('cac', 45)
@@ -105,8 +105,8 @@ def render_insights_page(data=None, kpis=None, format_currency=None, format_perc
         cust_delta = '—'
         cust_delta_color = '#9CA3AF'
         if 'customers' in data.columns and len(data) >= 60:
-            curr_cust = data.tail(30)['customers'].iloc[-1] if 'customers' in data.columns else 0
-            prev_cust = data.iloc[-60:-30]['customers'].iloc[-1] if len(data) >= 60 else curr_cust
+            curr_cust = int(data.tail(30)['customers'].iloc[-1])
+            prev_cust = int(data.iloc[-60:-30]['customers'].iloc[-1])
             if prev_cust > 0:
                 cust_pct = ((curr_cust - prev_cust) / prev_cust) * 100
                 cust_delta = f"{'↑' if cust_pct >= 0 else '↓'} {abs(cust_pct):.1f}%"

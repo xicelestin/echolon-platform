@@ -105,8 +105,20 @@ try:
             data['profit'] = data['revenue'] * 0.4
         if 'profit_margin' not in data.columns:
             data['profit_margin'] = 40.0
-        if 'roas' not in data.columns and 'marketing_spend' in data.columns:
-            data['roas'] = (data['revenue'] / data['marketing_spend']).clip(1, 10)
+        # ROAS: prioritize revenue/marketing_spend as source of truth when both exist
+        mkt_col = 'marketing_spend' if 'marketing_spend' in data.columns else (
+            'ad_spend' if 'ad_spend' in data.columns else (
+            'marketing_cost' if 'marketing_cost' in data.columns else None))
+        if 'revenue' in data.columns and mkt_col:
+            total_mkt = float(data[mkt_col].sum())
+            if total_mkt > 0:
+                period_roas = data['revenue'].sum() / total_mkt
+                data['roas'] = (data['revenue'] / data[mkt_col]).where(data[mkt_col] > 0)
+                data['roas'] = data['roas'].fillna(period_roas).clip(0.5, 50)
+                if mkt_col != 'marketing_spend':
+                    data['marketing_spend'] = data[mkt_col]
+            elif 'roas' not in data.columns:
+                data['roas'] = 3.0
         elif 'roas' not in data.columns:
             data['roas'] = 3.0
         if 'avg_order_value' not in data.columns and 'orders' in data.columns:
@@ -187,6 +199,11 @@ st.markdown("""
     
     hr { margin: 2rem 0 !important; border: none; border-top: 1px solid rgba(148, 163, 184, 0.15) !important; }
     
+    /* Metric labels - prevent truncation on laptop */
+    [data-testid="stMetric"] label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    @media (max-width: 1024px) {
+        [data-testid="stMetric"] label { font-size: 0.65rem !important; }
+    }
     @media (max-width: 768px) {
         .block-container { padding: 1rem !important; }
         .stMetric { min-width: 120px; }
@@ -194,11 +211,27 @@ st.markdown("""
         .stColumns > div { flex: 1 1 100% !important; min-width: 100% !important; }
         .stButton > button { min-height: 44px; padding: 12px 20px; font-size: 1rem; }
         [data-testid="stMetric"] { padding: 1rem !important; }
+        [data-testid="stMetric"] label { font-size: 0.6rem !important; }
         h1 { font-size: 1.5rem !important; }
         h2 { font-size: 1.25rem !important; }
     }
+    /* Live Data badge - top right, high contrast */
+    .echolon-live-badge {
+        position: fixed; top: 12px; right: 20px; z-index: 999;
+        padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.08em;
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+    }
+    .echolon-live-badge.live { background: linear-gradient(135deg, #10B981, #059669); color: white; }
+    .echolon-live-badge.demo { background: linear-gradient(135deg, #64748b, #475569); color: #e2e8f0; }
 </style>
 """, unsafe_allow_html=True)
+
+# Live Data badge - top right, high contrast
+_has_live = bool(st.session_state.get('connected_sources'))
+_badge_class = "live" if _has_live else "demo"
+_badge_text = "🟢 Live Data" if _has_live else "📊 Demo Data"
+st.markdown(f'<div class="echolon-live-badge {_badge_class}">{_badge_text}</div>', unsafe_allow_html=True)
 
 with st.sidebar:
     st.title("Echolon AI")
@@ -251,7 +284,7 @@ with st.sidebar:
     tier = get_user_tier()
     st.caption("Main")
     st.markdown("<div style='margin-bottom: 0.5rem;'></div>", unsafe_allow_html=True)
-    main_pages = ["Executive Briefing", "Dashboard", "Analytics", "Insights", "Predictions", "Recommendations", "Goals", "Data Sources"]
+    main_pages = ["Executive Briefing", "Dashboard", "Analytics", "Insights", "What-If", "Predictions", "Recommendations", "Goals", "Inventory Optimization", "Cohort Analysis", "Data Sources"]
     for p in main_pages:
         if can_access_page(p, tier):
             if st.button(p, use_container_width=True, key=f"main_{p}"):
@@ -262,8 +295,8 @@ with st.sidebar:
     if st.button("💳 Billing", use_container_width=True, key="main_billing"):
         st.session_state.current_page = "Billing"
         st.rerun()
-    more_pages = ["What-If", "Customer Insights", "Inventory & Demand", "Anomalies & Alerts", "Inventory Optimization", "Margin Analysis", "Smart Alerts", "Cohort Analysis", "Customer LTV", "Revenue Attribution", "Competitive Benchmark"]
-    with st.expander("More pages"):
+    more_pages = ["Customer Insights", "Inventory & Demand", "Anomalies & Alerts", "Margin Analysis", "Smart Alerts", "Customer LTV", "Revenue Attribution", "Competitive Benchmark"]
+    with st.expander("More pages", expanded=True):
         for p in more_pages:
             if can_access_page(p, tier):
                 if st.button(p, use_container_width=True, key=f"nav_{p}"):
@@ -342,16 +375,23 @@ try:
             st.stop()
         st.title("Dashboard")
 
-        # Data source banner
+        # Data source banner with Sync Now
         has_live = bool(st.session_state.get('connected_sources'))
         banner = "🟢 Live Data" if has_live else "📊 Demo Data"
         last_date = pd.to_datetime(data['date']).max().strftime('%Y-%m-%d') if 'date' in data.columns else 'N/A'
-        from utils.sync_utils import get_most_recent_sync, format_last_sync_ago
+        from utils.sync_utils import get_most_recent_sync, format_last_sync_ago, get_syncable_sources, sync_source_quiet
         sync_line = ""
         if has_live:
             recent = get_most_recent_sync()
             sync_line = f" | Last synced: {format_last_sync_ago(recent) if recent else 'Never'}"
-        st.info(f"{banner} | Last updated: {last_date}{sync_line}")
+        banner_col1, banner_col2 = st.columns([4, 1])
+        with banner_col1:
+            st.info(f"{banner} | Last updated: {last_date}{sync_line}")
+        with banner_col2:
+            if has_live and st.button("🔄 Sync Now", key="dashboard_sync_now"):
+                for sk in get_syncable_sources():
+                    sync_source_quiet(sk)
+                st.rerun()
         
         # vs Industry benchmark
         from utils.industry_utils import get_industry_benchmarks

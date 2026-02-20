@@ -49,6 +49,16 @@ def get_sources_needing_sync() -> List[str]:
     return needing
 
 
+def get_syncable_sources() -> List[str]:
+    """Return all connected sources that can be synced (have credentials). For manual Sync Now."""
+    connected = st.session_state.get("connected_sources", {})
+    syncable = []
+    for source_key in connected:
+        if source_key == "stripe" and st.session_state.get("api_keys", {}).get("stripe"):
+            syncable.append(source_key)
+    return syncable
+
+
 def sync_source_quiet(source_key: str) -> bool:
     """
     Sync a source without UI feedback or rerun. Returns True if successful.

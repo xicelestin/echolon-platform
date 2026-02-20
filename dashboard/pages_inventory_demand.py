@@ -22,7 +22,7 @@ def render_inventory_demand_page(data, kpis, format_currency, format_percentage,
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        if 'inventory_units' in data.columns:
+        if 'inventory_units' in data.columns and len(data) > 0:
             current_stock = data['inventory_units'].iloc[-1]
             st.metric("Current Stock", f"{format_number(current_stock)} units")
         else:
@@ -37,14 +37,18 @@ def render_inventory_demand_page(data, kpis, format_currency, format_percentage,
     
     with col3:
         if 'orders' in data.columns:
-            avg_daily_demand = data['orders'].mean()
-            st.metric("Avg Daily Demand", f"{format_number(avg_daily_demand)} orders")
+            recent_30 = data['orders'].tail(30)
+            avg_daily_demand_recent = recent_30.mean() if len(recent_30) > 0 else data['orders'].mean()
+            st.metric("Avg Daily Demand", f"{format_number(avg_daily_demand_recent)} orders")
         else:
             st.metric("Avg Daily Demand", "N/A")
     
     with col4:
-        if 'inventory_units' in data.columns and 'orders' in data.columns:
-            days_coverage = current_stock / avg_daily_demand if avg_daily_demand > 0 else 0
+        if 'inventory_units' in data.columns and 'orders' in data.columns and len(data) > 0:
+            _stock = data['inventory_units'].iloc[-1]
+            recent_orders = data['orders'].tail(30)
+            _demand = recent_orders.mean() if len(recent_orders) > 0 else data['orders'].mean()
+            days_coverage = _stock / _demand if _demand > 0 else 0
             st.metric("Days of Stock", f"{days_coverage:.1f} days")
         else:
             st.metric("Days of Stock", "N/A")
@@ -79,18 +83,28 @@ def render_inventory_demand_page(data, kpis, format_currency, format_percentage,
     # Demand Forecasting
     st.subheader("🔮 Demand Forecast (Next 30 Days)")
     
-    if 'orders' in data.columns and 'date' in data.columns:
-        # Simple linear forecast
-        recent_orders = data['orders'].tail(30)
-        avg_demand = recent_orders.mean()
-        trend = (recent_orders.iloc[-1] - recent_orders.iloc[0]) / 30
+    if 'orders' in data.columns and 'date' in data.columns and len(data) > 0:
+        # 7-day moving average to dampen outliers (Black Friday, wholesale spikes)
+        recent = data['orders'].tail(60).copy()
+        if len(recent) >= 7:
+            ma7 = recent.rolling(window=7, min_periods=1).mean()
+            baseline = float(ma7.iloc[-1])
+        else:
+            baseline = float(recent.mean()) if len(recent) > 0 else 0
+        # Light exponential smoothing for trend (alpha=0.2) - dampens noise
+        if len(recent) >= 2:
+            smoothed = recent.ewm(alpha=0.2, adjust=False).mean()
+            trend = float(smoothed.iloc[-1] - smoothed.iloc[-2]) if len(smoothed) >= 2 else 0
+        else:
+            trend = 0
         
-        # Forecast next 30 days
+        # Forecast next 30 days - flat baseline + gentle trend (outlier-resistant, human-realistic)
         forecast_days = 30
-        last_date = data['date'].max()
+        last_date = pd.to_datetime(data['date']).max()
         forecast_dates = pd.date_range(start=last_date + timedelta(days=1),
                                       periods=forecast_days, freq='D')
-        forecast_values = [avg_demand + (trend * i) for i in range(forecast_days)]
+        # Flat forecast from 7-day MA (outlier-resistant); optional gentle trend
+        forecast_values = [max(0, baseline + trend * min(i / 14, 1)) for i in range(forecast_days)]
         
         forecast_df = pd.DataFrame({
             'date': forecast_dates,
@@ -117,7 +131,7 @@ def render_inventory_demand_page(data, kpis, format_currency, format_percentage,
             avg_forecast = np.mean(forecast_values)
             st.metric("Avg Daily Forecast", f"{format_number(avg_forecast)} orders/day")
         with col3:
-            trend_pct = (trend / avg_demand * 100) if avg_demand > 0 else 0
+            trend_pct = (trend / baseline * 100) if baseline > 0 else 0
             st.metric("Demand Trend", f"{trend_pct:+.1f}%")
     else:
         st.info("ℹ️ Upload data with 'orders' column to see demand forecast.")
@@ -127,11 +141,13 @@ def render_inventory_demand_page(data, kpis, format_currency, format_percentage,
     # Stock Recommendations
     st.subheader("🎯 Restocking Recommendations")
     
-    if 'inventory_units' in data.columns and 'orders' in data.columns:
+    if 'inventory_units' in data.columns and 'orders' in data.columns and len(data) > 0:
         recommendations = []
         
         current_stock = data['inventory_units'].iloc[-1]
-        avg_daily_demand = data['orders'].mean()
+        avg_inventory = data['inventory_units'].mean()
+        recent_demand = data['orders'].tail(30).mean()
+        avg_daily_demand = recent_demand if recent_demand > 0 else data['orders'].mean()
         reorder_point = avg_inventory * 0.6
         optimal_stock = avg_inventory * 1.2
         

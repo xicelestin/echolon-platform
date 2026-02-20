@@ -128,7 +128,7 @@ def render_anomalies_alerts_page(data, kpis, format_currency, format_percentage,
             })
     
     # Inventory alerts
-    if 'inventory_units' in data.columns:
+    if 'inventory_units' in data.columns and len(data) > 0:
         current_stock = data['inventory_units'].iloc[-1]
         avg_stock = data['inventory_units'].mean()
         

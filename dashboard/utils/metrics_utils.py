@@ -204,6 +204,49 @@ def calculate_business_health_score(metrics: Dict[str, float], weights: Optional
     }
 
 
+def calculate_ltv(df: pd.DataFrame, lifespan_months: float = 24.0) -> float:
+    """
+    Single source of truth for Lifetime Value. Uses revenue per customer normalized by period length.
+    LTV = (total_revenue / avg_customers) * (lifespan_months / period_months)
+    
+    Args:
+        df: DataFrame with revenue, customers (and optionally date for period normalization)
+        lifespan_months: Assumed customer lifespan in months (default 24 = 2 years)
+        
+    Returns:
+        LTV in dollars, or 0 if data insufficient
+    """
+    if df is None or df.empty:
+        return 0.0
+    if 'revenue' not in df.columns:
+        return 0.0
+    total_revenue = df['revenue'].sum()
+    if total_revenue <= 0:
+        return 0.0
+    # Avg customers: use mean over period (handles daily data)
+    if 'customers' in df.columns:
+        cust_mean = df['customers'].replace(0, np.nan).mean()
+        if pd.isna(cust_mean) or cust_mean <= 0:
+            cust_mean = df['customers'].iloc[-1] if len(df) > 0 else 0
+    else:
+        cust_mean = 0
+    if cust_mean <= 0:
+        # Fallback: AOV * 12 months if we have orders
+        if 'orders' in df.columns and df['orders'].sum() > 0:
+            aov = total_revenue / df['orders'].sum()
+            return float(aov * 12)  # Conservative: 12 months of single-order value
+        return 0.0
+    revenue_per_customer = total_revenue / cust_mean
+    # Period length in months (for normalization)
+    if 'date' in df.columns and len(df) >= 2:
+        df_dates = pd.to_datetime(df['date'])
+        period_days = (df_dates.max() - df_dates.min()).days
+        period_months = max(0.25, period_days / 30.44)
+    else:
+        period_months = 12.0  # Assume annual if no date
+    return float(revenue_per_customer * (lifespan_months / period_months))
+
+
 def calculate_key_metrics(df: pd.DataFrame) -> Dict[str, float]:
     """
     Calculate key business metrics (CAC, LTV, Churn, etc.).
@@ -222,16 +265,26 @@ def calculate_key_metrics(df: pd.DataFrame) -> Dict[str, float]:
         metrics['avg_daily_revenue'] = df['revenue'].mean()
     
     # Customer metrics
-    if 'customers' in df.columns:
-        metrics['total_customers'] = df['customers'].iloc[-1] if len(df) > 0 else 0
+    if 'customers' in df.columns and len(df) > 0:
+        df_sorted = df.sort_values('date' if 'date' in df.columns else df.index.name or 0).reset_index(drop=True)
+        metrics['total_customers'] = df_sorted['customers'].iloc[-1]
         
-        # Simple churn calculation (if we have customer change data)
-        if len(df) > 30:
-            start_customers = df['customers'].iloc[-31]
-            end_customers = df['customers'].iloc[-1]
-            new_customers = df['new_customers'].sum() if 'new_customers' in df.columns else 0
-            churned = start_customers + new_customers - end_customers
-            metrics['churn_rate'] = (churned / start_customers * 100) if start_customers > 0 else 0
+        # Churn: adapt to data granularity (daily vs weekly vs monthly)
+        if 'date' in df.columns and len(df_sorted) >= 2:
+            df_sorted['date'] = pd.to_datetime(df_sorted['date'])
+            days_span = (df_sorted['date'].max() - df_sorted['date'].min()).days
+            # Need at least ~30 days of history for meaningful churn
+            if days_span >= 20:
+                # Use first third vs last third to handle non-daily data
+                n = len(df_sorted)
+                first_part = df_sorted.iloc[: max(1, n // 3)]
+                last_part = df_sorted.iloc[-max(1, n // 3):]
+                start_cust = first_part['customers'].mean()
+                end_cust = last_part['customers'].mean()
+                new_cust = df_sorted['new_customers'].sum() if 'new_customers' in df_sorted.columns else 0
+                if start_cust > 0:
+                    churned = max(0, start_cust + new_cust - end_cust) if new_cust > 0 else max(0, start_cust - end_cust)
+                    metrics['churn_rate'] = (churned / start_cust * 100)
     
     # CAC calculation
     if 'marketing_spend' in df.columns and 'new_customers' in df.columns:
@@ -239,11 +292,8 @@ def calculate_key_metrics(df: pd.DataFrame) -> Dict[str, float]:
         total_new_customers = df['new_customers'].sum()
         metrics['cac'] = total_marketing / total_new_customers if total_new_customers > 0 else 0
     
-    # LTV calculation (simplified)
-    if 'revenue' in df.columns and 'customers' in df.columns:
-        avg_revenue_per_customer = df['revenue'].sum() / df['customers'].mean() if df['customers'].mean() > 0 else 0
-        avg_lifespan_months = 24  # Assumption
-        metrics['ltv'] = avg_revenue_per_customer * avg_lifespan_months
+    # LTV - single source of truth
+    metrics['ltv'] = calculate_ltv(df)
     
     # DSO (Days Sales Outstanding)
     if 'accounts_receivable' in df.columns and 'revenue' in df.columns:
@@ -257,16 +307,21 @@ def calculate_key_metrics(df: pd.DataFrame) -> Dict[str, float]:
         total_cost = df['cost'].sum()
         metrics['profit_margin'] = ((total_revenue - total_cost) / total_revenue * 100) if total_revenue > 0 else 0
     
-    # Growth rates
-    if 'revenue' in df.columns and len(df) > 30:
-        current_30d = df['revenue'].tail(30).sum()
-        previous_30d = df['revenue'].iloc[-60:-30].sum()
-        metrics['revenue_growth'] = ((current_30d - previous_30d) / previous_30d * 100) if previous_30d > 0 else 0
+    # Growth rates - adapt to data length (works for sparse/non-daily data)
+    if 'revenue' in df.columns and len(df) >= 4:
+        n = len(df)
+        half = max(1, n // 2)
+        current_rev = df['revenue'].tail(half).sum()
+        previous_rev = df['revenue'].iloc[:half].sum()
+        metrics['revenue_growth'] = ((current_rev - previous_rev) / previous_rev * 100) if previous_rev > 0 else 0
     
-    if 'customers' in df.columns and len(df) > 30:
-        current_customers = df['customers'].iloc[-1]
-        month_ago_customers = df['customers'].iloc[-31]
-        metrics['customer_growth'] = ((current_customers - month_ago_customers) / month_ago_customers * 100) if month_ago_customers > 0 else 0
+    if 'customers' in df.columns and len(df) >= 2:
+        df_s = df.sort_values('date' if 'date' in df.columns else df.index.name or 0).reset_index(drop=True)
+        n = len(df_s)
+        half = max(1, n // 2)
+        current_customers = df_s['customers'].iloc[-1]
+        period_ago_customers = df_s['customers'].iloc[max(0, half - 1)]
+        metrics['customer_growth'] = ((current_customers - period_ago_customers) / period_ago_customers * 100) if period_ago_customers > 0 else 0
     
     return metrics
 

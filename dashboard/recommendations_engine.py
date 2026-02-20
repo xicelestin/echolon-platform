@@ -23,7 +23,7 @@ def compute_business_metrics(data: pd.DataFrame) -> Dict[str, float]:
     if 'marketing_spend' in data.columns:
         metrics['marketing_spend'] = data['marketing_spend'].sum()
     if 'customers' in data.columns:
-        metrics['total_customers'] = data['customers'].iloc[-1] if len(data) > 0 else 0
+        metrics['total_customers'] = data['customers'].iloc[-1] if 'customers' in data.columns and len(data) > 0 else 0
     
     return metrics
 

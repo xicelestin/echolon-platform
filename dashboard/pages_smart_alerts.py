@@ -21,7 +21,7 @@ def render_smart_alerts_page(data, kpis, format_currency, format_percentage, for
     avg_revenue = data['revenue'].mean() if 'revenue' in data.columns else 0
     
     # Inventory metrics
-    if 'inventory_units' in data.columns:
+    if 'inventory_units' in data.columns and len(data) > 0:
         avg_inventory = data['inventory_units'].mean()
         current_inventory = data['inventory_units'].iloc[-1]
         max_inventory = data['inventory_units'].max()

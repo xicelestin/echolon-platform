@@ -58,7 +58,7 @@ def detect_seasonality(data: pd.DataFrame) -> List[Dict[str, Any]]:
                     'period': month,
                     'revenue': rev,
                     'avg_revenue': avg,
-                    'multiplier': round(mult, 1),
+                    'multiplier': round(mult, 2),
                     'direction': 'above',
                     'message': f"{month} is {mult:.1f}x your average month ({_fmt_cur(rev)} vs {_fmt_cur(avg)} avg)",
                 })
@@ -67,7 +67,7 @@ def detect_seasonality(data: pd.DataFrame) -> List[Dict[str, Any]]:
                     'period': month,
                     'revenue': rev,
                     'avg_revenue': avg,
-                    'multiplier': round(mult, 1),
+                    'multiplier': round(mult, 2),
                     'direction': 'below',
                     'message': f"{month} is {mult:.1f}x your average ({_fmt_cur(rev)} vs {_fmt_cur(avg)} avg)",
                 })
@@ -82,20 +82,21 @@ def detect_dimension_shifts(
     dimension_label: str,
 ) -> List[Dict[str, Any]]:
     """
-    Compare any dimension's performance: current vs prior period.
-    Works for channel, category, product, region, or any breakdown column.
+    Compare any dimension's performance: H2 vs H1 (second half vs first half of date range).
+    Uses half-periods to reduce noise and correctly capture growth trends.
     Returns list with segment_name (actual value from data), change_pct, share_now, etc.
     """
     shifts = []
-    if data is None or len(data) < 60 or dimension_col not in data.columns or 'revenue' not in data.columns:
+    if data is None or len(data) < 30 or dimension_col not in data.columns or 'revenue' not in data.columns:
         return shifts
 
     try:
         df = data.copy()
         df['date'] = pd.to_datetime(df['date'])
-        cutoff = df['date'].max() - timedelta(days=30)
-        curr = df[df['date'] >= cutoff]
-        prev = df[(df['date'] >= cutoff - timedelta(days=30)) & (df['date'] < cutoff)]
+        df = df.sort_values('date')
+        mid_date = df['date'].min() + (df['date'].max() - df['date'].min()) / 2
+        curr = df[df['date'] >= mid_date]  # H2 / recent half
+        prev = df[df['date'] < mid_date]   # H1 / prior half
 
         curr_grp = curr.groupby(dimension_col)['revenue'].sum()
         prev_grp = prev.groupby(dimension_col)['revenue'].sum()
@@ -116,7 +117,7 @@ def detect_dimension_shifts(
                     'prev_rev': p_val,
                     'change_pct': round(pct, 1),
                     'share_now': round(share, 1),
-                    'message': f"{seg}: {pct:+.1f}% vs prior 30 days, now {share:.0f}% of revenue",
+                    'message': f"{seg}: {pct:+.1f}% vs prior half of period, now {share:.0f}% of revenue",
                 })
             else:
                 shifts.append({
