@@ -211,6 +211,7 @@ For detailed analysis, please visit the Insights page in the Echolon platform.
     
     with col_right:
         # Use dimension breakdown when available (channel, sales_channel, category, etc.)
+        mapping = detect_and_map_columns(data) if data is not None else {}
         dim_col = mapping.get('channel') or mapping.get('category') or ('channel' if 'channel' in data.columns else ('category' if 'category' in data.columns else None))
         if dim_col and dim_col in data.columns and 'revenue' in data.columns:
             label = 'Channel' if dim_col in ('channel', 'sales_channel', 'source', 'platform') else 'Category'
@@ -253,7 +254,7 @@ For detailed analysis, please visit the Insights page in the Echolon platform.
     st.plotly_chart(fig_regional, use_container_width=True)
 
     # Dimension performance: current vs prior period (when channel/category exists)
-    dim_col = mapping.get('channel') or mapping.get('category') or ('channel' if 'channel' in data.columns else ('category' if 'category' in data.columns else None))
+    dim_col = dim_col  # reuse from above
     if dim_col and dim_col in data.columns and 'revenue' in data.columns and len(data) >= 60:
         label = 'Channel' if dim_col in ('channel', 'sales_channel', 'source', 'platform') else 'Category'
         st.markdown(f"""<div style='margin:24px 0 16px 0;'><h4 style='font-size:16px;font-weight:600;'>{label} Performance: Current vs Prior 30 Days</h4></div>""", unsafe_allow_html=True)

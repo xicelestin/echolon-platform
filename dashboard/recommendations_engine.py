@@ -5,6 +5,14 @@ from typing import Dict, List, Any, Optional
 from utils import calculate_key_metrics
 from utils.data_patterns import analyze_data_patterns
 
+# Lazy import to avoid circular deps with streamlit
+def _log_trigger(**kwargs):
+    try:
+        from utils.recommendation_log import log_recommendation_trigger
+        log_recommendation_trigger(**kwargs)
+    except Exception:
+        pass
+
 
 def compute_business_metrics(data: pd.DataFrame) -> Dict[str, float]:
     """Compute all metrics needed for recommendations."""
@@ -28,22 +36,39 @@ def compute_business_metrics(data: pd.DataFrame) -> Dict[str, float]:
     return metrics
 
 
-def generate_data_driven_recommendations(data: pd.DataFrame, industry: str = 'ecommerce') -> List[Dict[str, Any]]:
+def generate_data_driven_recommendations(
+    data: pd.DataFrame,
+    industry: str = 'ecommerce',
+    kpis: Optional[Dict] = None,
+    data_confidence: Optional[Dict] = None,
+    window_label: str = "Last 90 Days",
+) -> List[Dict[str, Any]]:
     """
     Generate personalized recommendations from actual business data.
     Uses patterns (channels, products, categories) when available for specific steps.
+    Gates advice: no ROAS advice when roas_unavailable; no advice when data_confidence is Low.
     Returns list of recommendation dicts with title, impact, why, steps, confidence, category.
     """
+    kpis = kpis or {}
+    data_confidence = data_confidence or {}
     metrics = compute_business_metrics(data)
     pattern_result = analyze_data_patterns(data)
     patterns = pattern_result.get('patterns', {}) if pattern_result.get('has_data') else {}
-    
+
+    # Safety: suppress all advice when data confidence is Low
+    conf_level = data_confidence.get('level', 'High')
+    if conf_level == 'Low':
+        return []
+
     recs = []
-    
+
     total_revenue = metrics.get('total_revenue', 0)
     rev_growth = metrics.get('revenue_growth', 0)
     margin = metrics.get('avg_profit_margin', 40)
-    roas = metrics.get('roas', 3)
+    roas_unavailable = kpis.get('roas_unavailable', True)
+    roas = metrics.get('roas') if not roas_unavailable else None
+    if roas is None and not roas_unavailable:
+        roas = kpis.get('roas')
     aov = metrics.get('avg_order_value', 50)
     cust_count = metrics.get('total_customers', 1000)
     churn = metrics.get('churn_rate', 5)
@@ -58,7 +83,7 @@ def generate_data_driven_recommendations(data: pd.DataFrame, industry: str = 'ec
     top_categories = [c['category'] for c in patterns.get('top_categories', [])][:3]
     low_margin = patterns.get('low_margin_winners', [])
     
-    # Revenue recommendations
+    # Revenue recommendations (no ROAS mention when roas_unavailable)
     if rev_growth < 15 and rev_growth >= 0:
         est_impact = total_revenue * 0.08  # 8% uplift potential
         if top_channels:
@@ -70,20 +95,34 @@ def generate_data_driven_recommendations(data: pd.DataFrame, industry: str = 'ec
             ]
         else:
             steps = [
-                'Identify top 3 channels by ROAS',
+                'Identify top 3 channels by ROAS' if not roas_unavailable else 'Identify top 3 channels by performance',
                 'Increase budget 20% on winners',
                 'Pause or reduce underperformers',
                 'Monitor conversion rates weekly'
             ]
+        why = f'Your revenue growth is {rev_growth:.1f}%. Industry leaders achieve 15%+.' + (
+            f' Your ROAS of {roas:.1f}x suggests room to scale winning campaigns.' if roas is not None else ' Focus on scaling top performers.'
+        )
+        conf = min(85, 70 + int(roas)) if roas is not None else 75
         recs.append({
             'category': 'revenue',
             'title': f'Scale Marketing on Top Channels' + (f' ({top_channels[0]})' if top_channels else ''),
             'impact': f'+{format_currency_short(est_impact)} annually (est. 8-12% revenue lift)',
-            'why': f'Your revenue growth is {rev_growth:.1f}%. Industry leaders achieve 15%+. Your ROAS of {roas:.1f}x suggests room to scale winning campaigns.',
+            'why': why,
             'steps': steps,
-            'confidence': min(85, 70 + int(roas)),
+            'confidence': conf,
             'cost_benefit': 'Low cost | High upside'
         })
+        _log_trigger(
+            recommendation_id='scale_marketing',
+            metric='revenue_growth',
+            metric_value=rev_growth,
+            threshold=15,
+            window=window_label,
+            confidence=conf,
+            category='revenue',
+            title=recs[-1]['title'],
+        )
     
     if margin < 35 and margin > 0:
         margin_gap = 35 - margin
@@ -126,6 +165,16 @@ def generate_data_driven_recommendations(data: pd.DataFrame, industry: str = 'ec
             'confidence': 82,
             'cost_benefit': 'Minimal cost | Direct impact'
         })
+        _log_trigger(
+            recommendation_id='improve_margins',
+            metric='profit_margin',
+            metric_value=margin,
+            threshold=35,
+            window=window_label,
+            confidence=82,
+            category='revenue',
+            title=recs[-1]['title'],
+        )
     
     # Retention recommendations
     if churn > 2 or (churn == 0 and cust_count > 0):
@@ -147,8 +196,8 @@ def generate_data_driven_recommendations(data: pd.DataFrame, industry: str = 'ec
             'cost_benefit': '~$5-10K build | High LTV retention'
         })
     
-    # Efficiency recommendations
-    if roas < 4 and marketing_spend > 1000:
+    # Efficiency recommendations — ONLY when ROAS is valid (not estimated/missing)
+    if not roas_unavailable and roas is not None and roas < 4 and marketing_spend > 1000:
         roas_gap = 4 - roas
         est_impact = marketing_spend * roas_gap * (margin / 100)
         if top_channels:
@@ -174,6 +223,16 @@ def generate_data_driven_recommendations(data: pd.DataFrame, industry: str = 'ec
             'confidence': 85,
             'cost_benefit': 'Zero additional spend | Better returns'
         })
+        _log_trigger(
+            recommendation_id='optimize_roas',
+            metric='roas',
+            metric_value=roas,
+            threshold=4,
+            window=window_label,
+            confidence=85,
+            category='efficiency',
+            title=recs[-1]['title'],
+        )
     
     if aov < 75 and aov > 0:
         uplift = 0.15  # 15% AOV increase potential

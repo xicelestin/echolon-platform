@@ -5,6 +5,36 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Tuple, Optional
 
 
+def safe_divide(a, b):
+    """Divide a by b; return np.nan where b <= 0. No silent fallbacks."""
+    if hasattr(a, '__iter__') and hasattr(b, '__iter__'):
+        with np.errstate(divide='ignore', invalid='ignore'):
+            return np.where(np.asarray(b) > 0, np.asarray(a) / np.asarray(b), np.nan)
+    return (float(a) / float(b)) if b and float(b) > 0 else np.nan
+
+
+def apply_time_filter(data: pd.DataFrame, date_range: str) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+    """
+    Apply sidebar date range to data. Returns (filtered_df, window_info).
+    window_info: {start_date, end_date, days, months, label}
+    """
+    if data is None or data.empty or 'date' not in data.columns:
+        return data, {'label': 'All data', 'days': 0, 'months': 0}
+    df = data.copy()
+    df['date'] = pd.to_datetime(df['date'])
+    end_date = df['date'].max()
+    days_map = {'Last 7 Days': 7, 'Last 30 Days': 30, 'Last 90 Days': 90, 'Last 12 Months': 365, 'All Time': 99999}
+    days = days_map.get(date_range, 90)
+    start_date = end_date - timedelta(days=days)
+    filtered = df[(df['date'] >= start_date) & (df['date'] <= end_date)].copy()
+    if filtered.empty:
+        filtered = df
+    unique_months = filtered['date'].dt.to_period('M').nunique()
+    date_range_days = (filtered['date'].max() - filtered['date'].min()).days
+    label = f"{filtered['date'].min().strftime('%Y-%m-%d')} → {filtered['date'].max().strftime('%Y-%m-%d')} ({date_range_days} days, {unique_months} months)"
+    return filtered, {'start_date': filtered['date'].min(), 'end_date': filtered['date'].max(), 'days': date_range_days, 'months': unique_months, 'label': label}
+
+
 def calculate_period_comparison(current_value: float, previous_value: float) -> Dict[str, Any]:
     """
     Calculate period-over-period comparison metrics.
@@ -45,6 +75,13 @@ def calculate_period_comparison(current_value: float, previous_value: float) -> 
         'formatted_change': f"{arrow} {abs(percent_change):.1f}%",
         'arrow': arrow
     }
+
+
+def annualize_dollar_impact(change: float, period_days: int) -> float:
+    """Scale a period change to annualized dollar impact. period_days=90 -> *4."""
+    if period_days <= 0:
+        return change
+    return change * (365 / period_days)
 
 
 def get_period_data(df: pd.DataFrame, date_column: str, period_type: str = 'month') -> Tuple[pd.DataFrame, pd.DataFrame]:
@@ -391,6 +428,157 @@ def format_currency(value: float, decimals: int = 0) -> str:
 def format_percentage(value: float, decimals: int = 1) -> str:
     """Format value as percentage."""
     return f"{value:.{decimals}f}%"
+
+
+# --- Trust & Safety: Data Confidence, Unavailable Metrics, Period Diff ---
+
+REQUIRED_COLUMNS_BY_METRIC = {
+    'roas': ['revenue', 'marketing_spend'],  # or ad_spend, marketing_cost
+    'marketing_spend': ['marketing_spend'],  # or ad_spend
+    'revenue': ['revenue'],
+    'profit': ['profit'],
+    'cost': ['cost'],
+}
+
+
+def check_metric_availability(data: pd.DataFrame, metric: str) -> Tuple[bool, Optional[str]]:
+    """
+    Check if a metric can be computed from available columns.
+    Returns (available, missing_column_message).
+    A wrong number is worse than no number.
+    """
+    if data is None or data.empty:
+        return False, "No data"
+    required = REQUIRED_COLUMNS_BY_METRIC.get(metric, [])
+    if metric == 'roas':
+        has_mkt = any(c in data.columns for c in ['marketing_spend', 'ad_spend', 'marketing_cost'])
+        if not has_mkt:
+            return False, "Required column marketing_spend (or ad_spend) not found."
+        if 'revenue' not in data.columns:
+            return False, "Required column revenue not found."
+        mkt_col = 'marketing_spend' if 'marketing_spend' in data.columns else (
+            'ad_spend' if 'ad_spend' in data.columns else 'marketing_cost')
+        if data[mkt_col].sum() <= 0:
+            return False, "marketing_spend is zero or missing."
+        return True, None
+    for col in required:
+        if col not in data.columns:
+            return False, f"Required column {col} not found."
+    return True, None
+
+
+def calculate_data_confidence(data: pd.DataFrame, kpis: Dict, window_info: Dict) -> Dict[str, Any]:
+    """
+    Compute Data Confidence: High / Medium / Low.
+    Inputs: % missing in key columns, use of estimates, window length, fallback assumptions.
+    """
+    if data is None or data.empty:
+        return {'level': 'Low', 'score': 0, 'reasons': ['No data']}
+    reasons = []
+    score = 100
+
+    # Key columns
+    key_cols = ['date', 'revenue', 'revenue', 'revenue']  # revenue weighted
+    if 'marketing_spend' in data.columns or 'ad_spend' in data.columns:
+        key_cols.extend(['marketing_spend', 'marketing_spend'])
+    for col in ['date', 'revenue']:
+        if col in data.columns:
+            nan_pct = data[col].isna().sum() / len(data) * 100
+            if nan_pct > 10:
+                score -= 10
+                reasons.append(f"{col}: {nan_pct:.0f}% missing")
+            elif nan_pct > 10:
+                score -= 5
+                reasons.append(f"{col}: {nan_pct:.0f}% missing")
+
+    # Window length: <30 days = low confidence
+    days = window_info.get('days', 0)
+    if days < 30:
+        score -= 25
+        reasons.append(f"Window <30 days ({days}d)")
+    elif days < 60:
+        score -= 10
+        reasons.append(f"Window <60 days ({days}d)")
+
+    # Use of estimates
+    if kpis.get('roas_unavailable'):
+        score -= 15
+        reasons.append("ROAS unavailable (estimate not used)")
+    mkt_col = 'marketing_spend' if 'marketing_spend' in data.columns else 'ad_spend' if 'ad_spend' in data.columns else None
+    if not mkt_col:
+        score -= 10
+        reasons.append("Marketing spend estimated")
+    if 'cost' not in data.columns and 'profit_margin' in data.columns:
+        score -= 5
+        reasons.append("Cost derived from margin")
+
+    score = max(0, min(100, score))
+    if score >= 75:
+        level = 'High'
+    elif score >= 50:
+        level = 'Medium'
+    else:
+        level = 'Low'
+    return {'level': level, 'score': score, 'reasons': reasons}
+
+
+def calculate_period_diff(data: pd.DataFrame, kpis: Dict, format_currency_fn) -> Dict[str, Any]:
+    """
+    Calculate period-over-period diff for What Changed panel.
+    Revenue, ROAS, Marketing Spend, Net Cash Flow between two adjacent windows.
+    """
+    if data is None or (hasattr(data, 'empty') and data.empty) or 'date' not in data.columns:
+        return {'has_data': False}
+    df = data.copy()
+    df['date'] = pd.to_datetime(df['date'])
+    df = df.sort_values('date')
+    n = len(df)
+    if n < 14:
+        return {'has_data': False}
+    mid = n // 2
+    curr = df.iloc[mid:]
+    prev = df.iloc[:mid]
+
+    result = {'has_data': True, 'changes': []}
+    # Revenue
+    curr_rev = float(curr['revenue'].sum()) if 'revenue' in curr.columns else 0
+    prev_rev = float(prev['revenue'].sum()) if 'revenue' in prev.columns else 0
+    rev_delta = curr_rev - prev_rev
+    result['changes'].append({'metric': 'Revenue', 'delta': rev_delta, 'fmt': format_currency_fn(rev_delta)})
+
+    # ROAS
+    mkt_col = 'marketing_spend' if 'marketing_spend' in data.columns else 'ad_spend' if 'ad_spend' in data.columns else None
+    if mkt_col and kpis.get('roas') is not None and not kpis.get('roas_unavailable'):
+        curr_mkt = curr[mkt_col].sum()
+        prev_mkt = prev[mkt_col].sum()
+        curr_roas = curr['revenue'].sum() / curr_mkt if curr_mkt > 0 else None
+        prev_roas = prev['revenue'].sum() / prev_mkt if prev_mkt > 0 else None
+        if curr_roas is not None and prev_roas is not None and prev_roas > 0:
+            roas_delta = curr_roas - prev_roas
+            result['changes'].append({'metric': 'ROAS', 'delta': roas_delta, 'fmt': f"{roas_delta:+.1f}x"})
+    else:
+        result['changes'].append({'metric': 'ROAS', 'delta': None, 'fmt': 'N/A'})
+
+    # Marketing Spend
+    if mkt_col:
+        curr_mkt = float(curr[mkt_col].sum())
+        prev_mkt = float(prev[mkt_col].sum())
+        mkt_delta = curr_mkt - prev_mkt
+        result['changes'].append({'metric': 'Marketing Spend', 'delta': mkt_delta, 'fmt': format_currency_fn(mkt_delta)})
+    else:
+        result['changes'].append({'metric': 'Marketing Spend', 'delta': None, 'fmt': 'N/A'})
+
+    # Net Cash Flow
+    curr_cost = float(curr['cost'].sum()) if 'cost' in curr.columns else 0
+    prev_cost = float(prev['cost'].sum()) if 'cost' in prev.columns else 0
+    curr_mkt = float(curr[mkt_col].sum()) if mkt_col and mkt_col in curr.columns else 0
+    prev_mkt = float(prev[mkt_col].sum()) if mkt_col and mkt_col in prev.columns else 0
+    curr_cf = curr_rev - curr_cost - curr_mkt
+    prev_cf = prev_rev - prev_cost - prev_mkt
+    cf_delta = curr_cf - prev_cf
+    result['changes'].append({'metric': 'Net Cash Flow', 'delta': cf_delta, 'fmt': format_currency_fn(cf_delta)})
+
+    return result
 
 
 def get_trend_indicator(values: list) -> str:

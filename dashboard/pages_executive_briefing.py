@@ -4,24 +4,37 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from typing import Dict, Any, Tuple
-from utils import calculate_business_health_score, calculate_key_metrics, get_change_explanation, get_metric_alerts
+from utils import (
+    calculate_business_health_score,
+    calculate_key_metrics,
+    get_change_explanation,
+    get_metric_alerts,
+    calculate_data_confidence,
+    calculate_period_diff,
+    annualize_dollar_impact,
+)
 from utils.data_patterns import analyze_data_patterns
 from utils.industry_utils import get_industry_benchmarks
 
 
 def compute_cash_flow_metrics(data: pd.DataFrame) -> Dict[str, Any]:
-    """Compute cash flow and runway from business data."""
+    """Compute cash flow and runway from business data. Uses actual cost/ad_spend when available."""
     if data is None or data.empty:
         return {'runway_months': 0, 'monthly_burn': 0, 'monthly_inflow': 0, 'cash_health': 'unknown'}
     
     # Use actual date span to compute monthly revenue (not hardcoded 12)
     total_revenue = data['revenue'].sum()
     date_range_label = "Last 12 months"
-    if 'date' in data.columns and len(data) >= 7:
+    if 'date' in data.columns and len(data) >= 1:
         df = data.copy()
         df['date'] = pd.to_datetime(df['date'])
         date_range_days = (df['date'].max() - df['date'].min()).days
-        num_months = max(0.25, date_range_days / 30.44)  # 30.44 = avg days/month
+        unique_months = df['date'].dt.to_period('M').nunique()
+        # For monthly aggregate data (few rows per month), use unique months; else days/30.44
+        if unique_months >= 2 and len(df) / max(1, unique_months) <= 31:
+            num_months = float(unique_months)
+        else:
+            num_months = max(0.25, date_range_days / 30.44)
         monthly_revenue = total_revenue / num_months
         if num_months >= 11.5:
             date_range_label = "Last 12 months"
@@ -31,11 +44,28 @@ def compute_cash_flow_metrics(data: pd.DataFrame) -> Dict[str, Any]:
             date_range_label = f"Last {date_range_days} days"
     else:
         monthly_revenue = data['revenue'].mean() * 30 if len(data) > 0 else 0
-    monthly_marketing = data['marketing_spend'].mean() * 30 if 'marketing_spend' in data.columns else monthly_revenue * 0.15
+        num_months = 12.0
+        date_range_label = "Last 12 months"
+    
+    # Use ACTUAL cost and marketing spend when available (not estimates)
+    mkt_col = 'marketing_spend' if 'marketing_spend' in data.columns else (
+        'ad_spend' if 'ad_spend' in data.columns else 'marketing_cost' if 'marketing_cost' in data.columns else None)
+    if mkt_col and data[mkt_col].sum() > 0:
+        monthly_marketing = data[mkt_col].sum() / num_months
+    else:
+        monthly_marketing = monthly_revenue * 0.15  # Estimate only when missing
+    
+    if 'cost' in data.columns and data['cost'].sum() > 0:
+        monthly_cost = data['cost'].sum() / num_months
+    else:
+        margin = data['profit_margin'].mean() / 100 if 'profit_margin' in data.columns else 0.4
+        monthly_cost = monthly_revenue * (1 - margin)
+    
+    # Use actual cost + ad spend; no phantom 20% overhead when we have real data
+    monthly_expenses = monthly_cost + monthly_marketing
+    
     margin = data['profit_margin'].mean() / 100 if 'profit_margin' in data.columns else 0.4
     monthly_profit = monthly_revenue * margin
-    monthly_cogs = monthly_revenue * (1 - margin)
-    monthly_expenses = monthly_cogs + monthly_marketing + (monthly_revenue * 0.2)  # + 20% ops
     monthly_inflow = monthly_revenue
     monthly_burn = monthly_expenses - monthly_revenue  # Negative = profitable
     
@@ -55,14 +85,17 @@ def compute_cash_flow_metrics(data: pd.DataFrame) -> Dict[str, Any]:
     else:
         cash_health = 'critical'
     
+    has_actual_expenses = 'cost' in data.columns or mkt_col
     return {
         'runway_months': min(runway_months, 24),
         'monthly_burn': monthly_burn,
         'monthly_inflow': monthly_inflow,
         'monthly_profit': monthly_profit,
+        'monthly_expenses': monthly_expenses,
         'cash_health': cash_health,
         'cash_reserve_est': cash_reserve,
-        'date_range_label': date_range_label
+        'date_range_label': date_range_label,
+        'expenses_label': 'Cost + Ad Spend' if has_actual_expenses else 'Est. expenses'
     }
 
 
@@ -71,19 +104,21 @@ def get_top_opportunities(data: pd.DataFrame, metrics: Dict, kpis: Dict, pattern
     opportunities = []
     patterns = patterns or {}
 
-    # Pattern-based: dimension shifts (channel, category, product - whatever exists in data)
+    # Pattern-based: dimension shifts — sort by dollar_impact first (not % growth)
     dim_shifts = patterns.get('dimension_shifts', []) or patterns.get('channel_shifts', [])
-    growing = [c for c in dim_shifts if c.get('change_pct', 0) > 15]
-    declining = [c for c in dim_shifts if c.get('change_pct', 0) < -15]
+    growing = sorted([c for c in dim_shifts if c.get('change_pct', 0) > 15], key=lambda x: -x.get('dollar_impact', 0))
+    declining = sorted([c for c in dim_shifts if c.get('change_pct', 0) < -15], key=lambda x: -abs(x.get('dollar_impact', 0)))
     if growing and not declining:
         s = growing[0]
         name = s.get('segment_name') or s.get('channel', '')
+        dollar_impact = s.get('dollar_impact', 0)
         if name:
             opportunities.append({
                 'title': f'Scale {name} — Up {s["change_pct"]:.0f}%',
-                'impact': f'{name} grew {s["change_pct"]:.0f}% vs prior 30 days and is now {s["share_now"]:.0f}% of revenue.',
+                'impact': f'{name} added ~${dollar_impact:,.0f} vs prior period and is now {s["share_now"]:.0f}% of revenue.',
                 'priority': 'high',
-                'action': f'Increase investment in {name} — it\'s your growth driver'
+                'action': f'Increase investment in {name} — highest dollar impact',
+                'dollar_impact': dollar_impact
             })
     elif declining:
         s = declining[0]
@@ -166,8 +201,8 @@ def get_top_opportunities(data: pd.DataFrame, metrics: Dict, kpis: Dict, pattern
                 'action': 'Review pricing and cost structure'
             })
 
-        roas = data['roas'].mean() if 'roas' in data.columns else 3
-        if roas < 4 and len(opportunities) < 3:
+        roas = kpis.get('roas') if kpis else (data['roas'].mean() if 'roas' in data.columns else None)
+        if roas is not None and roas < 4 and len(opportunities) < 3 and not kpis.get('roas_unavailable'):
             opportunities.append({
                 'title': 'Optimize Marketing ROI',
                 'impact': f'ROAS of {roas:.1f}x is below 4x benchmark.',
@@ -248,15 +283,28 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
     st.title("📋 Executive Briefing")
     st.caption("Your business at a glance — 30 seconds")
     
+    # Window subtitle (all metrics use this window)
+    winfo = kpis.get('window_info', {})
+    if winfo.get('label'):
+        st.caption(f"**Window:** {winfo['label']}")
+    
+    # ROAS unavailable warning
+    if kpis.get('roas_unavailable'):
+        st.warning("⚠️ **ROAS unavailable:** Map `ad_spend` or `marketing_spend` in Data Sources to see ROAS. No placeholder used.")
+    
     # Compute metrics
     metrics = calculate_key_metrics(data)
+    winfo = kpis.get('window_info', {})
+    period_days = winfo.get('days', 90) // 2  # half-period for H1 vs H2
+    roas_val = kpis.get('roas')
     health_metrics = {
         'revenue_growth': metrics.get('revenue_growth', 0),
         'profit_margin': float(data['profit_margin'].mean()) if 'profit_margin' in data.columns else 40,
         'cash_flow_ratio': 1.2,
         'customer_growth': metrics.get('customer_growth', 0),
-        'roas': float(data['roas'].mean()) if 'roas' in data.columns else 3
     }
+    if roas_val is not None:
+        health_metrics['roas'] = roas_val
     health_score = calculate_business_health_score(health_metrics)
     cash_metrics = compute_cash_flow_metrics(data)
     pattern_analysis = analyze_data_patterns(data)
@@ -289,7 +337,7 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
         <div style="background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);padding:1.75rem;border-radius:16px;text-align:center;border:1px solid #374151;">
             <p style="color:#94a3b8;font-size:0.75rem;margin:0 0 8px 0;text-transform:uppercase;">Money Out</p>
             <p style="color:white;font-size:1.75rem;font-weight:700;margin:0;">{format_currency(outflow)}</p>
-            <p style="color:#64748b;font-size:0.8rem;margin:8px 0 0 0;">Est. expenses</p>
+            <p style="color:#94a3b8;font-size:0.8rem;margin:8px 0 0 0;font-style:italic;">{cash_metrics.get('expenses_label', 'Est. expenses')}</p>
         </div>
         <div style="background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);padding:1.75rem;border-radius:16px;text-align:center;border:1px solid #374151;">
             <p style="color:#94a3b8;font-size:0.75rem;margin:0 0 8px 0;text-transform:uppercase;">Net Cash Flow</p>
@@ -298,18 +346,31 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
         </div>
     </div>
     """, unsafe_allow_html=True)
+    from components import display_explain_this_number
+    display_explain_this_number(
+        "Net Cash Flow",
+        "Revenue − (Cost + Ad Spend)",
+        winfo.get('label', 'Last 90 Days'),
+        "Ops Overhead: 0% (not assumed)" if not ('cost' in data.columns and ('marketing_spend' in data.columns or 'ad_spend' in data.columns)) else "Using measured cost and ad spend."
+    )
     
-    # === Health Score (secondary) ===
+    # === Data Confidence (next to Business Health) ===
+    data_conf = calculate_data_confidence(data, kpis, winfo)
+    conf_level = data_conf.get('level', 'High')
+    conf_color = {'High': '#10B981', 'Medium': '#F59E0B', 'Low': '#EF4444'}.get(conf_level, '#94a3b8')
+
+    # === Health Score (secondary) + Data Confidence ===
     col1, col2, col3 = st.columns([1, 1, 1])
     runway = cash_metrics.get('runway_months', 12)
     health_emoji = {'healthy': '🟢', 'moderate': '🟡', 'caution': '🟠', 'critical': '🔴'}.get(cash_metrics.get('cash_health', 'moderate'), '🟡')
-    
+
     with col1:
         st.markdown(f"""
         <div style="text-align:center;padding:28px 24px;background:linear-gradient(135deg,#2563EB 0%,#1D4ED8 100%);border-radius:16px;border:1px solid rgba(59,130,246,0.5);box-shadow:0 4px 6px -1px rgba(0,0,0,0.2);">
             <h2 style="color:white;margin:0;font-size:2.5rem;font-weight:700;">{health_score['score']}</h2>
             <p style="color:rgba(255,255,255,0.9);margin:4px 0 0 0;">{health_score['status']}</p>
             <p style="color:rgba(255,255,255,0.8);font-size:14px;">Business Health</p>
+            <p style="color:{conf_color};font-size:12px;margin-top:10px;font-weight:600;">Data Confidence: {conf_level}</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -337,15 +398,27 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
     benchmarks = get_industry_benchmarks(industry)
     ind_name = {'ecommerce': 'E-commerce', 'saas': 'SaaS', 'restaurant': 'Restaurant', 'services': 'Services', 'general': 'General'}.get(industry, 'E-commerce')
     your_margin = float(data['profit_margin'].mean()) if 'profit_margin' in data.columns else 40
-    your_roas = float(data['roas'].mean()) if 'roas' in data.columns else 3
+    your_roas = kpis.get('roas')
     bench_margin = benchmarks.get('profit_margin', 35)
     bench_roas = benchmarks.get('roas', 4)
     m_vs = "above" if your_margin >= bench_margin else "below"
-    r_vs = "above" if your_roas >= bench_roas else "below"
-    st.markdown(f"**📊 vs {ind_name} benchmark:** Margin {your_margin:.0f}% ({m_vs} {bench_margin}% avg) · ROAS {your_roas:.1f}x ({r_vs} {bench_roas}x avg)")
+    if kpis.get('roas_unavailable') or your_roas is None:
+        roas_line = "ROAS N/A (map ad_spend)"
+    else:
+        r_vs = "above" if your_roas >= bench_roas else "below"
+        roas_line = f"ROAS {your_roas:.1f}x ({r_vs} {bench_roas}x avg)"
+    st.markdown(f"**📊 vs {ind_name} benchmark:** Margin {your_margin:.0f}% ({m_vs} {bench_margin}% avg) · {roas_line}")
     
-    st.markdown("---")
-    
+    # === What Changed? Diff Panel (period-over-period) ===
+    period_diff = calculate_period_diff(data, kpis, format_currency)
+    if period_diff.get('has_data') and period_diff.get('changes'):
+        st.markdown("#### 📈 Since last period")
+        diff_cols = st.columns(min(4, len(period_diff['changes'])))
+        for i, ch in enumerate(period_diff['changes'][:4]):
+            with diff_cols[i]:
+                st.metric(ch['metric'], ch['fmt'], "")
+        st.markdown("---")
+
     # === Alerts when metrics deteriorate ===
     metric_alerts = get_metric_alerts(data, metrics)
     if metric_alerts:
@@ -366,7 +439,12 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
                 for c in dim_shifts[:3]:
                     name = c.get('segment_name') or c.get('channel', '')
                     if name:
-                        st.markdown(f"- **{name}**: {c['message']}")
+                        msg = c['message']
+                        di = c.get('dollar_impact', 0)
+                        if di and period_days > 0:
+                            ann = annualize_dollar_impact(di, period_days)
+                            msg += f" (+{format_currency(ann)} annualized)"
+                        st.markdown(f"- **{name}**: {msg}")
             if patterns.get('seasonality'):
                 for s in patterns['seasonality'][:2]:
                     st.markdown(f"- **{s['period']}**: {s['message']}")
@@ -384,7 +462,7 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
             for d in change_explanation.get('drivers', [])[:4]:
                 st.markdown(f"- {d['explanation']}")
     
-    # === Top Opportunities (with "why" and contextual links) ===
+    # === Top Opportunities (with dollar impact, "why", and contextual links) ===
     OPP_TO_PAGE = {'Scale': 'Analytics', 'Address': 'Insights', 'Plan for': 'Predictions', 'Improve Margin': 'Margin Analysis',
                    'Improve Profit': 'Margin Analysis', 'Optimize': 'Analytics', 'Focus on': 'Analytics',
                    'Accelerate Revenue': 'Predictions', 'Reverse Revenue': 'Insights', 'Optimize Marketing': 'Analytics'}
@@ -393,7 +471,12 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
         with st.container(border=True):
             col_l, col_r = st.columns([4, 1])
             with col_l:
-                st.markdown(f"**{opp['title']}**")
+                title_line = opp['title']
+                dollar_impact = opp.get('dollar_impact', 0)
+                if dollar_impact and period_days > 0:
+                    ann = annualize_dollar_impact(dollar_impact, period_days)
+                    title_line += f" (+{format_currency(ann)} annualized)"
+                st.markdown(f"**{title_line}**")
                 st.caption(f"**Why:** {opp['impact']}")
                 st.markdown(f"*→ {opp['action']}*")
                 link_page = next((p for k, p in OPP_TO_PAGE.items() if opp['title'].startswith(k)), None)

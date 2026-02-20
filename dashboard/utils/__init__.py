@@ -22,6 +22,8 @@ from .export_utils import (
     to_json
 )
 from .metrics_utils import (
+    safe_divide,
+    apply_time_filter,
     calculate_period_comparison,
     get_period_data,
     calculate_business_health_score,
@@ -30,7 +32,11 @@ from .metrics_utils import (
     get_goal_progress,
     format_currency,
     format_percentage,
-    get_trend_indicator
+    get_trend_indicator,
+    check_metric_availability,
+    calculate_data_confidence,
+    calculate_period_diff,
+    annualize_dollar_impact,
 )
 from .driver_analysis import get_change_explanation, analyze_revenue_drivers
 from .data_patterns import analyze_data_patterns
@@ -57,6 +63,8 @@ __all__ = [
     'to_csv',
     'to_excel',
     'to_json',    # Metrics utilities
+    'safe_divide',
+    'apply_time_filter',
     'calculate_period_comparison',
     'get_period_data',
     'calculate_business_health_score',
@@ -66,6 +74,10 @@ __all__ = [
     'format_currency',
     'format_percentage',
     'get_trend_indicator',
+    'check_metric_availability',
+    'calculate_data_confidence',
+    'calculate_period_diff',
+    'annualize_dollar_impact',
     'generate_personalized_insights',
     'generate_action_items',
     'get_top_priority_this_week',

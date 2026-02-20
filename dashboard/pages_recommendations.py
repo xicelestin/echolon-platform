@@ -2,7 +2,8 @@
 import streamlit as st
 import pandas as pd
 from recommendations_engine import generate_data_driven_recommendations
-from utils import calculate_business_health_score, calculate_key_metrics
+from utils import calculate_business_health_score, calculate_key_metrics, calculate_data_confidence
+from utils.recommendation_log import get_recommendation_log, format_log_for_display
 
 
 def _init_action_tracking():
@@ -21,20 +22,39 @@ def render_recommendations_page(data=None, kpis=None, format_currency=None, form
     if data is None or (hasattr(data, 'empty') and data.empty):
         st.warning("Load data from Dashboard or Data Sources to get personalized recommendations.")
         return
-    
+
+    kpis = kpis or {}
     _init_action_tracking()
     industry = st.session_state.get('industry', 'ecommerce')
-    
+    window_info = kpis.get('window_info', {})
+    window_label = window_info.get('label', 'Last 90 Days')
+
+    # Data confidence — gate advice when Low
+    data_confidence = calculate_data_confidence(data, kpis, window_info)
+
     st.markdown("""<div style='margin-bottom:30px'><h1 style='font-size:36px;font-weight:700;margin-bottom:5px'>AI Recommendations</h1><p style='color:#9CA3AF;font-size:16px;margin:0'>Personalized insights from your business data</p></div>""", unsafe_allow_html=True)
-    
+
     # Data source badge
     data_source = "Live Data" if st.session_state.get('connected_sources') else "Demo Data"
     badge_color = "#10B981" if data_source == "Live Data" else "#6B7280"
-    st.markdown(f"""<div style='background:{badge_color};color:white;border-radius:8px;padding:8px 16px;font-size:14px;margin-bottom:24px;display:inline-block;'><b>📊 {data_source}</b> | Based on your last 90 days</div>""", unsafe_allow_html=True)
-    
-    # Generate data-driven recommendations
-    recs = generate_data_driven_recommendations(data, industry)
-    
+    st.markdown(f"""<div style='background:{badge_color};color:white;border-radius:8px;padding:8px 16px;font-size:14px;margin-bottom:24px;display:inline-block;'><b>📊 {data_source}</b> | {window_label}</div>""", unsafe_allow_html=True)
+
+    # Safety: Advice disabled when data confidence is Low
+    if data_confidence.get('level') == 'Low':
+        st.warning("⚠️ **Advice disabled due to insufficient data quality.** Add more data (revenue, date, marketing spend) and use a longer window (30+ days) to unlock recommendations.")
+        with st.expander("Why is advice disabled?"):
+            st.caption("We only show recommendations when we can trust the underlying metrics. Low confidence = missing columns, short window, or heavy use of estimates.")
+            for r in data_confidence.get('reasons', []):
+                st.markdown(f"- {r}")
+        return
+
+    # Generate data-driven recommendations (gated by kpis + data_confidence)
+    recs = generate_data_driven_recommendations(data, industry, kpis=kpis, data_confidence=data_confidence, window_label=window_label)
+
+    if not recs:
+        st.info("No recommendations match your current metrics. Your business may be performing well, or we need more data (e.g. map marketing_spend for ROAS advice).")
+        return
+
     category_tabs = {
         'revenue': '🚀 Revenue',
         'retention': '💚 Retention',
@@ -97,3 +117,9 @@ def render_recommendations_page(data=None, kpis=None, format_currency=None, form
     **Priority order:** Start with Efficiency (quick wins) → Revenue (scale) → Retention (compound) → Innovation (long-term).  
     Track your progress by marking recommendations as implemented.
     """)
+
+    # Audit: Why we suggested this (recommendation log)
+    log_entries = get_recommendation_log()
+    if log_entries:
+        with st.expander("📋 Why we suggested these (audit log)", expanded=False):
+            st.code(format_log_for_display(log_entries), language=None)

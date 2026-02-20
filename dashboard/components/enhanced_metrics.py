@@ -4,6 +4,54 @@ import pandas as pd
 from typing import Optional, Dict, Any
 
 
+def display_unavailable_metric(label: str, missing_message: str):
+    """
+    Display a metric as Unavailable with ⚠️ icon and hover text.
+    Rule: A wrong number is worse than no number.
+    """
+    st.markdown(f"""
+    <div style="background:rgba(30,41,59,0.9);padding:1.25rem 1.5rem;border-radius:14px;border:1px solid rgba(251,191,36,0.4);" title="{missing_message}">
+        <p style="color:#94a3b8;font-size:0.75rem;margin:0 0 4px 0;text-transform:uppercase;">{label}</p>
+        <p style="color:#fbbf24;font-size:1.1rem;font-weight:600;margin:0;">⚠️ Unavailable</p>
+        <p style="color:#94a3b8;font-size:0.7rem;margin:6px 0 0 0;">{missing_message}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def display_metric_with_dollar_impact(
+    label: str, value: str, pct_change: str, dollar_impact: Optional[str] = None,
+    is_estimate: bool = False
+):
+    """
+    Display metric with % change and optional dollar impact line.
+    If is_estimate: italic, lighter color, (est.) suffix.
+    """
+    est_class = "echolon-estimate" if is_estimate else ""
+    est_suffix = " <span class='echolon-estimate'>(est.)</span>" if is_estimate else ""
+    dollar_line = f"<p style='color:#94a3b8;font-size:0.75rem;margin:4px 0 0 0;'>{dollar_impact}</p>" if dollar_impact else ""
+    st.markdown(f"""
+    <div class="{est_class}" style="background:linear-gradient(180deg,rgba(30,41,59,0.9) 0%,rgba(15,23,42,0.95) 100%);padding:1.25rem 1.5rem;border-radius:14px;border:1px solid rgba(148,163,184,0.15);">
+        <p style="color:#94a3b8;font-size:0.75rem;margin:0 0 4px 0;text-transform:uppercase;">{label}</p>
+        <p style="color:#f8fafc;font-size:1.35rem;font-weight:700;margin:0;">{value}{est_suffix}</p>
+        <p style="color:#94a3b8;font-size:0.85rem;margin:4px 0 0 0;">{pct_change}</p>
+        {dollar_line}
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def display_explain_this_number(
+    metric_name: str, formula: str, window: str, assumptions: str = ""
+):
+    """Expandable 'Explain This Number' - reduces confusion, increases trust."""
+    with st.expander(f"📖 Explain: {metric_name}", expanded=False):
+        st.markdown(f"**Calculated as:** {formula}")
+        st.markdown(f"**Window:** {window}")
+        if assumptions:
+            st.markdown(f"**Assumptions:** {assumptions}")
+        else:
+            st.caption("No assumptions applied — using measured data only.")
+
+
 def display_business_health_score(health_data: Dict[str, Any]):
     """
     Display Business Health Score with visual breakdown.

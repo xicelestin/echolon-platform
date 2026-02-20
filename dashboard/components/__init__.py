@@ -19,7 +19,10 @@ from .charts import (
 from .enhanced_metrics import (
     display_business_health_score,
     display_metric_with_comparison,
-    display_key_metrics_grid
+    display_key_metrics_grid,
+    display_unavailable_metric,
+    display_metric_with_dollar_impact,
+    display_explain_this_number,
 )
 
 __all__ = [
@@ -36,5 +39,8 @@ __all__ = [
     'COLOR_PALETTE',
     'display_business_health_score',
     'display_metric_with_comparison',
-    'display_key_metrics_grid'
+    'display_key_metrics_grid',
+    'display_unavailable_metric',
+    'display_metric_with_dollar_impact',
+    'display_explain_this_number',
 ]

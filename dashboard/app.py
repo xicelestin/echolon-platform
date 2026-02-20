@@ -10,8 +10,16 @@ import io
 st.set_page_config(page_title="Echolon AI", page_icon="📊", layout="wide")
 
 from components import create_line_chart, create_bar_chart, COLORS, COLOR_PALETTE
+from components import display_unavailable_metric
 from utils import create_multi_format_export, create_download_button
-from utils import calculate_business_health_score, calculate_period_comparison, calculate_key_metrics
+from utils import (
+    calculate_business_health_score,
+    calculate_period_comparison,
+    calculate_key_metrics,
+    safe_divide,
+    apply_time_filter,
+    calculate_data_confidence,
+)
 from utils import get_top_priority_this_week, get_metric_alerts
 from utils.metrics_utils import forecast_revenue
 from components import display_business_health_score, display_metric_with_comparison, display_key_metrics_grid
@@ -105,7 +113,7 @@ try:
             data['profit'] = data['revenue'] * 0.4
         if 'profit_margin' not in data.columns:
             data['profit_margin'] = 40.0
-        # ROAS: prioritize revenue/marketing_spend as source of truth when both exist
+        # ROAS: compute from revenue/marketing_spend only when both exist and spend > 0. No placeholder.
         mkt_col = 'marketing_spend' if 'marketing_spend' in data.columns else (
             'ad_spend' if 'ad_spend' in data.columns else (
             'marketing_cost' if 'marketing_cost' in data.columns else None))
@@ -113,33 +121,31 @@ try:
             total_mkt = float(data[mkt_col].sum())
             if total_mkt > 0:
                 period_roas = data['revenue'].sum() / total_mkt
-                data['roas'] = (data['revenue'] / data[mkt_col]).where(data[mkt_col] > 0)
+                data['roas'] = safe_divide(data['revenue'], data[mkt_col])
                 data['roas'] = data['roas'].fillna(period_roas).clip(0.5, 50)
                 if mkt_col != 'marketing_spend':
                     data['marketing_spend'] = data[mkt_col]
-            elif 'roas' not in data.columns:
-                data['roas'] = 3.0
-        elif 'roas' not in data.columns:
-            data['roas'] = 3.0
         if 'avg_order_value' not in data.columns and 'orders' in data.columns:
             data['avg_order_value'] = np.where(data['orders'] > 0, data['revenue'] / data['orders'], 50)
-        # Apply date range filter
+        # Apply date range filter (unified window for all metrics)
         date_range = st.session_state.get('date_range', 'Last 90 Days')
-        if 'date' in data.columns and date_range != 'All Time':
-            data['date'] = pd.to_datetime(data['date'])
-            end_date = data['date'].max()
-            days_map = {'Last 7 Days': 7, 'Last 30 Days': 30, 'Last 90 Days': 90, 'Last 12 Months': 365}
-            days = days_map.get(date_range, 90)
-            start_date = end_date - timedelta(days=days)
-            filtered = data[(data['date'] >= start_date) & (data['date'] <= end_date)].copy()
-            if len(filtered) > 0:
-                data = filtered
-            # else: keep full data if filter would be empty
-        st.session_state.current_data = data  # Update with filtered data
-    roas_val = float(data['roas'].mean()) if 'roas' in data.columns and len(data) > 0 else 3.0
-    if pd.isna(roas_val):
-        roas_val = 3.0
-    kpis = {'total_revenue': float(data['revenue'].sum()) if 'revenue' in data.columns else 0, 'roas': roas_val}
+        data, window_info = apply_time_filter(data, date_range)
+        st.session_state.current_data = data
+        st.session_state.window_info = window_info
+    # ROAS: SUM(revenue)/SUM(marketing_spend) for window. No fake 3.0.
+    mkt_col = 'marketing_spend' if 'marketing_spend' in data.columns else 'ad_spend' if 'ad_spend' in data.columns else None
+    total_mkt = float(data[mkt_col].sum()) if mkt_col else 0
+    roas_val = None
+    roas_unavailable = True
+    if mkt_col and total_mkt > 0 and 'revenue' in data.columns:
+        roas_val = float(data['revenue'].sum() / total_mkt)
+        roas_unavailable = False
+    kpis = {
+        'total_revenue': float(data['revenue'].sum()) if 'revenue' in data.columns else 0,
+        'roas': roas_val,
+        'roas_unavailable': roas_unavailable,
+        'window_info': st.session_state.get('window_info', {})
+    }
 except Exception as e:
     st.error("❌ Failed to load data. Please try again or upload fresh data from Data Sources.")
     with st.expander("Technical details"):
@@ -215,6 +221,13 @@ st.markdown("""
         h1 { font-size: 1.5rem !important; }
         h2 { font-size: 1.25rem !important; }
     }
+    /* Spacing: prevent labels colliding with Share/actions */
+    [data-testid="stMetric"], .echolon-metric-block { padding-bottom: 2rem !important; }
+    
+    /* Trust: estimates visually different - italic, lighter, (est.) */
+    .echolon-estimate { font-style: italic !important; color: #94a3b8 !important; opacity: 0.9; }
+    .stMarkdown h1, .stMarkdown h2 { margin-bottom: 1.5rem !important; }
+    
     /* Live Data badge - top right, high contrast */
     .echolon-live-badge {
         position: fixed; top: 12px; right: 20px; z-index: 999;
@@ -320,6 +333,32 @@ if not can_access_page(p, tier):
 
 # Pages that need date+revenue show a friendly message if user didn't map those columns
 PAGES_NEEDING_DATE_REVENUE = ["Executive Briefing", "Dashboard", "Analytics", "Insights", "Predictions", "Recommendations", "Goals", "What-If", "Margin Analysis", "Smart Alerts", "Anomalies & Alerts", "Revenue Attribution", "Customer LTV", "Competitive Benchmark"]
+
+def _render_data_quality_panel(data, kpis):
+    """Data Quality panel: missing columns, row count, month count, % NaNs."""
+    if data is None or data.empty:
+        return
+    with st.expander("📋 Data Quality", expanded=False):
+        required = ['date', 'revenue']
+        missing_req = [c for c in required if c not in data.columns]
+        has_mkt = 'marketing_spend' in data.columns or 'ad_spend' in data.columns
+        winfo = kpis.get('window_info', {})
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Rows in window", f"{len(data):,}", "")
+        with col2:
+            st.metric("Months", winfo.get('months', '—'), "")
+        with col3:
+            nan_pct = (data['revenue'].isna().sum() / len(data) * 100) if 'revenue' in data.columns else 0
+            st.metric("% NaNs (revenue)", f"{nan_pct:.1f}%", "")
+        with col4:
+            status = "⚠️ Missing" if missing_req else ("⚠️ No ad_spend" if not has_mkt else "✅ OK")
+            st.metric("Columns", status, "")
+        if missing_req:
+            st.warning(f"Missing required: {', '.join(missing_req)}")
+        if kpis.get('roas_unavailable'):
+            st.caption("ROAS: map ad_spend or marketing_spend")
+
 def _check_data_for_page(page_name):
     provided = st.session_state.get("uploaded_data_provided_columns")
     if provided is None:
@@ -338,6 +377,7 @@ try:
     if p == "Executive Briefing":
         if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
             st.stop()
+        _render_data_quality_panel(data, kpis)
         render_executive_briefing_page(*args)
         # Add export options
         metrics = calculate_key_metrics(data)
@@ -346,8 +386,9 @@ try:
             'profit_margin': float(data['profit_margin'].mean()) if 'profit_margin' in data.columns else 40,
             'cash_flow_ratio': 1.2,
             'customer_growth': metrics.get('customer_growth', 0),
-            'roas': float(data['roas'].mean()) if 'roas' in data.columns else 3
         }
+        if kpis.get('roas') is not None:
+            health_metrics['roas'] = kpis['roas']
         health_score = calculate_business_health_score(health_metrics)
         st.markdown("---")
         st.subheader("📤 Export & Share")
@@ -373,6 +414,10 @@ try:
     elif p == "Dashboard":
         if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
             st.stop()
+        _render_data_quality_panel(data, kpis)
+        winfo = kpis.get('window_info', {})
+        if winfo.get('label'):
+            st.caption(f"**Window:** {winfo['label']}")
         st.title("Dashboard")
 
         # Data source banner with Sync Now
@@ -405,6 +450,8 @@ try:
         
         # Calculate metrics first (needed for alerts and top priority)
         dash_metrics = calculate_key_metrics(data)
+        if kpis.get('roas') is not None:
+            dash_metrics['roas'] = kpis['roas']
         metric_alerts = get_metric_alerts(data, dash_metrics)
         if metric_alerts:
             st.markdown("#### ⚠️ Alerts")
@@ -449,8 +496,14 @@ try:
                 st.metric("Avg Margin", format_percentage(avg_margin), "✓ Healthy")
     
         with col4:
-                avg_roas = data['roas'].mean()
-                st.metric("Avg ROAS", format_multiplier(avg_roas), "↑ 15.2%")
+                if kpis.get('roas_unavailable'):
+                    display_unavailable_metric("Avg ROAS", "Required column marketing_spend not found.")
+                else:
+                    avg_roas = kpis.get('roas') or (data['roas'].mean() if 'roas' in data.columns else None)
+                    if avg_roas is not None:
+                        st.metric("Avg ROAS", format_multiplier(avg_roas), "↑ 15.2%")
+                    else:
+                        display_unavailable_metric("Avg ROAS", "Required column marketing_spend not found.")
     
         st.markdown("---")
 
@@ -510,10 +563,15 @@ try:
             'profit_margin': data['profit_margin'].mean() if 'profit_margin' in data.columns else 40,
             'cash_flow_ratio': 1.2,
             'customer_growth': metrics.get('customer_growth', 0),
-            'roas': data['roas'].mean() if 'roas' in data.columns else 3
         }
+        if kpis.get('roas') is not None and not kpis.get('roas_unavailable'):
+            health_metrics['roas'] = kpis['roas']
+        else:
+            health_metrics['roas'] = 1  # Neutral when unavailable (no fake 3.0)
         health_score = calculate_business_health_score(health_metrics)
+        data_conf = calculate_data_confidence(data, kpis, winfo)
         display_business_health_score(health_score)
+        st.caption(f"**Data Confidence:** {data_conf.get('level', 'High')}")
     elif p == "Analytics":
         if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
             st.stop()
