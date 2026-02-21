@@ -62,13 +62,14 @@ def render_goals_page(data=None, kpis=None, format_currency=None, format_percent
             st.progress(min(progress['progress'] / 100, 1.0))
             st.markdown(f"**Current:** {format_currency(goals['revenue']['current'])} | **Target:** {format_currency(rev_target)}")
             st.caption(progress['message'])
-
+        st.markdown("<div style='margin:0.75rem 0;'></div>", unsafe_allow_html=True)
         with st.expander("👥 Customer Goal", expanded=True):
             cust_target = st.number_input("Target Customers", value=int(goals['customers']['target']), step=100, key="goal_cust")
             progress = get_goal_progress(goals['customers']['current'], cust_target)
             st.progress(min(progress['progress'] / 100, 1.0))
             st.markdown(f"**Current:** {format_count(goals['customers']['current'])} | **Target:** {format_count(cust_target)}")
             st.caption(progress['message'])
+        st.markdown("<div style='margin:0.75rem 0;'></div>", unsafe_allow_html=True)
 
     with col2:
         with st.expander("📈 Profit Margin Goal", expanded=True):
@@ -77,7 +78,7 @@ def render_goals_page(data=None, kpis=None, format_currency=None, format_percent
             st.progress(min(progress['progress'] / 100, 1.0))
             st.markdown(f"**Current:** {format_percentage(goals['profit_margin']['current'])} | **Target:** {format_percentage(margin_target)}")
             st.caption(progress['message'])
-
+        st.markdown("<div style='margin:0.75rem 0;'></div>", unsafe_allow_html=True)
         with st.expander("⚡ ROAS Goal", expanded=True):
             roas_target = st.number_input("Target ROAS (x)", value=float(goals['roas']['target']), step=0.5, format="%.1f", key="goal_roas")
             if roas_unavailable:

@@ -384,13 +384,6 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
             <p style="color:{conf_color};font-size:12px;margin-top:10px;font-weight:600;">Data Confidence: {conf_level}</p>
         </div>
         """, unsafe_allow_html=True)
-        display_explain_this_number(
-            "Business Health Score",
-            "Weighted: Revenue, Profitability, Cash Flow, Customer Growth, Efficiency (ROAS). 0–100 scale.",
-            winfo.get('label', '—'),
-            "Components: " + ", ".join(f"{k}={v}" for k, v in (health_score.get('breakdown') or {}).items() if v is not None),
-            aggregation="Component scores aggregated by weighted average"
-        )
     
     with col2:
         st.markdown(f"""
@@ -410,7 +403,18 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
             <p style="color:#6b7280;font-size:0.75rem;margin-top:6px;">{cash_metrics.get('date_range_label', 'Last 12 months')}</p>
         </div>
         """, unsafe_allow_html=True)
-    
+
+    # Explain Business Health (full width, below cards to avoid overlap)
+    st.markdown("<div style='margin-top:1.5rem;'></div>", unsafe_allow_html=True)
+    display_explain_this_number(
+        "Business Health Score",
+        "Weighted: Revenue, Profitability, Cash Flow, Customer Growth, Efficiency (ROAS). 0–100 scale.",
+        winfo.get('label', '—'),
+        "Components: " + ", ".join(f"{k}={v}" for k, v in (health_score.get('breakdown') or {}).items() if v is not None),
+        aggregation="Component scores aggregated by weighted average"
+    )
+    st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
+
     # === vs Industry Benchmarks ===
     industry = st.session_state.get('industry', 'ecommerce')
     benchmarks = get_industry_benchmarks(industry)
@@ -432,6 +436,7 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
     margin_def = kpis.get('margin_definition', 'Gross')
     st.markdown(f"**📊 vs {ind_name} benchmark:** {margin_line} · {roas_line}")
     st.caption(f"Margin = {margin_def} (revenue − cost)")
+    st.markdown("<div style='height:1.25rem;'></div>", unsafe_allow_html=True)  # Spacer so expander doesn't overlap ROAS text
     # Explain ROAS (when available) and Margin
     with st.expander("📖 Explain: ROAS & Margin", expanded=False):
         st.markdown("**ROAS** = SUM(revenue) ÷ SUM(marketing_spend or ad_spend)")

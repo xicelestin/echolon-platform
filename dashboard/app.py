@@ -189,11 +189,28 @@ st.markdown("""
     }
     
     /* Expanders - prevent overlap when expanded */
-    [data-testid="stExpander"] { border-radius: 14px; border: 1px solid rgba(148, 163, 184, 0.2); background: rgba(30, 41, 59, 0.4); margin-bottom: 1rem; }
+    [data-testid="stExpander"] {
+        border-radius: 14px; border: 1px solid rgba(148, 163, 184, 0.2);
+        background: rgba(30, 41, 59, 0.4); margin: 1rem 0;
+        position: relative; z-index: 1; clear: both;
+    }
+    [data-testid="stExpander"] details summary { padding: 0.75rem 1rem !important; white-space: normal !important; line-height: 1.4 !important; }
+    [data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+        padding: 1rem !important; margin-top: 0 !important;
+        display: block !important; position: relative !important; overflow: visible !important;
+    }
+    /* Columns inside expanders - prevent overlap */
+    [data-testid="stExpander"] .stColumns { margin-bottom: 0.5rem !important; }
+    [data-testid="stExpander"] .stColumns > div { min-height: 1px !important; }
     
-    /* Sidebar */
+    /* Sidebar - prevent expander overlap */
     [data-testid="stSidebar"] { background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important; }
     [data-testid="stSidebar"] .stMarkdown { color: #94a3b8; }
+    [data-testid="stSidebar"] [data-testid="stExpander"] {
+        margin: 0.75rem 0 !important; display: block !important; clear: both !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stExpander"] + [data-testid="stExpander"],
+    [data-testid="stSidebar"] [data-testid="stExpander"] + div { margin-top: 0.5rem !important; }
     
     hr { margin: 2rem 0 !important; border: none; border-top: 1px solid rgba(148, 163, 184, 0.15) !important; }
     
@@ -252,6 +269,7 @@ with st.sidebar:
     has_goals = bool(st.session_state.get('goals') and any(g.get('target') for g in (st.session_state.get('goals') or {}).values()))
     onboarding_done = has_data and has_goals
     if not st.session_state.onboarding_dismissed and not onboarding_done:
+        st.markdown("<div style='margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
         with st.expander("🎯 Get Started — 3 steps to your first briefing", expanded=True):
             st.markdown("1. **Connect your data** — CSV, Stripe, or Shopify")
             st.markdown("2. **Set your industry** — for relevant benchmarks")
@@ -269,6 +287,7 @@ with st.sidebar:
             if st.button("I'll do this later", key="onboard_skip"):
                 st.session_state.onboarding_dismissed = True
                 st.rerun()
+        st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
         st.markdown("---")
     
     industry_options = {k: f"{v['icon']} {v['name']}" for k, v in INDUSTRIES.items()}
@@ -285,9 +304,11 @@ with st.sidebar:
         key="sidebar_date_range"
     )
     st.session_state.company_name = st.text_input("Company Name", value=st.session_state.get('company_name', 'Your Business'), key="company_name_input")
+    st.markdown("<div style='margin-top:1rem;margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
     with st.expander("🔔 Alerts"):
         st.caption("We alert you when: revenue drops >5%, margin drops >3 pts, ROAS down >15%.")
         st.caption("Based on your last 60 days of data.")
+    st.markdown("<div style='margin-top:1rem;margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
     st.markdown("---")
     tier = get_user_tier()
     st.caption("Main")
@@ -303,6 +324,7 @@ with st.sidebar:
     if st.button("💳 Billing", use_container_width=True, key="main_billing"):
         st.session_state.current_page = "Billing"
         st.rerun()
+    st.markdown("<div style='margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
     more_pages = ["Customer Insights", "Inventory & Demand", "Anomalies & Alerts", "Margin Analysis", "Smart Alerts", "Customer LTV", "Revenue Attribution", "Competitive Benchmark"]
     with st.expander("More pages", expanded=True):
         for p in more_pages:
@@ -334,6 +356,7 @@ def _render_data_quality_panel(data, kpis):
     if data is None or data.empty:
         return
     report = validate_data_contract(data, kpis.get('window_info', {}))
+    st.markdown("<div style='margin-top:1rem;'></div>", unsafe_allow_html=True)
     with st.expander("📋 Data Quality", expanded=False):
         # Summary metrics
         col1, col2, col3, col4 = st.columns(4)
@@ -362,6 +385,7 @@ def _render_data_quality_panel(data, kpis):
             st.caption(f"Customers: {report['customers_semantics']} (last value)" if report['customers_semantics'] == 'cumulative' else f"Customers: {report['customers_semantics']} (sum in window)")
         if kpis.get('roas_unavailable'):
             st.caption("ROAS: map ad_spend or marketing_spend")
+        st.markdown("<div style='margin:0.75rem 0;'></div>", unsafe_allow_html=True)
         # Download cleaned CSV
         from utils.export_cleaned import create_download_cleaned_csv_button
         create_download_cleaned_csv_button(data, window_info=kpis.get('window_info'), key="dq_download_cleaned")
