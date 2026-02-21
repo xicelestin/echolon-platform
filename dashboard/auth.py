@@ -146,8 +146,8 @@ def render_landing_page():
             st.rerun()
     with col_starter:
         st.markdown("""
-        <div style="font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#059669 0%,#047857 100%);padding:1.75rem;border-radius:16px;border:2px solid rgba(52,211,153,0.5);height:100%;position:relative;box-shadow:0 10px 40px -10px rgba(5,150,105,0.4);">
-            <span style="position:absolute;top:-10px;right:16px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:10px;font-weight:600;padding:4px 10px;border-radius:6px;letter-spacing:0.05em;">POPULAR</span>
+        <div style="font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#059669 0%,#047857 100%);padding:1.75rem;border-radius:16px;border:2px solid rgba(52,211,153,0.5);height:100%;position:relative;box-shadow:0 10px 40px -10px rgba(5,150,105,0.4);overflow:visible;">
+            <span style="position:absolute;top:8px;right:16px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:10px;font-weight:600;padding:4px 10px;border-radius:6px;letter-spacing:0.05em;">POPULAR</span>
             <p style="font-size:1.1rem;font-weight:600;color:rgba(255,255,255,0.9);margin:0;">Starter</p>
             <p style="font-size:2.25rem;font-weight:700;color:white;margin:0.5rem 0;">$49</p>
             <p style="color:rgba(255,255,255,0.85);font-size:0.85rem;margin:0 0 1.25rem 0;">/mo · $39/mo annual</p>

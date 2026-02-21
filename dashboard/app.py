@@ -188,8 +188,8 @@ st.markdown("""
         background: rgba(51, 65, 85, 0.8) !important; border-color: rgba(148, 163, 184, 0.5);
     }
     
-    /* Expanders */
-    [data-testid="stExpander"] { border-radius: 14px; border: 1px solid rgba(148, 163, 184, 0.2); background: rgba(30, 41, 59, 0.4); }
+    /* Expanders - prevent overlap when expanded */
+    [data-testid="stExpander"] { border-radius: 14px; border: 1px solid rgba(148, 163, 184, 0.2); background: rgba(30, 41, 59, 0.4); margin-bottom: 1rem; }
     
     /* Sidebar */
     [data-testid="stSidebar"] { background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important; }
@@ -207,6 +207,7 @@ st.markdown("""
         .stMetric { min-width: 120px; }
         [data-testid="stSidebar"] { width: 100% !important; }
         .stColumns > div { flex: 1 1 100% !important; min-width: 100% !important; }
+        [data-testid="stExpander"] { margin-bottom: 1rem !important; }
         .stButton > button { min-height: 44px; padding: 12px 20px; font-size: 1rem; }
         [data-testid="stMetric"] { padding: 1rem !important; }
         [data-testid="stMetric"] label { font-size: 0.6rem !important; }
@@ -220,27 +221,29 @@ st.markdown("""
     .echolon-estimate { font-style: italic !important; color: #94a3b8 !important; opacity: 0.9; }
     .stMarkdown h1, .stMarkdown h2 { margin-bottom: 1.5rem !important; }
     
-    /* Live Data badge - top right, high contrast */
+    /* Live Data badge - in sidebar to avoid overlap with main content */
     .echolon-live-badge {
-        position: fixed; top: 12px; right: 20px; z-index: 999;
-        padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;
-        text-transform: uppercase; letter-spacing: 0.08em;
-        box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem;
     }
     .echolon-live-badge.live { background: linear-gradient(135deg, #10B981, #059669); color: white; }
     .echolon-live-badge.demo { background: linear-gradient(135deg, #64748b, #475569); color: #e2e8f0; }
+    /* Executive briefing grids - wrap on narrow screens */
+    .echolon-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    @media (max-width: 900px) { .echolon-grid-3 { grid-template-columns: 1fr; } }
+    /* Business Health large score - responsive */
+    .echolon-health-score { font-size: clamp(2.5rem, 8vw, 4.5rem) !important; }
 </style>
 """, unsafe_allow_html=True)
-
-# Live Data badge - top right, high contrast
-_has_live = bool(st.session_state.get('connected_sources'))
-_badge_class = "live" if _has_live else "demo"
-_badge_text = "🟢 Live Data" if _has_live else "📊 Demo Data"
-st.markdown(f'<div class="echolon-live-badge {_badge_class}">{_badge_text}</div>', unsafe_allow_html=True)
 
 with st.sidebar:
     st.title("Echolon AI")
     st.caption("Business Intelligence")
+    # Live Data badge - in sidebar to avoid overlap with main content
+    _has_live = bool(st.session_state.get('connected_sources'))
+    _badge_class = "live" if _has_live else "demo"
+    _badge_text = "🟢 Live Data" if _has_live else "📊 Demo Data"
+    st.markdown(f'<div class="echolon-live-badge {_badge_class}">{_badge_text}</div>', unsafe_allow_html=True)
     
     # Onboarding checklist for first-time users
     if 'onboarding_dismissed' not in st.session_state:

@@ -76,7 +76,7 @@ def display_business_health_score(health_data: Dict[str, Any]):
         # Large score display
         st.markdown(f"""
         <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px;">
-            <h1 style="color: white; font-size: 72px; margin: 0;">{score}</h1>
+            <h1 class="echolon-health-score" style="color: white; margin: 0;">{score}</h1>
             <p style="color: white; font-size: 24px; margin: 0;">/ 100</p>
             <p style="color: white; font-size: 18px; margin-top: 10px;">{status}</p>
         </div>

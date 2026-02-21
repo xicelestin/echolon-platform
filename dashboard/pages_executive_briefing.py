@@ -338,7 +338,7 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
     outflow = cash_metrics.get('monthly_expenses', 0)  # avg monthly cost + ad spend
     surplus = inflow - outflow  # explicit: Net Cash Flow = Money In - Money Out
     st.markdown(f"""
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;">
+    <div class="echolon-grid-3" style="margin-bottom:2rem;">
         <div style="background:linear-gradient(135deg,#059669 0%,#047857 100%);padding:1.75rem;border-radius:16px;text-align:center;border:1px solid rgba(52,211,153,0.4);">
             <p style="color:rgba(255,255,255,0.9);font-size:0.75rem;margin:0 0 8px 0;text-transform:uppercase;">Money In</p>
             <p style="color:white;font-size:1.75rem;font-weight:700;margin:0;">{format_currency(inflow)}</p>
