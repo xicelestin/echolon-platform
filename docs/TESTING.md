@@ -2,6 +2,10 @@
 
 On every push/PR to `main` or `develop`, **[`.github/workflows/ci.yml`](../.github/workflows/ci.yml)** runs on Ubuntu: `compileall` + `pytest` for the dashboard, and backend `smoke_test.py` with SQLite.
 
+**Dependabot** opens weekly PRs for **`dashboard/`** and **`backend/`** pip deps and for **GitHub Actions** — see **[`.github/dependabot.yml`](../.github/dependabot.yml)**.
+
+**Optional local hooks:** `pip install pre-commit && pre-commit install` then commits run **[`.pre-commit-config.yaml`](../.pre-commit-config.yaml)** (EOF/whitespace/yaml checks + `black --check` on `backend/` and `dashboard/`).
+
 ## 1. Syntax (whole repo)
 
 Uses a project-local bytecode cache so macOS sandboxed environments can write `.pyc` files:
