@@ -292,7 +292,28 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
     """Render the Executive Briefing - 30-second view. Leads with what to do today."""
     st.markdown("<div style='margin-bottom: 1.5rem;'>", unsafe_allow_html=True)
     st.title("📋 Executive Briefing")
-    st.caption("Your business at a glance — 30 seconds")
+    st.markdown(
+        "**Cash, margin, and one clear action this week** — from your numbers, not generic advice."
+    )
+    st.caption("Your business at a glance — about 30 seconds")
+
+    has_live = bool(st.session_state.get("connected_sources"))
+    has_upload = st.session_state.get("uploaded_data") is not None
+    if has_live:
+        st.success(
+            "Using **connected sources** for this briefing. Numbers reflect your sync window and sidebar date range."
+        )
+    elif has_upload:
+        st.info(
+            "Using **your uploaded data**. Connect **Stripe**, **Shopify**, or more under **Data Sources** "
+            "for automatic refresh and fresher alerts."
+        )
+    else:
+        st.warning(
+            "You're on **sample (demo) data** — useful to explore the product. "
+            "Add your file or connect accounts under **Data Sources** so cash, margin, and priorities match **your** business. "
+            "**Growth** unlocks forecasts, What-If, and Recommendations on top."
+        )
     
     # Window subtitle (all metrics use this window)
     winfo = kpis.get('window_info', {})
@@ -326,7 +347,7 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
     
     # === HERO: Do This Week (lead with action) ===
     st.markdown(f"""
-    <div style="font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#059669 0%,#047857 100%);border-radius:20px;padding:2rem 2.25rem;margin:0 0 2rem 0;border:1px solid rgba(52,211,153,0.4);box-shadow:0 10px 40px -10px rgba(5,150,105,0.4);">
+    <div class="echolon-briefing-hero" style="font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#059669 0%,#047857 100%);border-radius:20px;padding:2rem 2.25rem;margin:0 0 2rem 0;border:1px solid rgba(52,211,153,0.4);box-shadow:0 10px 40px -10px rgba(5,150,105,0.4);">
         <p style="color:rgba(255,255,255,0.9);font-size:10px;margin:0 0 12px 0;text-transform:uppercase;letter-spacing:0.12em;font-weight:600;">Do This Week</p>
         <p style="color:white;font-size:1.5rem;font-weight:700;margin:0;line-height:1.5;letter-spacing:-0.01em;">{this_week}</p>
         <p style="color:rgba(255,255,255,0.8);font-size:0.9rem;margin:1.25rem 0 0 0;">Based on your data — revenue, margins, and trends.</p>

@@ -55,7 +55,12 @@ from components import display_business_health_score, display_metric_with_compar
 
 # Import auth early to avoid circular import (pages_data_sources imports auth)
 from auth import require_authentication, render_user_info, get_current_user
-from utils.subscription import get_user_tier, can_access_page
+from utils.subscription import (
+    get_user_tier,
+    can_access_page,
+    upgrade_tooltip_for_page,
+    locked_page_detail,
+)
 
 # Page Imports
 from pages_margin_analysis import render_margin_analysis_page
@@ -308,6 +313,12 @@ st.markdown("""
     /* Executive briefing grids - wrap on narrow screens */
     .echolon-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
     @media (max-width: 900px) { .echolon-grid-3 { grid-template-columns: 1fr; } }
+    /* Executive Briefing hero — comfortable on phones */
+    @media (max-width: 768px) {
+        .echolon-briefing-hero { padding: 1.35rem 1.25rem !important; border-radius: 16px !important; }
+        .echolon-briefing-hero p:first-of-type { font-size: 9px !important; }
+        .echolon-briefing-hero p:nth-of-type(2) { font-size: 1.15rem !important; }
+    }
     /* Business Health large score - responsive */
     .echolon-health-score { font-size: clamp(2.5rem, 8vw, 4.5rem) !important; }
     /* Accessibility: keyboard focus + respect reduced motion */
@@ -341,7 +352,9 @@ with st.sidebar:
     _badge_class = "live" if _has_live else "demo"
     _badge_text = "🟢 Live Data" if _has_live else "📊 Demo Data"
     st.markdown(f'<div class="echolon-live-badge {_badge_class}">{_badge_text}</div>', unsafe_allow_html=True)
-    
+    if not _has_live:
+        st.caption("Demo data shows how Echolon works. **Data Sources** = your real books.")
+
     # Onboarding checklist for first-time users
     if 'onboarding_dismissed' not in st.session_state:
         st.session_state.onboarding_dismissed = False
@@ -408,7 +421,13 @@ with st.sidebar:
                 st.session_state.pop("_page_from_url_applied", None)
                 st.rerun()
         else:
-            st.button(f"🔒 {p}", use_container_width=True, disabled=True, key=f"main_{p}", help="Upgrade to access")
+            st.button(
+                f"🔒 {p}",
+                use_container_width=True,
+                disabled=True,
+                key=f"main_{p}",
+                help=upgrade_tooltip_for_page(p, tier),
+            )
     if st.button("💳 Billing", use_container_width=True, key="main_billing"):
         st.session_state.current_page = "Billing"
         st.session_state.pop("_page_from_url_applied", None)
@@ -423,7 +442,22 @@ with st.sidebar:
                     st.session_state.pop("_page_from_url_applied", None)
                     st.rerun()
             else:
-                st.button(f"🔒 {p}", use_container_width=True, disabled=True, key=f"nav_{p}", help="Upgrade to access")
+                st.button(
+                    f"🔒 {p}",
+                    use_container_width=True,
+                    disabled=True,
+                    key=f"nav_{p}",
+                    help=upgrade_tooltip_for_page(p, tier),
+                )
+
+    with st.expander("Privacy & terms"):
+        st.markdown(
+            "**Your data** — Uploaded files and metrics stay in your session unless you connect "
+            "cloud sources; then retention follows those providers and your settings.\n\n"
+            "**Not legal advice** — Echolon surfaces estimates from your data; confirm decisions "
+            "with your accountant or counsel.\n\n"
+            "Add a hosted **Privacy Policy** and **Terms** URL in your deployment when you go to production."
+        )
 
     render_user_info()
 
@@ -436,8 +470,8 @@ args = (data, kpis, format_currency, format_percentage, format_multiplier)
 
 # Tier enforcement: if user can't access this page, show upgrade prompt
 if not can_access_page(p, tier):
-    st.info(f"🔒 **{p}** is available on Growth plan. Upgrade to unlock Predictions, What-If, Recommendations, and more.")
-    if st.button("💳 Upgrade Plan", key="upgrade_from_page"):
+    st.info(locked_page_detail(p, tier))
+    if st.button("💳 Open Billing", key="upgrade_from_page"):
         st.session_state.current_page = "Billing"
         st.session_state.pop("_page_from_url_applied", None)
         st.rerun()

@@ -52,6 +52,40 @@ GROWTH_ONLY_PAGES = [
     "Cohort Analysis", "Customer LTV", "Revenue Attribution", "Competitive Benchmark",
 ]
 
+# Short tooltips for disabled nav buttons (Streamlit `help=` length is limited in UI)
+_GROWTH_TOOLTIP = "Growth: forecasts, What-If, Recommendations, exports, unlimited sources"
+_STARTER_TOOLTIP = "Starter+: Dashboard, Analytics, Insights, Goals, 90-day history"
+
+
+def upgrade_tooltip_for_page(page_name: str, tier: str) -> str:
+    """Hover text on locked sidebar buttons."""
+    if tier == "growth" or page_name == "Billing":
+        return ""
+    if page_name in GROWTH_ONLY_PAGES:
+        return _GROWTH_TOOLTIP
+    return _STARTER_TOOLTIP
+
+
+def locked_page_detail(page_name: str, tier: str) -> str:
+    """Full message when user lands on a page their plan does not include."""
+    if page_name in GROWTH_ONLY_PAGES:
+        return (
+            f"**{page_name}** is included in **Growth** ($99/mo, or less annually). "
+            "That plan adds AI **Predictions**, **What-If** scenarios, **Recommendations**, "
+            "Smart Alerts, LTV & inventory tools, **PDF/Excel exports**, and **unlimited** "
+            "connected sources with **12 months** of history. Open **Billing** to upgrade."
+        )
+    if tier == "free":
+        return (
+            f"**{page_name}** is included in **Starter** ($49/mo) or **Growth**. "
+            "**Starter** unlocks Dashboard, Analytics, Insights, Goals, Inventory Optimization, "
+            "Cohort Analysis, and **90 days** of history. Open **Billing** to choose a plan."
+        )
+    return (
+        f"**{page_name}** requires **Growth**. Open **Billing** to upgrade and unlock "
+        "forecasts, scenarios, and advanced modules."
+    )
+
 
 def get_user_tier(username: str = None) -> str:
     """

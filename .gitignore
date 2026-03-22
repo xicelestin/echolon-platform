@@ -210,6 +210,10 @@ __marimo__/
 # Echolon Project-Specific
 # =============================================================================
 
+# CI / local compile caches
+.pycache_ci/
+.venv-backend/
+
 # Database files
 *.db
 *.sqlite

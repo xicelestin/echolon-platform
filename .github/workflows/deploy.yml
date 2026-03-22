@@ -189,26 +189,45 @@ jobs:
           print('All smoke tests passed')
           "
 
-  # Notifications
+  # Notifications (push only — avoids false “failed” on PRs where build/deploy are skipped)
   notify:
     runs-on: ubuntu-latest
     name: Send Notifications
     needs: [test, build, deploy, smoke-test]
-    if: always()
+    if: always() && github.event_name == 'push'
     steps:
       - name: Determine job status
         id: status
+        env:
+          TEST: ${{ needs.test.result }}
+          BUILD: ${{ needs.build.result }}
+          DEPLOY: ${{ needs.deploy.result }}
+          SMOKE: ${{ needs.smoke-test.result }}
         run: |
-          if [[ "${{ needs.test.result }}" == "success" && "${{ needs.build.result }}" == "success" && "${{ needs.deploy.result }}" == "success" ]]; then
-            echo "status=✅ DEPLOYMENT SUCCESSFUL" >> $GITHUB_OUTPUT
+          if [[ "$TEST" != "success" ]]; then
+            echo "status=❌ Tests failed" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            if [[ "$BUILD" == "success" && "$DEPLOY" == "success" && "$SMOKE" == "success" ]]; then
+              echo "status=✅ Production deployment successful" >> $GITHUB_OUTPUT
+            elif [[ "$BUILD" != "success" ]]; then
+              echo "status=❌ Docker build failed" >> $GITHUB_OUTPUT
+            else
+              echo "status=❌ Deploy or smoke tests failed" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "status=❌ DEPLOYMENT FAILED" >> $GITHUB_OUTPUT
+            if [[ "$BUILD" == "success" ]]; then
+              echo "status=✅ CI passed (image build OK)" >> $GITHUB_OUTPUT
+            else
+              echo "status=❌ Docker build failed" >> $GITHUB_OUTPUT
+            fi
           fi
 
       - name: Send Slack notification
+        if: ${{ secrets.SLACK_WEBHOOK != '' }}
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ steps.status.outputs.status }}
           text: 'Echolon Platform CI/CD Pipeline'
           webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-        if: always()

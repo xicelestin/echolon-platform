@@ -50,7 +50,10 @@ def render_billing_page():
     with col2:
         with st.container(border=True):
             st.markdown("**Starter** — $49/mo · $39/mo annual")
-            st.caption("Dashboard, Analytics, Insights, 90 days")
+            st.caption(
+                "Executive Briefing, Dashboard, Analytics, Insights, Goals, Inventory Optimization, "
+                "Cohort Analysis, 1 data source, 90-day history. No AI Predictions / What-If (Growth)."
+            )
             if tier == "free":
                 sub_col1, sub_col2 = st.columns(2)
                 with sub_col1:
@@ -65,7 +68,10 @@ def render_billing_page():
     with col3:
         with st.container(border=True):
             st.markdown("**Growth** — $99/mo · $79/mo annual")
-            st.caption("All features, unlimited sources, 12 months")
+            st.caption(
+                "Everything in Starter, plus Predictions, What-If, Recommendations, Smart Alerts, "
+                "LTV, inventory & margin deep-dives, exports, unlimited sources, 12-month history."
+            )
             has_paid_subscription = st.session_state.get("stripe_subscription_status") == "active"
             if tier != "growth":
                 sub_col1, sub_col2 = st.columns(2)
