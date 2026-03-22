@@ -7,7 +7,34 @@ from datetime import datetime, timedelta
 import io
 
 # Must be first Streamlit command
-st.set_page_config(page_title="Echolon AI", page_icon="📊", layout="wide")
+st.set_page_config(
+    page_title="Echolon AI",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={
+        "Get Help": "https://github.com/xicelestin/echolon-platform/blob/main/README.md",
+        "Report a bug": "https://github.com/xicelestin/echolon-platform/issues",
+        "About": "Echolon AI — business intelligence and forecasting. Data stays in your session unless you connect cloud sources.",
+    },
+)
+
+DATE_RANGE_OPTIONS = [
+    "Last 7 Days",
+    "Last 30 Days",
+    "Last 90 Days",
+    "Last 12 Months",
+    "All Time",
+]
+
+_PLOTLY_CONFIG = {"displayModeBar": True, "displaylogo": False, "modeBarButtonsToRemove": ["lasso2d", "select2d"]}
+
+
+def _echolon_toast(message: str, icon: str = "✅"):
+    """Show toast when supported (Streamlit ≥1.33)."""
+    show = getattr(st, "toast", None)
+    if callable(show):
+        show(message, icon=icon)
 
 from components import create_line_chart, create_bar_chart, COLORS, COLOR_PALETTE
 from components import display_unavailable_metric
@@ -78,6 +105,39 @@ if 'company_name' not in st.session_state:
     st.session_state.company_name = 'Your Business'
 if 'date_range' not in st.session_state:
     st.session_state.date_range = 'Last 90 Days'
+
+# Optional deep link: ?page=dashboard (slug → sidebar title)
+_PAGE_SLUGS = {
+    "executive-briefing": "Executive Briefing",
+    "dashboard": "Dashboard",
+    "analytics": "Analytics",
+    "insights": "Insights",
+    "what-if": "What-If",
+    "predictions": "Predictions",
+    "recommendations": "Recommendations",
+    "goals": "Goals",
+    "inventory-optimization": "Inventory Optimization",
+    "cohort-analysis": "Cohort Analysis",
+    "data-sources": "Data Sources",
+    "billing": "Billing",
+    "customer-insights": "Customer Insights",
+    "inventory-demand": "Inventory & Demand",
+    "anomalies-alerts": "Anomalies & Alerts",
+    "margin-analysis": "Margin Analysis",
+    "smart-alerts": "Smart Alerts",
+    "customer-ltv": "Customer LTV",
+    "revenue-attribution": "Revenue Attribution",
+    "competitive-benchmark": "Competitive Benchmark",
+}
+_qp = getattr(st, "query_params", None)
+if _qp is not None and not st.session_state.get("_page_from_url_applied"):
+    st.session_state._page_from_url_applied = True
+    raw = _qp.get("page")
+    if raw:
+        slug = raw[0] if isinstance(raw, (list, tuple)) else raw
+        slug = str(slug).strip().lower()
+        if slug in _PAGE_SLUGS:
+            st.session_state.current_page = _PAGE_SLUGS[slug]
 
 @st.cache_data
 def load_data():
@@ -250,8 +310,28 @@ st.markdown("""
     @media (max-width: 900px) { .echolon-grid-3 { grid-template-columns: 1fr; } }
     /* Business Health large score - responsive */
     .echolon-health-score { font-size: clamp(2.5rem, 8vw, 4.5rem) !important; }
+    /* Accessibility: keyboard focus + respect reduced motion */
+    .stButton > button:focus-visible {
+        outline: 2px solid #34d399 !important;
+        outline-offset: 2px !important;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+        [data-testid="stMetric"]:hover { transform: none !important; }
+    }
+    /* Skip link: screen readers / keyboard */
+    .echolon-skip-link {
+        position: absolute; left: -9999px; z-index: 9999; padding: 0.5rem 1rem; background: #10B981; color: #0f172a;
+        font-weight: 600; border-radius: 8px; text-decoration: none;
+    }
+    .echolon-skip-link:focus { left: 1rem; top: 1rem; }
 </style>
 """, unsafe_allow_html=True)
+
+st.markdown(
+    '<a href="#main-content" class="echolon-skip-link">Skip to main content</a>',
+    unsafe_allow_html=True,
+)
 
 with st.sidebar:
     st.title("Echolon AI")
@@ -279,10 +359,12 @@ with st.sidebar:
             with col1:
                 if st.button("📁 Connect Data", key="onboard_data"):
                     st.session_state.current_page = "Data Sources"
+                    st.session_state.pop("_page_from_url_applied", None)
                     st.rerun()
             with col2:
                 if has_data and st.button("🎯 Set Goal", key="onboard_goals"):
                     st.session_state.current_page = "Goals"
+                    st.session_state.pop("_page_from_url_applied", None)
                     st.rerun()
             if st.button("I'll do this later", key="onboard_skip"):
                 st.session_state.onboarding_dismissed = True
@@ -297,11 +379,16 @@ with st.sidebar:
         format_func=lambda k: industry_options[k],
         key="sidebar_industry"
     )
+    _dr = st.session_state.get("date_range", "Last 90 Days")
+    if _dr not in DATE_RANGE_OPTIONS:
+        _dr = "Last 90 Days"
+    _dr_index = DATE_RANGE_OPTIONS.index(_dr)
     st.session_state.date_range = st.selectbox(
         "Date Range",
-        ["Last 7 Days", "Last 30 Days", "Last 90 Days", "Last 12 Months", "All Time"],
-        index=2,
-        key="sidebar_date_range"
+        DATE_RANGE_OPTIONS,
+        index=_dr_index,
+        key="sidebar_date_range",
+        help="Applies to charts and KPIs that use the selected time window.",
     )
     st.session_state.company_name = st.text_input("Company Name", value=st.session_state.get('company_name', 'Your Business'), key="company_name_input")
     st.markdown("<div style='margin-top:1rem;margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
@@ -318,11 +405,13 @@ with st.sidebar:
         if can_access_page(p, tier):
             if st.button(p, use_container_width=True, key=f"main_{p}"):
                 st.session_state.current_page = p
+                st.session_state.pop("_page_from_url_applied", None)
                 st.rerun()
         else:
             st.button(f"🔒 {p}", use_container_width=True, disabled=True, key=f"main_{p}", help="Upgrade to access")
     if st.button("💳 Billing", use_container_width=True, key="main_billing"):
         st.session_state.current_page = "Billing"
+        st.session_state.pop("_page_from_url_applied", None)
         st.rerun()
     st.markdown("<div style='margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
     more_pages = ["Customer Insights", "Inventory & Demand", "Anomalies & Alerts", "Margin Analysis", "Smart Alerts", "Customer LTV", "Revenue Attribution", "Competitive Benchmark"]
@@ -331,12 +420,17 @@ with st.sidebar:
             if can_access_page(p, tier):
                 if st.button(p, use_container_width=True, key=f"nav_{p}"):
                     st.session_state.current_page = p
+                    st.session_state.pop("_page_from_url_applied", None)
                     st.rerun()
             else:
                 st.button(f"🔒 {p}", use_container_width=True, disabled=True, key=f"nav_{p}", help="Upgrade to access")
 
     render_user_info()
 
+st.markdown(
+    '<div id="main-content" tabindex="-1" style="outline:none;height:0;overflow:hidden;" aria-label="Main content"></div>',
+    unsafe_allow_html=True,
+)
 p = st.session_state.current_page
 args = (data, kpis, format_currency, format_percentage, format_multiplier)
 
@@ -345,6 +439,7 @@ if not can_access_page(p, tier):
     st.info(f"🔒 **{p}** is available on Growth plan. Upgrade to unlock Predictions, What-If, Recommendations, and more.")
     if st.button("💳 Upgrade Plan", key="upgrade_from_page"):
         st.session_state.current_page = "Billing"
+        st.session_state.pop("_page_from_url_applied", None)
         st.rerun()
     st.stop()
 
@@ -409,6 +504,7 @@ def _check_data_for_page(page_name):
     st.info(f"📊 **This page needs:** {', '.join(missing)}. Map these columns in **Data Sources** to see {page_name.lower()}.")
     if st.button("📁 Go to Data Sources", key=f"goto_ds_{page_name}"):
         st.session_state.current_page = "Data Sources"
+        st.session_state.pop("_page_from_url_applied", None)
         st.rerun()
     return False
 
@@ -451,6 +547,8 @@ try:
             )
             st.caption("Summary for email")
     elif p == "Dashboard":
+        if st.session_state.pop("_echolon_sync_toast", False):
+            _echolon_toast("Connected sources synced.", icon="🔄")
         if p in PAGES_NEEDING_DATE_REVENUE and not _check_data_for_page(p):
             st.stop()
         _render_data_quality_panel(data, kpis)
@@ -475,6 +573,7 @@ try:
             if has_live and st.button("🔄 Sync Now", key="dashboard_sync_now"):
                 for sk in get_syncable_sources():
                     sync_source_quiet(sk)
+                st.session_state._echolon_sync_toast = True
                 st.rerun()
         
         # vs Industry benchmark
@@ -601,7 +700,7 @@ try:
             chart_data['date'] = pd.to_datetime(chart_data['date'])
             fig = px.area(chart_data, x='date', y='revenue', title='Revenue Over Time')
             fig.update_layout(template='plotly_dark', height=280, margin=dict(t=40, b=30, l=50, r=20))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, config=_PLOTLY_CONFIG)
 
         st.markdown("---")
 
