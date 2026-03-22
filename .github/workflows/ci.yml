@@ -1,0 +1,73 @@
+# Fast, reliable checks on every PR and push (Linux — avoids macOS NumPy issues).
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dashboard:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: dashboard/requirements.txt
+
+      - name: Install dashboard + pytest
+        run: |
+          python -m pip install -U pip
+          pip install -r dashboard/requirements.txt pytest httpx
+
+      - name: Compile all Python (syntax)
+        env:
+          PYTHONPYCACHEPREFIX: ${{ github.workspace }}/.pycache_ci
+        run: |
+          python -m compileall -q dashboard
+          rm -rf .pycache_ci
+
+      - name: Pytest (dashboard)
+        env:
+          PYTHONPATH: dashboard
+        run: pytest dashboard/tests -v --tb=short
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend + pytest
+        run: |
+          python -m pip install -U pip
+          pip install -r backend/requirements.txt pytest httpx
+
+      - name: Compile backend (syntax)
+        env:
+          PYTHONPYCACHEPREFIX: ${{ github.workspace }}/.pycache_ci
+        run: |
+          python -m compileall -q backend
+          rm -rf .pycache_ci
+
+      - name: Smoke tests (FastAPI)
+        env:
+          DATABASE_URL: sqlite:////tmp/echolon_ci_smoke.db
+        working-directory: backend
+        run: pytest smoke_test.py -v --tb=short

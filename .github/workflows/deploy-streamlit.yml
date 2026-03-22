@@ -26,13 +26,19 @@ jobs:
           pip install flake8 pylint
           flake8 dashboard/ --count --select=E9,F63,F7,F82 --show-source --statistics || true
       
-      - name: Verify Python syntax
+      - name: Verify Python syntax (dashboard)
+        env:
+          PYTHONPYCACHEPREFIX: ${{ github.workspace }}/.pycache_ci
         run: |
-          python -m py_compile dashboard/app.py
-          python -m py_compile dashboard/pages_predictions.py
-          python -m py_compile dashboard/pages_insights.py
-          python -m py_compile dashboard/pages_inventory_ops.py
-          python -m py_compile dashboard/pages_recommendations.py
+          python -m compileall -q dashboard
+          rm -rf .pycache_ci
+
+      - name: Dashboard unit tests
+        env:
+          PYTHONPATH: dashboard
+        run: |
+          pip install pytest httpx
+          pytest dashboard/tests -v --tb=short
 
   trigger-streamlit-deploy:
     needs: lint-and-validate

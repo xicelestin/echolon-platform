@@ -1,5 +1,7 @@
 # Testing & verification
 
+On every push/PR to `main` or `develop`, **[`.github/workflows/ci.yml`](../.github/workflows/ci.yml)** runs on Ubuntu: `compileall` + `pytest` for the dashboard, and backend `smoke_test.py` with SQLite.
+
 ## 1. Syntax (whole repo)
 
 Uses a project-local bytecode cache so macOS sandboxed environments can write `.pyc` files:
