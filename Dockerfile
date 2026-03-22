@@ -9,9 +9,9 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
-COPY requirements-fastapi.txt .
-RUN pip install --no-cache-dir -r requirements-fastapi.txt
+# Backend Python dependencies (repo ships backend/requirements.txt)
+COPY backend/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Multi-stage build for Streamlit dashboard
 FROM python:3.11-slim as streamlit-builder
@@ -24,9 +24,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
-COPY requirements-streamlit.txt .
-RUN pip install --no-cache-dir -r requirements-streamlit.txt
+COPY dashboard/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Final runtime image combining both
 FROM python:3.11-slim
@@ -48,8 +47,8 @@ COPY --from=fastapi-builder /usr/local/bin /usr/local/bin
 COPY backend/ /app/backend/
 COPY dashboard/ /app/dashboard/
 
-# Copy environment files
-COPY .env.prod /app/.env
+# Optional env file (provide .env in build context or use runtime env vars)
+COPY .env.example /app/.env
 
 # Expose ports
 EXPOSE 8000 8501

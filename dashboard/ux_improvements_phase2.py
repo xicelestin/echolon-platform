@@ -920,12 +920,15 @@ def render_export_buttons(df: pd.DataFrame, summary_data: Dict):
     
     with col3:
         # Summary Report
+        summary_lines = [
+            f"{k.replace('_', ' ').title()}: {v}" for k, v in summary_data.items()
+        ]
+        summary_body = "\n".join(summary_lines) + "\n"
         report = f"""ECHOLON AI BUSINESS SUMMARY
 Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}
 
-{'='*50}
-{''.join([f'{k.replace("_", " ").title()}: {v}\n' for k, v in summary_data.items()])}
-"""
+{'=' * 50}
+{summary_body}"""
         st.download_button(
             label="📝 Download Report",
             data=report,

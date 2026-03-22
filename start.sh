@@ -73,8 +73,8 @@ start_backend() {
     # Create necessary directories
     mkdir -p /app/logs
     
-    # Start uvicorn server
-    exec uvicorn main:app \
+    # Start uvicorn in background (do not use exec — it would replace the shell)
+    uvicorn main:app \
         --host 0.0.0.0 \
         --port 8000 \
         --workers 4 \
@@ -82,7 +82,7 @@ start_backend() {
         --access-log \
         --use-colors \
         >> $LOG_DIR/backend.log 2>&1 &
-    
+
     BACKEND_PID=$!
     log_message "FastAPI backend started with PID: $BACKEND_PID"
 }
@@ -99,11 +99,10 @@ start_dashboard() {
     export STREAMLIT_SERVER_HEADLESS=true
     export STREAMLIT_CLIENT_SHOWERRORDETAILS=false
     
-    # Start streamlit app
-    exec streamlit run app.py \
+    streamlit run app.py \
         --logger.level="${LOG_LEVEL:-info}" \
         >> $LOG_DIR/dashboard.log 2>&1 &
-    
+
     DASHBOARD_PID=$!
     log_message "Streamlit dashboard started with PID: $DASHBOARD_PID"
 }

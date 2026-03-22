@@ -130,29 +130,27 @@ with tab1:
                 credentials_json = {}
             
             submitted = st.form_submit_button("✅ Connect Data Source", use_container_width=True)
-                        if submitted:
-                try:
-                    # API call would go here
-                    display_success(f"Data source '{source_name}' connected successfully!")
-                except Exception as e:
-                    display_error(
-                        f"Failed to connect data source",
-                        error_code="DATASOURCE_CONNECT_ERROR",
-                        error_detail=str(e),
-                        request_id="admin-datasource-123"
-                    )
-                    log_error(
-                        error_code="DATASOURCE_CONNECT_ERROR",
-                        message="Failed to connect data source",
-                        detail=str(e)
-                    )
-            
             if submitted:
                 if not source_name or not credentials_json:
                     st.error("❌ Please fill in all required fields")
                 else:
-                    st.success(f"✅ Data source '{source_name}' connected!")
-                    st.info("💡 Your data will sync automatically every 24 hours")
+                    try:
+                        # API call would go here
+                        display_success(f"Data source '{source_name}' connected successfully!")
+                        st.success(f"✅ Data source '{source_name}' connected!")
+                        st.info("💡 Your data will sync automatically every 24 hours")
+                    except Exception as e:
+                        display_error(
+                            "Failed to connect data source",
+                            error_code="DATASOURCE_CONNECT_ERROR",
+                            error_detail=str(e),
+                            request_id="admin-datasource-123",
+                        )
+                        log_error(
+                            error_code="DATASOURCE_CONNECT_ERROR",
+                            message="Failed to connect data source",
+                            detail=str(e),
+                        )
     
     with col2:
         st.markdown("### 📦 Connected Sources")
