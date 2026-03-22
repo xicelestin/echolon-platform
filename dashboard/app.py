@@ -361,9 +361,13 @@ with st.sidebar:
     has_data = bool(st.session_state.get('connected_sources') or st.session_state.get('uploaded_data') is not None)
     has_goals = bool(st.session_state.get('goals') and any(g.get('target') for g in (st.session_state.get('goals') or {}).values()))
     onboarding_done = has_data and has_goals
+    if "compact_nav" not in st.session_state:
+        st.session_state.compact_nav = True
+
     if not st.session_state.onboarding_dismissed and not onboarding_done:
         st.markdown("<div style='margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
-        with st.expander("🎯 Get Started — 3 steps to your first briefing", expanded=True):
+        _onb_exp = not st.session_state.compact_nav
+        with st.expander("🎯 Get Started — 3 steps to your first briefing", expanded=_onb_exp):
             st.markdown("1. **Connect your data** — CSV, Stripe, or Shopify")
             st.markdown("2. **Set your industry** — for relevant benchmarks")
             st.markdown("3. **Set a goal** — track what matters")
@@ -405,50 +409,99 @@ with st.sidebar:
     )
     st.session_state.company_name = st.text_input("Company Name", value=st.session_state.get('company_name', 'Your Business'), key="company_name_input")
     st.markdown("<div style='margin-top:1rem;margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
-    with st.expander("🔔 Alerts"):
+    with st.expander("🔔 Alerts", expanded=False):
         st.caption("We alert you when: revenue drops >5%, margin drops >3 pts, ROAS down >15%.")
         st.caption("Based on your last 60 days of data.")
     st.markdown("<div style='margin-top:1rem;margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
     st.markdown("---")
     tier = get_user_tier()
-    st.caption("Main")
-    st.markdown("<div style='margin-bottom: 0.5rem;'></div>", unsafe_allow_html=True)
-    main_pages = ["Executive Briefing", "Dashboard", "Analytics", "Insights", "What-If", "Predictions", "Recommendations", "Goals", "Inventory Optimization", "Cohort Analysis", "Data Sources"]
-    for p in main_pages:
-        if can_access_page(p, tier):
-            if st.button(p, use_container_width=True, key=f"main_{p}"):
-                st.session_state.current_page = p
-                st.session_state.pop("_page_from_url_applied", None)
-                st.rerun()
-        else:
-            st.button(
-                f"🔒 {p}",
-                use_container_width=True,
-                disabled=True,
-                key=f"main_{p}",
-                help=upgrade_tooltip_for_page(p, tier),
-            )
-    if st.button("💳 Billing", use_container_width=True, key="main_billing"):
-        st.session_state.current_page = "Billing"
+
+    st.session_state.compact_nav = st.toggle(
+        "Simple sidebar",
+        value=st.session_state.compact_nav,
+        help="On: one short menu for day-to-day. Off: every module, grouped by topic.",
+    )
+
+    def _nav_to(page: str):
+        st.session_state.current_page = page
         st.session_state.pop("_page_from_url_applied", None)
         st.rerun()
-    st.markdown("<div style='margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
-    more_pages = ["Customer Insights", "Inventory & Demand", "Anomalies & Alerts", "Margin Analysis", "Smart Alerts", "Customer LTV", "Revenue Attribution", "Competitive Benchmark"]
-    with st.expander("More pages", expanded=True):
-        for p in more_pages:
-            if can_access_page(p, tier):
-                if st.button(p, use_container_width=True, key=f"nav_{p}"):
-                    st.session_state.current_page = p
-                    st.session_state.pop("_page_from_url_applied", None)
-                    st.rerun()
-            else:
-                st.button(
-                    f"🔒 {p}",
-                    use_container_width=True,
-                    disabled=True,
-                    key=f"nav_{p}",
-                    help=upgrade_tooltip_for_page(p, tier),
-                )
+
+    # --- Compact: one dropdown, far fewer decisions ---
+    _CORE_PAGES = [
+        "Executive Briefing",
+        "Dashboard",
+        "Analytics",
+        "Insights",
+        "Goals",
+        "Data Sources",
+        "Billing",
+    ]
+    if st.session_state.compact_nav:
+        st.caption("Where to?")
+        _allowed_core = [p for p in _CORE_PAGES if can_access_page(p, tier)]
+        _p = st.session_state.current_page
+        _nav_list = list(_allowed_core)
+        if _p not in _nav_list and can_access_page(_p, tier):
+            _nav_list.insert(0, _p)
+        if not _nav_list:
+            _nav_list = ["Executive Briefing"]
+        _ix = _nav_list.index(_p) if _p in _nav_list else 0
+        _choice = st.selectbox(
+            "Page",
+            options=_nav_list,
+            index=_ix,
+            label_visibility="collapsed",
+            key="compact_nav_page_select",
+        )
+        if _choice != _p:
+            _nav_to(_choice)
+        st.caption("Turn **Simple sidebar** off to open forecasts, What-If, Recommendations, and 10+ more tools.")
+    else:
+        # --- Full: grouped sections (easier to scan than one long list) ---
+        st.caption("Navigation")
+
+        def _nav_buttons(pages, key_prefix: str):
+            for p in pages:
+                if can_access_page(p, tier):
+                    if st.button(p, use_container_width=True, key=f"{key_prefix}_{p}"):
+                        _nav_to(p)
+                else:
+                    st.button(
+                        f"🔒 {p}",
+                        use_container_width=True,
+                        disabled=True,
+                        key=f"{key_prefix}_{p}",
+                        help=upgrade_tooltip_for_page(p, tier),
+                    )
+
+        st.markdown("**Overview**")
+        _nav_buttons(["Executive Briefing", "Dashboard", "Data Sources"], "nav_ov")
+
+        st.markdown("**Analysis**")
+        _nav_buttons(["Analytics", "Insights", "Goals", "Inventory Optimization", "Cohort Analysis"], "nav_an")
+
+        st.markdown("**Forecast & plan**")
+        _nav_buttons(["What-If", "Predictions", "Recommendations"], "nav_fc")
+
+        st.markdown("**Operations & risk**")
+        _nav_buttons(
+            [
+                "Customer Insights",
+                "Inventory & Demand",
+                "Anomalies & Alerts",
+                "Margin Analysis",
+                "Smart Alerts",
+                "Customer LTV",
+                "Revenue Attribution",
+                "Competitive Benchmark",
+            ],
+            "nav_op",
+        )
+
+        st.markdown("**Account**")
+        if st.button("💳 Billing", use_container_width=True, key="main_billing"):
+            _nav_to("Billing")
 
     with st.expander("Privacy & terms"):
         st.markdown(

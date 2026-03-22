@@ -19,5 +19,6 @@ Single source of truth for navigation and user context. **Do not** duplicate bus
 | `onboarding_dismissed` | Hides the Get Started expander. |
 | `_page_from_url_applied` | One-shot guard for `?page=` query hydration. |
 | `_echolon_sync_toast` | Triggers post-sync toast on Dashboard. |
+| `compact_nav` | If `True` (default), sidebar uses a short **selectbox**; if `False`, full grouped module list. |
 
 **KPIs** are recomputed in `app.py` after data load (`compute_kpis(data, window_info)`) and are **not** stored in session state as a single key today — pages receive `kpis` via arguments from `app.py`.
