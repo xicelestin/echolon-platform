@@ -565,8 +565,10 @@ def render_csv_upload_section():
 # Modify render_data_sources_page to include tabs for better organization
 def render_data_sources_page_enhanced():
     """Enhanced main function with tabs for better UX"""
+    if 'upload_history' not in st.session_state:
+        st.session_state.upload_history = []
     st.title("📂 Data Sources")
-    st.markdown("### Connect and manage your business data")
+    st.caption("Connect and manage your business data")
     
     # Live data badge + Connect in 2 min callout
     has_connected = bool(st.session_state.get('connected_sources'))

@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
+from utils import calculate_key_metrics
 
 def render_analytics_page(data, kpis, format_currency, format_percentage, format_multiplier):
     st.title("🔍 Advanced Business Analytics")
@@ -65,14 +66,23 @@ def render_analytics_page(data, kpis, format_currency, format_percentage, format
             st.markdown("---")
             st.subheader("⚡ Operational Efficiency")
             col_eff1, col_eff2, col_eff3 = st.columns(3)
-            marketing_total = data['marketing_spend'].sum()
+            metrics = calculate_key_metrics(data)
+            marketing_total = data['marketing_spend'].sum() if 'marketing_spend' in data.columns else 0
             marketing_eff = (data['revenue'].sum() / marketing_total) if marketing_total > 0 else 0
+            cac_value = metrics.get('cac')
+            ltv_value = metrics.get('ltv')
+            if cac_value is None or cac_value <= 0:
+                cac_display = "N/A"
+                ltv_cac_display = "N/A"
+            else:
+                cac_display = f"${cac_value:.0f}"
+                ltv_cac_display = f"{(ltv_value / cac_value):.1f}x" if ltv_value is not None and ltv_value > 0 else "N/A"
             with col_eff1:
                 st.metric("Marketing Efficiency", f"{marketing_eff:.2f}x")
             with col_eff2:
-                st.metric("CAC (Est.)", "$42.50")
+                st.metric("CAC", cac_display)
             with col_eff3:
-                st.metric("LTV/CAC", "3.8x")
+                st.metric("LTV/CAC", ltv_cac_display)
 
             fig_roas = px.area(data, x='date', y='roas', title="ROAS Trend", color_discrete_sequence=['#9467bd'])
             st.plotly_chart(fig_roas, use_container_width=True)

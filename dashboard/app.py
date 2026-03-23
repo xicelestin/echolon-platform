@@ -98,7 +98,10 @@ def format_currency(value, decimals=0):
     return f"${value:,.{decimals}f}"
 
 def format_percentage(value, decimals=1): return f"{value:.{decimals}f}%"
-def format_multiplier(value, decimals=2): return f"{value:.{decimals}f}x"  # Only for ratios (ROAS, LTV/CAC)
+def format_multiplier(value, decimals=2):
+    if abs(float(value)) < (0.5 * (10 ** (-decimals))):
+        value = 0.0
+    return f"{value:.{decimals}f}x"  # Only for ratios (ROAS, LTV/CAC)
 def format_number(value, decimals=0): return f"{value:,.{decimals}f}"
 def format_count(value): return f"{int(round(value)):,}"  # Counts: no decimals, no "x"
 
@@ -110,6 +113,8 @@ if 'company_name' not in st.session_state:
     st.session_state.company_name = 'Your Business'
 if 'date_range' not in st.session_state:
     st.session_state.date_range = 'Last 90 Days'
+if 'upload_history' not in st.session_state:
+    st.session_state.upload_history = []
 
 # Optional deep link: ?page=dashboard (slug → sidebar title)
 _PAGE_SLUGS = {
@@ -270,17 +275,34 @@ st.markdown("""
     
     /* Sidebar - prevent expander overlap */
     [data-testid="stSidebar"] { background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important; }
+    [data-testid="stSidebar"] section[data-testid="stSidebarUserContent"] {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+        overflow-x: hidden !important;
+    }
     [data-testid="stSidebar"] .stMarkdown { color: #94a3b8; }
     [data-testid="stSidebar"] [data-testid="stExpander"] {
         margin: 0.75rem 0 !important; display: block !important; clear: both !important;
     }
+    [data-testid="stSidebar"] [data-testid="stExpander"] summary {
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
     [data-testid="stSidebar"] [data-testid="stExpander"] + [data-testid="stExpander"],
     [data-testid="stSidebar"] [data-testid="stExpander"] + div { margin-top: 0.5rem !important; }
+    [data-testid="stSidebar"] a[href^="#"] { display: none !important; }
     
     hr { margin: 2rem 0 !important; border: none; border-top: 1px solid rgba(148, 163, 184, 0.15) !important; }
     
-    /* Metric labels - prevent truncation on laptop */
-    [data-testid="stMetric"] label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    /* Metric labels - allow wrapping (avoid clipped titles and subtitles) */
+    [data-testid="stMetric"] label {
+        max-width: 100%;
+        overflow: visible;
+        text-overflow: unset;
+        white-space: normal;
+        line-height: 1.2;
+    }
+    [data-testid="stMetricDelta"] { white-space: normal !important; }
     @media (max-width: 1024px) {
         [data-testid="stMetric"] label { font-size: 0.65rem !important; }
     }
@@ -390,25 +412,36 @@ with st.sidebar:
         st.markdown("---")
     
     industry_options = {k: f"{v['icon']} {v['name']}" for k, v in INDUSTRIES.items()}
-    st.session_state.industry = st.selectbox(
-        "Industry",
-        options=list(industry_options.keys()),
-        format_func=lambda k: industry_options[k],
-        key="sidebar_industry"
-    )
-    _dr = st.session_state.get("date_range", "Last 90 Days")
-    if _dr not in DATE_RANGE_OPTIONS:
-        _dr = "Last 90 Days"
-    _dr_index = DATE_RANGE_OPTIONS.index(_dr)
-    st.session_state.date_range = st.selectbox(
-        "Date Range",
-        DATE_RANGE_OPTIONS,
-        index=_dr_index,
-        key="sidebar_date_range",
-        help="Applies to charts and KPIs that use the selected time window.",
-    )
-    st.session_state.company_name = st.text_input("Company Name", value=st.session_state.get('company_name', 'Your Business'), key="company_name_input")
-    st.markdown("<div style='margin-top:1rem;margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
+
+    def _workspace_inputs():
+        st.session_state.industry = st.selectbox(
+            "Industry",
+            options=list(industry_options.keys()),
+            format_func=lambda k: industry_options[k],
+            key="sidebar_industry",
+        )
+        _dr = st.session_state.get("date_range", "Last 90 Days")
+        if _dr not in DATE_RANGE_OPTIONS:
+            _dr = "Last 90 Days"
+        _dr_index = DATE_RANGE_OPTIONS.index(_dr)
+        st.session_state.date_range = st.selectbox(
+            "Date Range",
+            DATE_RANGE_OPTIONS,
+            index=_dr_index,
+            key="sidebar_date_range",
+            help="Applies to charts and KPIs that use the selected time window.",
+        )
+        st.session_state.company_name = st.text_input(
+            "Company Name",
+            value=st.session_state.get("company_name", "Your Business"),
+            key="company_name_input",
+        )
+
+    # Full sidebar: keep industry / dates / company visible (familiar layout).
+    if not st.session_state.compact_nav:
+        _workspace_inputs()
+        st.markdown("<div style='margin-top:1rem;margin-bottom:0.5rem;'></div>", unsafe_allow_html=True)
+
     with st.expander("🔔 Alerts", expanded=False):
         st.caption("We alert you when: revenue drops >5%, margin drops >3 pts, ROAS down >15%.")
         st.caption("Based on your last 60 days of data.")
@@ -457,6 +490,9 @@ with st.sidebar:
         if _choice != _p:
             _nav_to(_choice)
         st.caption("Turn **Simple sidebar** off to open forecasts, What-If, Recommendations, and 10+ more tools.")
+        with st.expander("Workspace", expanded=False):
+            st.caption("Industry, date range, and company name on PDFs/exports.")
+            _workspace_inputs()
     else:
         # --- Full: grouped sections (easier to scan than one long list) ---
         st.caption("Navigation")
@@ -539,7 +575,9 @@ def _render_data_quality_panel(data, kpis):
         return
     report = validate_data_contract(data, kpis.get('window_info', {}))
     st.markdown("<div style='margin-top:1rem;'></div>", unsafe_allow_html=True)
-    with st.expander("📋 Data Quality", expanded=False):
+    _checks = report.get('checks', [])
+    _has_issues = any(c.get('status') in ('warn', 'error') for c in _checks)
+    with st.expander("📋 Data Quality", expanded=_has_issues):
         # Summary metrics
         col1, col2, col3, col4 = st.columns(4)
         with col1:
@@ -558,7 +596,7 @@ def _render_data_quality_panel(data, kpis):
             st.caption(f"**Margin definition:** {kpis.get('margin_definition', 'Gross')} (revenue − cost)")
         # Checks list
         st.markdown("**Checks**")
-        for c in report.get('checks', [])[:12]:
+        for c in _checks[:12]:
             status = c.get('status', 'info')
             msg = c.get('message', '')
             icon = "✅" if status == 'ok' else ("⚠️" if status == 'warn' else ("❌" if status == 'error' else "ℹ️"))
@@ -792,7 +830,6 @@ try:
         st.markdown("---")
 
         # Quick Stats
-        st.subheader("📋 Business Health Score")
         health_metrics = {
             'revenue_growth': metrics.get('revenue_growth', 0),
             'profit_margin': data['profit_margin'].mean() if 'profit_margin' in data.columns else 40,

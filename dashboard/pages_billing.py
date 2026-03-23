@@ -57,10 +57,10 @@ def render_billing_page():
             if tier == "free":
                 sub_col1, sub_col2 = st.columns(2)
                 with sub_col1:
-                    if st.button("Monthly", key="sub_starter_monthly"):
+                    if st.button("Monthly", key="sub_starter_monthly", use_container_width=True):
                         _redirect_to_checkout("starter", annual=False)
                 with sub_col2:
-                    if st.button("Annual", key="sub_starter_annual"):
+                    if st.button("Annual", key="sub_starter_annual", use_container_width=True):
                         _redirect_to_checkout("starter", annual=True)
             elif tier == "starter":
                 st.success("Current plan")
@@ -76,10 +76,10 @@ def render_billing_page():
             if tier != "growth":
                 sub_col1, sub_col2 = st.columns(2)
                 with sub_col1:
-                    if st.button("Monthly", key="sub_growth_monthly", type="primary"):
+                    if st.button("Monthly", key="sub_growth_monthly", type="primary", use_container_width=True):
                         _redirect_to_checkout("growth", annual=False)
                 with sub_col2:
-                    if st.button("Annual", key="sub_growth_annual", type="primary"):
+                    if st.button("Annual", key="sub_growth_annual", type="primary", use_container_width=True):
                         _redirect_to_checkout("growth", annual=True)
             elif has_paid_subscription:
                 st.success("Current plan")
@@ -87,10 +87,10 @@ def render_billing_page():
                 st.caption("Subscribe to lock in your plan")
                 sub_col1, sub_col2 = st.columns(2)
                 with sub_col1:
-                    if st.button("Monthly", key="sub_growth_monthly", type="primary"):
+                    if st.button("Monthly", key="sub_growth_monthly", type="primary", use_container_width=True):
                         _redirect_to_checkout("growth", annual=False)
                 with sub_col2:
-                    if st.button("Annual", key="sub_growth_annual", type="primary"):
+                    if st.button("Annual", key="sub_growth_annual", type="primary", use_container_width=True):
                         _redirect_to_checkout("growth", annual=True)
     
     st.markdown("---")

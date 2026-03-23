@@ -54,8 +54,12 @@ def render_insights_page(data=None, kpis=None, format_currency=None, format_perc
     active_customers = int(data['customers'].iloc[-1]) if 'customers' in data.columns and len(data) > 0 else int(total_orders * 0.5)
     avg_order_value = (total_revenue / total_orders) if total_orders > 0 else 50
     ltv = metrics.get('ltv', avg_order_value * 12)
-    cac = metrics.get('cac', 45)
-    ltv_cac_ratio = (ltv / cac) if cac > 0 else 0
+    cac = metrics.get('cac')
+    if cac is None or cac <= 0:
+        cac = None
+        ltv_cac_ratio = None
+    else:
+        ltv_cac_ratio = ltv / cac
     rev_growth = metrics.get('revenue_growth', 8)
     churn_rate = metrics.get('churn_rate', 2.1)
 
@@ -135,15 +139,15 @@ def render_insights_page(data=None, kpis=None, format_currency=None, format_perc
     
     with col5:
         st.markdown(create_kpi_card(
-            '📊', 'CAC', f'${cac:.0f}',
+            '📊', 'CAC', (f'${cac:.0f}' if cac is not None else 'N/A'),
             '↓ 5.2%', '#10B981', 'Customer acquisition cost'
         ), unsafe_allow_html=True)
     
     with col6:
-        efficiency_color = '#10B981' if ltv_cac_ratio > 20 else '#F59E0B'
+        efficiency_color = '#10B981' if (ltv_cac_ratio is not None and ltv_cac_ratio > 20) else '#F59E0B'
         efficiency_pct = '↑ 18%'
         st.markdown(create_kpi_card(
-            '⚡', 'LTV/CAC Ratio', f'{ltv_cac_ratio:.1f}x',
+            '⚡', 'LTV/CAC Ratio', (f'{ltv_cac_ratio:.1f}x' if ltv_cac_ratio is not None else 'N/A'),
             efficiency_pct, efficiency_color, 'LTV to CAC ratio (>20x ideal)'
         ), unsafe_allow_html=True)
     
@@ -174,8 +178,8 @@ Revenue: {fmt_cur(total_revenue)}
 Active Customers: {active_customers:,}
 Average Order Value: {fmt_cur(avg_order_value, 2)}
 Customer LTV: {fmt_cur(ltv)}
-CAC: {fmt_cur(cac)}
-LTV/CAC Ratio: {ltv_cac_ratio:.1f}x
+CAC: {fmt_cur(cac) if cac is not None else "N/A"}
+LTV/CAC Ratio: {f"{ltv_cac_ratio:.1f}x" if ltv_cac_ratio is not None else "N/A"}
 Revenue Growth: {fmt_pct(rev_growth)}
 Churn Rate: {fmt_pct(churn_rate)}
 

@@ -566,4 +566,10 @@ def render_executive_briefing_page(data, kpis, format_currency, format_percentag
             st.metric("Est. Cash Health", cash_metrics.get('cash_health', 'N/A').title(), "")
     
     st.markdown("---")
-    st.caption(f"Briefing generated {datetime.now().strftime('%Y-%m-%d %H:%M')} | Based on your business data")
+    _generated_at = datetime.now().strftime("%Y-%m-%d %H:%M")
+    st.markdown(
+        f"<p style='color:#94a3b8;font-size:0.85rem;white-space:nowrap;'>"
+        f"Briefing generated {_generated_at} | Based on your business data"
+        f"</p>",
+        unsafe_allow_html=True,
+    )
