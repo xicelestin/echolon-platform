@@ -4,7 +4,7 @@ sqlalchemy==2.0.23
 alembic==1.12.1
 pydantic>=2.11.7,<3
 pydantic-settings==2.1.0
-python-dotenv==1.0.0
+python-dotenv==1.2.2
 google-cloud-secret-manager==2.16.4
 psycopg2-binary==2.9.9
 python-multipart==0.0.6
