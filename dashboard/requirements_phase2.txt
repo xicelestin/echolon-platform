@@ -14,7 +14,7 @@ plotly>=5.17.0
 psutil>=5.10.0
 
 # Data Science
-scikit-learn>=1.3.0
+scikit-learn>=1.8.0
 
 # Utilities
 python-dateutil>=2.8.2
