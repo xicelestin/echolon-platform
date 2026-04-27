@@ -15,4 +15,4 @@ statsmodels>=0.14.0
 stripe>=7.0.0
 ShopifyAPI>=12.5.0
 openpyxl>=3.1.0
-supabase>=2.0.0
+supabase>=2.29.0
